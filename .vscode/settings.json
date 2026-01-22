@@ -1,0 +1,30 @@
+{
+  "editor.formatOnSave": false,
+  "npm.packageManager": "pnpm",
+
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.fixAll.stylelint": "explicit"
+  },
+  "eslint.format.enable": true,
+  "eslint.validate": [
+    "vue",
+    "javascript"
+  ],
+  "cSpell.dictionaryDefinitions": [
+    {
+      "name": "zzdats",
+      "path": "${workspaceFolder}/.vscode/wordlist/zzdats.txt"
+    }
+  ],
+  "cSpell.dictionaries": ["zzdats"],
+  "eslint.enable": true,
+  "eslint.codeActionsOnSave.mode": "all",
+  "eslint.run": "onSave",
+  "[javascript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[vue]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+}
