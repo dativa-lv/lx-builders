@@ -21,7 +21,7 @@ const vueConfig = defineConfig({
       formats: ['esm', 'umd'],
     },
     rollupOptions: {
-      external: ['vue', '@wntr/lx-ui'],
+      external: ['vue', '@dativa-lv/lx-ui'],
       output: {
         minifyInternalExports: false,
         assetFileNames: '[name][extname]',

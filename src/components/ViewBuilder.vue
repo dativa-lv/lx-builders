@@ -17,7 +17,7 @@ import {
   LxRow,
   lxStringUtils,
   lxDevUtils,
-} from '@wntr/lx-ui';
+} from '@dativa-lv/lx-ui';
 
 // TODO: add export from lx/ui
 import { getDisplayTexts } from '@/utils/generalUtils';

@@ -1,7 +1,7 @@
 import { test, expect } from 'vitest';
 import { mount, RouterLinkStub } from '@vue/test-utils';
 import LxFilterBuilder from '@/components/FilterBuilder.vue';
-import { lxFormatUtils } from '@wntr/lx-ui';
+import { lxFormatUtils } from '@dativa-lv/lx-ui';
 
 test('LxFilterBuilder with one row', () => {
   const schema = { type: 'object', properties: { name: { type: 'string' } } };

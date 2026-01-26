@@ -82,6 +82,6 @@
   },
   "peerDependencies": {
     "vue": "^3.5.17",
-    "@wntr/lx-ui": "^1.11.0"
+    "@dativa-lv/lx-ui": "2.0.0-beta"
   }
 }

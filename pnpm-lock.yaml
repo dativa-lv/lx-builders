@@ -13,6 +13,9 @@ importers:
 
   .:
     dependencies:
+      '@dativa-lv/lx-ui':
+        specifier: 2.0.0-beta
+        version: 2.0.0-beta(leaflet@1.9.4)(sortablejs@1.14.0)(typescript@5.3.3)(vue@3.5.17(typescript@5.3.3))
       '@vue/test-utils':
         specifier: ^2.4.3
         version: 2.4.6
@@ -31,9 +34,6 @@ importers:
       '@vueuse/integrations':
         specifier: ^11.0.3
         version: 11.3.0(axios@1.12.2)(focus-trap@7.6.4)(sortablejs@1.14.0)(vue@3.5.17(typescript@5.3.3))
-      '@wntr/lx-ui':
-        specifier: ^1.11.0
-        version: 1.11.0(leaflet@1.9.4)(sortablejs@1.14.0)(typescript@5.3.3)(vue@3.5.17(typescript@5.3.3))
     devDependencies:
       '@testing-library/vue':
         specifier: ^8.0.1
@@ -340,6 +340,11 @@ packages:
   '@csstools/css-tokenizer@3.0.4':
     resolution: {integrity: sha512-Vd/9EVDiu6PPJt9yAh6roZP6El1xHrdvIVGjyBsHR0RYwNHgL7FJPyIIW4fANJNG6FtyZfvlRPpFI4ZM/lubvw==}
     engines: {node: '>=18'}
+
+  '@dativa-lv/lx-ui@2.0.0-beta':
+    resolution: {integrity: sha512-rs1Mcg+xNRB1b8G4pgJUSUFfzSGEX3Y1CUEkGtDuijDtL7OwTrCmPFGncbhi+khWSYV3wVy2el6eWfcDXEH3ZA==}
+    peerDependencies:
+      vue: ^3.5.17
 
   '@esbuild/aix-ppc64@0.19.12':
     resolution: {integrity: sha512-bmoCYyWdEL3wDQIVbcyzRyeKLgk2WtWLTWz1ZIAZF/EGbNOwSA6ew3PftJ1PqMiOOGu0OyFMzG53L0zqIpPeNA==}
@@ -973,11 +978,11 @@ packages:
     peerDependencies:
       '@tiptap/core': ^2.7.0
 
-  '@tiptap/extension-link@2.1.16':
-    resolution: {integrity: sha512-QIXYwxHi2kKU2sqDXngTpggO4ZmLm4vMxDlbWT9so1iUPAqQJW2ZRbdygFYy1txirWcoaJKocPwSJemyAeUzmw==}
+  '@tiptap/extension-link@2.10.4':
+    resolution: {integrity: sha512-9lbtMUPc9IYCRMKV/B4k/no9J5OQQl/jJn9W2ce3NjJZSrOjuZs0CjJZgCESIaj6911s7nEJUvxKKmsbD3UC3Q==}
     peerDependencies:
-      '@tiptap/core': ^2.0.0
-      '@tiptap/pm': ^2.0.0
+      '@tiptap/core': ^2.7.0
+      '@tiptap/pm': ^2.7.0
 
   '@tiptap/extension-list-item@2.11.7':
     resolution: {integrity: sha512-6ikh7Y+qAbkSuIHXPIINqfzmWs5uIGrylihdZ9adaIyvrN1KSnWIqrZIk/NcZTg5YFIJlXrnGSRSjb/QM3WUhw==}
@@ -1328,11 +1333,6 @@ packages:
     peerDependencies:
       vue: ^3.5.0
 
-  '@wntr/lx-ui@1.11.0':
-    resolution: {integrity: sha512-2Xef2e8BfeaMmcxyePRqeowkALdn0sU7FzorAjx2NXJdRpjAMJH6KPgtHzsMPUVS0B+15JEUoIvbR3+IJxue0Q==}
-    peerDependencies:
-      vue: ^3.5.17
-
   '@xmldom/xmldom@0.9.8':
     resolution: {integrity: sha512-p96FSY54r+WJ50FIOsCOjyj/wavs8921hG5+kVMmZgKcvIKxMXHTrjNJvRgWa/zuX3B6t2lijLNFaOyuxUH+2A==}
     engines: {node: '>=14.6'}
@@ -1533,6 +1533,7 @@ packages:
 
   c2pa@0.22.6:
     resolution: {integrity: sha512-kWp2QlteDoofzePb53qIwGsUnCXQmKMiC/Td7NnSUWfiWtpTzkpwZXiZwQ7O8jJ4NHTpFI+G27NGXYnUu73h4w==}
+    deprecated: This package is no longer being actively developed. Please use @contentauth/c2pa-web instead.
 
   cac@6.7.14:
     resolution: {integrity: sha512-b6Ilus+c3RrdDk+JhLKUAQfzzgLEPy6wcXqS7f/xe1EETvsDP6GORG7SFuOs6cID5YkqchW/LXZbX5bc8j7ZcQ==}
@@ -4160,6 +4161,75 @@ snapshots:
   '@csstools/css-tokenizer@3.0.4':
     optional: true
 
+  '@dativa-lv/lx-ui@2.0.0-beta(leaflet@1.9.4)(sortablejs@1.14.0)(typescript@5.3.3)(vue@3.5.17(typescript@5.3.3))':
+    dependencies:
+      '@braintree/sanitize-url': 7.1.1
+      '@floating-ui/vue': 1.1.6(vue@3.5.17(typescript@5.3.3))
+      '@tiptap/core': 2.11.3(@tiptap/pm@2.1.12)
+      '@tiptap/extension-character-count': 2.1.16(@tiptap/core@2.11.3(@tiptap/pm@2.1.12))(@tiptap/pm@2.1.12)
+      '@tiptap/extension-color': 2.1.16(@tiptap/core@2.11.3(@tiptap/pm@2.1.12))(@tiptap/extension-text-style@2.1.16(@tiptap/core@2.11.3(@tiptap/pm@2.1.12)))
+      '@tiptap/extension-heading': 2.11.3(@tiptap/core@2.11.3(@tiptap/pm@2.1.12))
+      '@tiptap/extension-image': 2.2.2(@tiptap/core@2.11.3(@tiptap/pm@2.1.12))
+      '@tiptap/extension-link': 2.10.4(@tiptap/core@2.11.3(@tiptap/pm@2.1.12))(@tiptap/pm@2.1.12)
+      '@tiptap/extension-placeholder': 2.1.16(@tiptap/core@2.11.3(@tiptap/pm@2.1.12))(@tiptap/pm@2.1.12)
+      '@tiptap/extension-text-style': 2.1.16(@tiptap/core@2.11.3(@tiptap/pm@2.1.12))
+      '@tiptap/extension-underline': 2.4.0(@tiptap/core@2.11.3(@tiptap/pm@2.1.12))
+      '@tiptap/pm': 2.1.12
+      '@tiptap/starter-kit': 2.1.12(@tiptap/pm@2.1.12)
+      '@tiptap/vue-3': 2.1.16(@tiptap/core@2.11.3(@tiptap/pm@2.1.12))(@tiptap/pm@2.1.12)(vue@3.5.17(typescript@5.3.3))
+      '@vue-leaflet/vue-leaflet': 0.10.1(leaflet@1.9.4)(typescript@5.3.3)
+      '@vue/test-utils': 2.4.6
+      '@vuelidate/core': 2.0.3(vue@3.5.17(typescript@5.3.3))
+      '@vuelidate/validators': 2.0.4(vue@3.5.17(typescript@5.3.3))
+      '@vueuse/components': 10.11.1(vue@3.5.17(typescript@5.3.3))
+      '@vueuse/core': 13.4.0(vue@3.5.17(typescript@5.3.3))
+      '@vueuse/integrations': 11.3.0(axios@1.12.2)(focus-trap@7.6.4)(sortablejs@1.14.0)(vue@3.5.17(typescript@5.3.3))
+      avvvatars-vue: 1.1.1(vue@3.5.17(typescript@5.3.3))
+      axios: 1.12.2
+      c2pa: 0.22.6
+      cyrillic-to-translit-js: 3.2.1
+      date-fns: 3.6.0
+      exifreader: 4.27.0
+      focus-trap: 7.6.4
+      glob: 10.5.0
+      i18n-iso-countries: 7.14.0
+      jsrsasign: 11.1.0
+      jszip: 3.10.1
+      linkifyjs: 4.3.2
+      marked: 15.0.7
+      mime: 4.0.6
+      pdfjs-dist: 4.10.38
+      pinia: 2.3.1(typescript@5.3.3)(vue@3.5.17(typescript@5.3.3))
+      prosemirror-model: 1.25.0
+      prosemirror-state: 1.4.3
+      qrcode.vue: 3.6.0(vue@3.5.17(typescript@5.3.3))
+      tiptap-markdown: 0.8.10(@tiptap/core@2.11.3(@tiptap/pm@2.1.12))
+      v-money3: 3.24.1(vue@3.5.17(typescript@5.3.3))
+      vue: 3.5.17(typescript@5.3.3)
+      vue-country-flag-next: 2.3.2(vue@3.5.17(typescript@5.3.3))
+      vue-dompurify-html: 5.2.0(vue@3.5.17(typescript@5.3.3))
+      vue-imask: 7.3.0(vue@3.5.17(typescript@5.3.3))
+      vue-qrcode-reader: 5.7.1
+      vue-router: 4.5.0(vue@3.5.17(typescript@5.3.3))
+      vuedraggable: 4.1.0(vue@3.5.17(typescript@5.3.3))
+    transitivePeerDependencies:
+      - '@types/leaflet'
+      - '@vue/composition-api'
+      - async-validator
+      - change-case
+      - debug
+      - drauu
+      - fuse.js
+      - idb-keyval
+      - jwt-decode
+      - leaflet
+      - nprogress
+      - qrcode
+      - sortablejs
+      - supports-color
+      - typescript
+      - universal-cookie
+
   '@esbuild/aix-ppc64@0.19.12':
     optional: true
 
@@ -4792,7 +4862,7 @@ snapshots:
     dependencies:
       '@tiptap/core': 2.11.3(@tiptap/pm@2.1.12)
 
-  '@tiptap/extension-link@2.1.16(@tiptap/core@2.11.3(@tiptap/pm@2.1.12))(@tiptap/pm@2.1.12)':
+  '@tiptap/extension-link@2.10.4(@tiptap/core@2.11.3(@tiptap/pm@2.1.12))(@tiptap/pm@2.1.12)':
     dependencies:
       '@tiptap/core': 2.11.3(@tiptap/pm@2.1.12)
       '@tiptap/pm': 2.1.12
@@ -5231,75 +5301,6 @@ snapshots:
   '@vueuse/shared@13.4.0(vue@3.5.17(typescript@5.3.3))':
     dependencies:
       vue: 3.5.17(typescript@5.3.3)
-
-  '@wntr/lx-ui@1.11.0(leaflet@1.9.4)(sortablejs@1.14.0)(typescript@5.3.3)(vue@3.5.17(typescript@5.3.3))':
-    dependencies:
-      '@braintree/sanitize-url': 7.1.1
-      '@floating-ui/vue': 1.1.6(vue@3.5.17(typescript@5.3.3))
-      '@tiptap/core': 2.11.3(@tiptap/pm@2.1.12)
-      '@tiptap/extension-character-count': 2.1.16(@tiptap/core@2.11.3(@tiptap/pm@2.1.12))(@tiptap/pm@2.1.12)
-      '@tiptap/extension-color': 2.1.16(@tiptap/core@2.11.3(@tiptap/pm@2.1.12))(@tiptap/extension-text-style@2.1.16(@tiptap/core@2.11.3(@tiptap/pm@2.1.12)))
-      '@tiptap/extension-heading': 2.11.3(@tiptap/core@2.11.3(@tiptap/pm@2.1.12))
-      '@tiptap/extension-image': 2.2.2(@tiptap/core@2.11.3(@tiptap/pm@2.1.12))
-      '@tiptap/extension-link': 2.1.16(@tiptap/core@2.11.3(@tiptap/pm@2.1.12))(@tiptap/pm@2.1.12)
-      '@tiptap/extension-placeholder': 2.1.16(@tiptap/core@2.11.3(@tiptap/pm@2.1.12))(@tiptap/pm@2.1.12)
-      '@tiptap/extension-text-style': 2.1.16(@tiptap/core@2.11.3(@tiptap/pm@2.1.12))
-      '@tiptap/extension-underline': 2.4.0(@tiptap/core@2.11.3(@tiptap/pm@2.1.12))
-      '@tiptap/pm': 2.1.12
-      '@tiptap/starter-kit': 2.1.12(@tiptap/pm@2.1.12)
-      '@tiptap/vue-3': 2.1.16(@tiptap/core@2.11.3(@tiptap/pm@2.1.12))(@tiptap/pm@2.1.12)(vue@3.5.17(typescript@5.3.3))
-      '@vue-leaflet/vue-leaflet': 0.10.1(leaflet@1.9.4)(typescript@5.3.3)
-      '@vue/test-utils': 2.4.6
-      '@vuelidate/core': 2.0.3(vue@3.5.17(typescript@5.3.3))
-      '@vuelidate/validators': 2.0.4(vue@3.5.17(typescript@5.3.3))
-      '@vueuse/components': 10.11.1(vue@3.5.17(typescript@5.3.3))
-      '@vueuse/core': 13.4.0(vue@3.5.17(typescript@5.3.3))
-      '@vueuse/integrations': 11.3.0(axios@1.12.2)(focus-trap@7.6.4)(sortablejs@1.14.0)(vue@3.5.17(typescript@5.3.3))
-      avvvatars-vue: 1.1.1(vue@3.5.17(typescript@5.3.3))
-      axios: 1.12.2
-      c2pa: 0.22.6
-      cyrillic-to-translit-js: 3.2.1
-      date-fns: 3.6.0
-      exifreader: 4.27.0
-      focus-trap: 7.6.4
-      glob: 10.5.0
-      i18n-iso-countries: 7.14.0
-      jsrsasign: 11.1.0
-      jszip: 3.10.1
-      linkifyjs: 4.3.2
-      marked: 15.0.7
-      mime: 4.0.6
-      pdfjs-dist: 4.10.38
-      pinia: 2.3.1(typescript@5.3.3)(vue@3.5.17(typescript@5.3.3))
-      prosemirror-model: 1.25.0
-      prosemirror-state: 1.4.3
-      qrcode.vue: 3.6.0(vue@3.5.17(typescript@5.3.3))
-      tiptap-markdown: 0.8.10(@tiptap/core@2.11.3(@tiptap/pm@2.1.12))
-      v-money3: 3.24.1(vue@3.5.17(typescript@5.3.3))
-      vue: 3.5.17(typescript@5.3.3)
-      vue-country-flag-next: 2.3.2(vue@3.5.17(typescript@5.3.3))
-      vue-dompurify-html: 5.2.0(vue@3.5.17(typescript@5.3.3))
-      vue-imask: 7.3.0(vue@3.5.17(typescript@5.3.3))
-      vue-qrcode-reader: 5.7.1
-      vue-router: 4.5.0(vue@3.5.17(typescript@5.3.3))
-      vuedraggable: 4.1.0(vue@3.5.17(typescript@5.3.3))
-    transitivePeerDependencies:
-      - '@types/leaflet'
-      - '@vue/composition-api'
-      - async-validator
-      - change-case
-      - debug
-      - drauu
-      - fuse.js
-      - idb-keyval
-      - jwt-decode
-      - leaflet
-      - nprogress
-      - qrcode
-      - sortablejs
-      - supports-color
-      - typescript
-      - universal-cookie
 
   '@xmldom/xmldom@0.9.8':
     optional: true

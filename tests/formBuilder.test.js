@@ -1,5 +1,5 @@
 import { test, expect, afterEach } from 'vitest';
-import { LxForm } from '@wntr/lx-ui';
+import { LxForm } from '@dativa-lv/lx-ui';
 import LxFormBuilder from '@/components/FormBuilder.vue';
 import { mount } from '@vue/test-utils';
 import { h } from 'vue';

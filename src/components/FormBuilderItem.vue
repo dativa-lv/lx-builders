@@ -37,7 +37,7 @@ import {
   LxPersonDisplay,
   LxQr,
   LxQrScanner,
-  LxRatings,
+  LxRating,
   LxRichTextDisplay,
   LxStateDisplay,
   LxSteps,
@@ -49,7 +49,7 @@ import {
   LxDateTimeRange,
   LxStack,
   lxDevUtils,
-} from '@wntr/lx-ui';
+} from '@dativa-lv/lx-ui';
 
 const props = defineProps({
   id: { type: String, default: null },
@@ -3267,7 +3267,7 @@ function getCustomVariant(row) {
     @value="(a) => componentEmit('value', name, a)"
     @error="(a) => componentEmit('error', name, a)"
   />
-  <LxRatings
+  <LxRating
     v-else-if="selectedComponent === 'ratings'"
     :mode="displaySchema?.properties[name]?.lx?.mode"
     :kind="displaySchema?.properties[name]?.lx?.kind"

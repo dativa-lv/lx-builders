@@ -1,7 +1,7 @@
 <script setup>
 // TODO: add this component export from wntr/lx-ui package
 import { computed, onMounted } from 'vue';
-import { LxForm, LxButton } from '@wntr/lx-ui';
+import { LxForm, LxButton } from '@dativa-lv/lx-ui';
 
 // TODO: add export from lx/ui
 import { getDisplayTexts } from '@/utils/generalUtils';

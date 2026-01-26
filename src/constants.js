@@ -1,1 +1,1 @@
-// Public constants for @wntr/builders.
+// Public constants for @dativa-lv/builders.

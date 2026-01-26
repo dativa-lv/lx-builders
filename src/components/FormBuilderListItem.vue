@@ -1,5 +1,5 @@
 <script setup>
-import { LxFlag, LxStateDisplay, LxPersonDisplay, LxIcon, lxFormatUtils } from '@wntr/lx-ui';
+import { LxFlag, LxStateDisplay, LxPersonDisplay, LxIcon, lxFormatUtils } from '@dativa-lv/lx-ui';
 
 defineProps({
   item: { type: Object, default: () => ({}) },

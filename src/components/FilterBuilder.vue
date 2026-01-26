@@ -2,7 +2,7 @@
 import { onMounted, ref, computed } from 'vue';
 import LxFormBuilder from '@/components/FormBuilder.vue';
 import useLx from '@/hooks/useLx';
-import { LxFilters, lxDevUtils, lxFormatUtils, lxDateUtils } from '@wntr/lx-ui';
+import { LxFilters, lxDevUtils, lxFormatUtils, lxDateUtils } from '@dativa-lv/lx-ui';
 
 // TODO: add export from lx/ui
 import { focusNextFocusableElement, getDisplayTexts } from '@/utils/generalUtils';
