@@ -1,9 +1,5 @@
 <script setup>
 import { computed, ref } from 'vue';
-import useLx from '@/hooks/useLx';
-import LxAppendableListSimple from '@/components/AppendableListSimple.vue';
-import LxFormBuilderListItem from '@/components/FormBuilderListItem.vue';
-
 import {
   LxRow,
   LxTextInput,
@@ -47,9 +43,12 @@ import {
   LxLogoDisplay,
   LxAutoComplete,
   LxDateTimeRange,
-  LxStack,
   lxDevUtils,
 } from '@dativa-lv/lx-ui';
+import useLx from '@/hooks/useLx';
+import { getOtherSelectComponent } from '@/components/formBuilderOtherSelect';
+import LxFormBuilderListItem from '@/components/FormBuilderListItem.vue';
+import LxAppendableListSimple from '@/components/AppendableListSimple.vue';
 
 const props = defineProps({
   id: { type: String, default: null },
@@ -154,64 +153,7 @@ function objectSelect(row, name) {
 }
 
 function otherSelect(row) {
-  if (
-    row?.lx?.displayType === 'autoComplete' &&
-    (row?.type === 'string' || row?.type === 'array' || row?.type === 'object')
-  )
-    return 'autoComplete';
-  if (row?.lx?.displayType === 'button' && (row?.type === 'string' || row?.type === 'object'))
-    return 'button';
-  if (row?.lx?.displayType === 'camera' && row?.type === 'string') return 'camera';
-  if (row?.lx?.displayType === 'fileViewer' && row?.type === 'string') return 'fileViewer';
-  if (row?.lx?.displayType === 'flag' && (row?.type === 'string' || row?.type === 'object'))
-    return 'flag';
-  if (row?.lx?.displayType === 'icon' && (row?.type === 'string' || row?.type === 'object'))
-    return 'icon';
-  if (row?.lx?.displayType === 'illustration' && (row?.type === 'string' || row?.type === 'object'))
-    return 'illustration';
-  if (row?.lx?.displayType === 'link' && (row?.type === 'string' || row?.type === 'object'))
-    return 'link';
-  if (row?.lx?.displayType === 'contentSwitcher' && row?.type === 'string')
-    return 'contentSwitcher';
-  if (row?.lx?.displayType === 'markdown' && row?.type === 'string') return 'markdownTextArea';
-  if (
-    row?.lx?.displayType === 'personDisplay' &&
-    (row?.type === 'string' || row?.type === 'object' || row?.type === 'array')
-  )
-    return 'personDisplay';
-  if (row?.lx?.displayType === 'qr' && (row?.type === 'string' || row?.type === 'object'))
-    return 'qr';
-  if (row?.lx?.displayType === 'qrScanner' && row?.type === 'object') return 'qrScanner';
-  if (
-    row?.lx?.displayType === 'richTextDisplay' &&
-    (row?.type === 'string' || row?.type === 'object')
-  )
-    return 'richTextDisplay';
-  if (row?.lx?.displayType === 'stateDisplay' && (row?.type === 'string' || row?.type === 'object'))
-    return 'stateDisplay';
-  if (row?.lx?.displayType === 'steps' && row?.type === 'string') return 'steps';
-  if (row?.lx?.displayType === 'visualPicker' && (row?.type === 'string' || row?.type === 'array'))
-    return 'visualPicker';
-  if (row?.lx?.displayType === 'dayInput' && (row?.type === 'integer' || row?.type === 'object'))
-    return 'dayInput';
-  if (row?.lx?.displayType === 'drawPad' && row?.type === 'string') return 'drawPad';
-  if (row?.lx?.displayType === 'logoDisplay' && (row?.type === 'string' || row?.type === 'object'))
-    return 'logoDisplay';
-  if (row?.lx?.displayType === 'dropDownMenu' && (row?.type === 'string' || row?.type === 'object'))
-    return 'dropDownMenu';
-  if (row?.lx?.displayType === 'numberSlider' && row?.type === 'integer') return 'numberSlider';
-  if (row?.lx?.displayType === 'ratings' && (row?.type === 'integer' || row?.type === 'number'))
-    return 'ratings';
-  if (row?.type === 'boolean' && row?.lx?.displayType === 'checkbox') return 'checkbox';
-  if (
-    row?.lx?.displayType === 'dataVisualizer' &&
-    (row?.type === 'array' || row?.type === 'object')
-  )
-    return 'dataVisualizer';
-  if (row?.lx?.displayType === 'file' && row?.type === 'array') return 'file';
-  if (row?.lx?.displayType === 'text' && row?.type === 'string') return 'text';
-  if (row?.lx?.displayType === 'dateTimeRange' && row?.type === 'object') return 'dateTimeRange';
-  return null;
+  return getOtherSelectComponent(row, { excludedDisplayTypes: ['stack'] });
 }
 
 function componentSelect(row, name, log = false) {
@@ -419,6 +361,23 @@ function getCustomVariant(row) {
   }
   return row?.lx?.variant;
 }
+
+const getActions = computed(() => {
+  const actions = [
+    {
+      id: 'saveElement',
+      name: props.texts.saveElement,
+      kind: 'primary',
+    },
+  ];
+  return newObject.value ? actions : null;
+});
+
+function handleModalActionClick(action, name) {
+  if (action === 'saveElement') {
+    saveNewElement(name);
+  }
+}
 </script>
 <template>
   <!-- TODO: if type number / decimal / integer then conferToString - false -->
@@ -536,7 +495,7 @@ function getCustomVariant(row) {
   <LxValuePicker
     v-else-if="selectedComponent === 'valuePicker'"
     :id="id + '-' + name"
-    :kind="displaySchema?.properties[name]?.type === 'array' ? 'multiple' : 'single'"
+    :selectionKind="displaySchema?.properties[name]?.type === 'array' ? 'multiple' : 'single'"
     :items="
       displaySchema?.properties[name]?.lx?.items || enumToObject(displaySchema?.properties[name])
     "
@@ -658,7 +617,7 @@ function getCustomVariant(row) {
       model?.[name]?.[displaySchema?.properties?.[name]?.lx?.descriptionAttribute] ||
       model?.[name]?.description
     "
-    :force-uppercase="displaySchema?.properties[name]?.lx?.forceUppercase"
+    :uppercase="displaySchema?.properties[name]?.lx?.uppercase"
     :disabled="displaySchema?.properties[name]?.lx?.disabled"
     :loading="displaySchema?.properties[name]?.lx?.loading"
     :busy="displaySchema?.properties[name]?.lx?.busy"
@@ -681,7 +640,7 @@ function getCustomVariant(row) {
           :rowSpan="item?.lx?.rowSpan"
           :columnSpan="item?.lx?.columnSpan"
           :action-definitions="item?.lx?.actionDefinitions"
-          @action-click="(a, b, c) => rowActionClicked(b, c, `${name}.${itemName}`, undefined)"
+          @actionClick="(a, b, c) => rowActionClicked(b, c, `${name}.${itemName}`, undefined)"
         >
           <LxTextInput
             v-if="componentSelect(item, itemName) === 'textInputDefault'"
@@ -753,7 +712,7 @@ function getCustomVariant(row) {
           />
           <LxValuePicker
             v-else-if="componentSelect(item, itemName) === 'valuePicker'"
-            :kind="item?.type === 'array' ? 'multiple' : 'single'"
+            :selectionKind="item?.type === 'array' ? 'multiple' : 'single'"
             :items="item?.lx?.items || enumToObject(item)"
             :id-attribute="item?.lx?.idAttribute"
             :name-attribute="item?.lx?.nameAttribute"
@@ -865,9 +824,9 @@ function getCustomVariant(row) {
     <LxListItem
       v-if="selectedComponent === 'objectList'"
       :value="model[name]"
-      :label="model[name][displaySchema?.properties[name].lx.primaryAttribute] || model[name]?.name"
+      :label="model[name][displaySchema?.properties[name].lx.nameAttribute] || model[name]?.name"
       :description="
-        model[name][displaySchema?.properties[name].lx.secondaryAttribute] ||
+        model[name][displaySchema?.properties[name].lx.descriptionAttribute] ||
         model[name]?.description
       "
       icon="edit"
@@ -903,8 +862,8 @@ function getCustomVariant(row) {
             :label="item?.title ? item?.title : itemName"
             :rowSpan="item?.lx?.rowSpan"
             :columnSpan="item?.lx?.columnSpan"
-            :action-definitions="item?.lx?.actionDefinitions"
-            @action-click="(a, b, c) => rowActionClicked(b, c, `${name}.${itemName}`, undefined)"
+            :actionDefinitions="item?.lx?.actionDefinitions"
+            @actionClick="(a, b, c) => rowActionClicked(b, c, `${name}.${itemName}`, undefined)"
           >
             <LxTextInput
               v-if="componentSelect(item, itemName) === 'textInputDefault'"
@@ -977,7 +936,7 @@ function getCustomVariant(row) {
             />
             <LxValuePicker
               v-else-if="componentSelect(item, itemName) === 'valuePicker'"
-              :kind="item?.type === 'array' ? 'multiple' : 'single'"
+              :selectionKind="item?.type === 'array' ? 'multiple' : 'single'"
               :items="item?.lx?.items || enumToObject(item)"
               :id-attribute="item?.lx?.idAttribute"
               :name-attribute="item?.lx?.nameAttribute"
@@ -1095,8 +1054,8 @@ function getCustomVariant(row) {
       ]
     "
     :idAttribute="displaySchema?.properties[name]?.lx?.idAttribute"
-    :primaryAttribute="displaySchema?.properties[name]?.lx?.primaryAttribute"
-    :secondaryAttribute="displaySchema?.properties[name]?.lx?.secondaryAttribute"
+    :nameAttribute="displaySchema?.properties[name]?.lx?.nameAttribute"
+    :descriptionAttribute="displaySchema?.properties[name]?.lx?.descriptionAttribute"
     :hrefAttribute="displaySchema?.properties[name]?.lx?.hrefAttribute"
     :groupAttribute="displaySchema?.properties[name]?.lx?.groupAttribute"
     :clickableAttribute="displaySchema?.properties[name]?.lx?.clickableAttribute"
@@ -1214,11 +1173,11 @@ function getCustomVariant(row) {
         ]
       "
       :idAttribute="displaySchema?.properties[name]?.lx?.idAttribute"
-      :primaryAttribute="displaySchema?.properties[name]?.lx?.primaryAttribute"
-      :secondaryAttribute="displaySchema?.properties[name]?.lx?.secondaryAttribute"
+      :nameAttribute="displaySchema?.properties[name]?.lx?.nameAttribute"
+      :descriptionAttribute="displaySchema?.properties[name]?.lx?.descriptionAttribute"
       :hrefAttribute="displaySchema?.properties[name]?.lx?.hrefAttribute"
       :groupAttribute="displaySchema?.properties[name]?.lx?.groupAttribute"
-      :clickableAttribute="displaySchema?.properties[name]?.lx?.primaryAttribute || 'name'"
+      :clickableAttribute="displaySchema?.properties[name]?.lx?.nameAttribute || 'name'"
       :iconAttribute="displaySchema?.properties[name]?.lx?.iconAttribute"
       :iconSetAttribute="displaySchema?.properties[name]?.lx?.iconSetAttribute"
       :tooltipAttribute="displaySchema?.properties[name]?.lx?.tooltipAttribute"
@@ -1335,10 +1294,9 @@ function getCustomVariant(row) {
     </LxList>
     <LxModal
       :ref="(el) => (modalRefs[id + '-' + name] = el)"
-      :buttonPrimaryLabel="texts.saveElement"
-      :buttonPrimaryVisible="newObject"
-      @primary-action="saveNewElement(name)"
-      @closed="newObject = false"
+      :actionDefinitions="getActions"
+      @close="newObject = false"
+      @actionClick="handleModalActionClick($event, name)"
     >
       <LxForm
         :showHeader="false"
@@ -1356,8 +1314,8 @@ function getCustomVariant(row) {
             :label="itemValue?.title ? itemValue?.title : itemName"
             :rowSpan="itemValue?.lx?.rowSpan"
             :columnSpan="itemValue?.lx?.columnSpan"
-            :action-definitions="itemValue?.lx?.actionDefinitions"
-            @action-click="(a, b, c) => rowActionClicked(b, c, `${name}.${itemName}`, undefined)"
+            :actionDefinitions="itemValue?.lx?.actionDefinitions"
+            @actionClick="(a, b, c) => rowActionClicked(b, c, `${name}.${itemName}`, undefined)"
           >
             <LxTextInput
               v-if="componentSelect(itemValue, itemName) === 'textInputDefault'"
@@ -1430,7 +1388,7 @@ function getCustomVariant(row) {
             />
             <LxValuePicker
               v-else-if="componentSelect(itemValue, itemName) === 'valuePicker'"
-              :kind="itemValue?.type === 'array' ? 'multiple' : 'single'"
+              :selectionKind="itemValue?.type === 'array' ? 'multiple' : 'single'"
               :items="itemValue?.lx?.items || enumToObject(itemValue)"
               :id-attribute="itemValue?.lx?.idAttribute"
               :name-attribute="itemValue?.lx?.nameAttribute"
@@ -1651,7 +1609,7 @@ function getCustomVariant(row) {
                         componentSelect(appendableItem, appendableItemName) === 'valuePicker'
                       "
                       :id="name + '-' + appendableItemName + '-' + index"
-                      :kind="appendableItem?.type === 'array' ? 'multiple' : 'single'"
+                      :selectionKind="appendableItem?.type === 'array' ? 'multiple' : 'single'"
                       :items="appendableItem?.lx?.items || enumToObject(appendableItem)"
                       :id-attribute="appendableItem?.lx?.idAttribute"
                       :name-attribute="appendableItem?.lx?.nameAttribute"
@@ -1801,7 +1759,7 @@ function getCustomVariant(row) {
     :toolbarActionDefinitions="displaySchema?.properties[name]?.lx?.toolbarActionDefinitions"
     :texts="displaySchema?.properties[name]?.lx?.texts"
     @actionClick="(val, item, _) => componentEmit('actionClick', name, val, item)"
-    @toolbarActionClicked="(val) => componentEmit('toolbarActionClicked', name, val)"
+    @toolbarActionClick="(val) => componentEmit('toolbarActionClick', name, val)"
   />
   <div v-else-if="selectedComponent === 'arrayTableModal'">
     <LxDataGrid
@@ -1846,7 +1804,7 @@ function getCustomVariant(row) {
             displaySchema?.properties[name]?.lx?.actionDefinitions
           )
       "
-      @toolbarActionClicked="(val) => componentEmit('toolbarActionClicked', name, val)"
+      @toolbarActionClick="(val) => componentEmit('toolbarActionClick', name, val)"
     >
       <template #toolbar>
         <LxButton
@@ -1860,10 +1818,9 @@ function getCustomVariant(row) {
     </LxDataGrid>
     <LxModal
       :ref="(el) => (modalRefs[id + '-' + name] = el)"
-      :buttonPrimaryLabel="texts.saveElement"
-      :buttonPrimaryVisible="newObject"
-      @primary-action="saveNewElement(name)"
-      @closed="newObject = false"
+      :actionDefinitions="getActions"
+      @close="newObject = false"
+      @actionClick="handleModalActionClick($event, name)"
     >
       <LxForm
         :showHeader="false"
@@ -1955,7 +1912,7 @@ function getCustomVariant(row) {
             />
             <LxValuePicker
               v-else-if="componentSelect(itemValue, itemName) === 'valuePicker'"
-              :kind="itemValue?.type === 'array' ? 'multiple' : 'single'"
+              :selectionKind="itemValue?.type === 'array' ? 'multiple' : 'single'"
               :items="itemValue?.lx?.items || enumToObject(itemValue)"
               :id-attribute="itemValue?.lx?.idAttribute"
               :name-attribute="itemValue?.lx?.nameAttribute"
@@ -2178,7 +2135,7 @@ function getCustomVariant(row) {
                         componentSelect(appendableItem, appendableItemName) === 'valuePicker'
                       "
                       :id="name + '-' + appendableItemName + '-' + index"
-                      :kind="appendableItem?.type === 'array' ? 'multiple' : 'single'"
+                      :selectionKind="appendableItem?.type === 'array' ? 'multiple' : 'single'"
                       :items="appendableItem?.lx?.items || enumToObject(appendableItem)"
                       :id-attribute="appendableItem?.lx?.idAttribute"
                       :name-attribute="appendableItem?.lx?.nameAttribute"
@@ -2307,14 +2264,14 @@ function getCustomVariant(row) {
     :readOnly="isReadOnly(displaySchema?.properties[name])"
     :expandable="displaySchema?.properties[name]?.lx?.expandable"
     :nameAttribute="displaySchema?.properties[name]?.lx?.nameAttribute"
-    :addButtonLabel="displaySchema?.properties[name]?.lx?.addButtonLabel"
     :columnCount="displaySchema?.properties[name]?.lx?.columnCount"
     :kind="displaySchema?.properties[name]?.lx?.kind"
     :requiredMode="displaySchema?.properties[name]?.lx?.requiredMode"
     :canAddItems="displaySchema?.properties[name]?.lx?.canAddItems"
-    :force-uppercase="displaySchema?.properties[name]?.lx?.forceUppercase"
+    :uppercase="displaySchema?.properties[name]?.lx?.uppercase"
     :defaultExpanded="displaySchema?.properties[name]?.lx?.defaultExpanded"
     :expandedAttribute="displaySchema?.properties[name]?.lx?.expandedAttribute"
+    :texts="displaySchema?.properties[name]?.lx?.texts"
   >
     <template #customItem="{ item, index }">
       <template
@@ -2415,7 +2372,7 @@ function getCustomVariant(row) {
           <LxValuePicker
             v-else-if="componentSelect(appendableItem, appendableItemName) === 'valuePicker'"
             :id="name + '-' + appendableItemName + '-' + index"
-            :kind="appendableItem?.type === 'array' ? 'multiple' : 'single'"
+            :selectionKind="appendableItem?.type === 'array' ? 'multiple' : 'single'"
             :items="appendableItem?.lx?.items || enumToObject(appendableItem)"
             :id-attribute="appendableItem?.lx?.idAttribute"
             :name-attribute="appendableItem?.lx?.nameAttribute"
@@ -2535,15 +2492,11 @@ function getCustomVariant(row) {
     v-else-if="selectedComponent === 'smallAppendableList'"
     v-model="model[name]"
     :readOnly="isReadOnly(displaySchema?.properties[name])"
-    :addButtonLabel="displaySchema?.properties[name]?.lx?.addButtonLabel"
     :columnCount="displaySchema?.properties[name]?.lx?.columnCount"
-    :kind="
-      displaySchema?.properties[name]?.lx?.kind
-        ? displaySchema?.properties[name]?.lx?.kind
-        : 'compact'
-    "
+    :kind="displaySchema?.properties[name]?.lx?.kind || 'compact'"
     :requiredMode="displaySchema?.properties[name]?.lx?.requiredMode"
     :canAddItems="displaySchema?.properties[name]?.lx?.canAddItems"
+    :texts="displaySchema?.properties[name]?.lx?.texts"
   >
     <template #customItem="{ index }">
       <LxPlaceholder
@@ -2555,8 +2508,8 @@ function getCustomVariant(row) {
         :hideLabel="true"
         :rowSpan="row?.items?.lx?.rowSpan"
         :columnSpan="row?.items?.lx?.columnSpan"
-        :action-definitions="row?.items?.lx?.actionDefinitions"
-        @action-click="(a, b, c) => rowActionClicked(b, c, name, index)"
+        :actionDefinitions="row?.items?.lx?.actionDefinitions"
+        @actionClick="(a, b, c) => rowActionClicked(b, c, name, index)"
       >
         <LxTextInput
           v-if="componentSelect(row?.items, name) === 'textInputDefault'"
@@ -2657,9 +2610,8 @@ function getCustomVariant(row) {
     :invalidation-message="invalidMessage"
     :loading="displaySchema?.properties[name]?.lx?.loading"
     :hasDetails="displaySchema?.properties[name]?.lx?.hasDetails"
-    :selectingKind="displaySchema?.properties[name]?.type === 'array' ? 'multiple' : 'single'"
+    :selectionKind="displaySchema?.properties[name]?.type === 'array' ? 'multiple' : 'single'"
     :detailMode="displaySchema?.properties[name]?.lx?.detailMode"
-    :variant="displaySchema?.properties[name]?.lx?.variant"
     :preloadedItems="displaySchema?.properties[name]?.lx?.preloadedItems"
     :labelId="displaySchema?.properties[name]?.lx?.labelId"
     :hasSelectAll="displaySchema?.properties[name]?.lx?.hasSelectAll"
@@ -3034,7 +2986,7 @@ function getCustomVariant(row) {
   <LxFileUploader
     v-else-if="selectedComponent === 'file'"
     :id="id + '-' + name"
-    :kind="displaySchema?.properties[name]?.lx?.kind"
+    :selectionKind="displaySchema?.properties[name]?.lx?.selectionKind"
     :mode="displaySchema?.properties[name]?.lx?.mode"
     :draggable="displaySchema?.properties[name]?.lx?.draggable"
     :dataType="displaySchema?.properties[name]?.lx?.dataType"
@@ -3168,7 +3120,7 @@ function getCustomVariant(row) {
     :ignoreThemeChange="model[name].ignoreThemeChange"
     :hasUserLocation="model[name].hasUserLocation"
     :texts="model[name].texts"
-    @searched="(a) => componentEmit('searched', name, a)"
+    @search="(a) => componentEmit('search', name, a)"
   />
   <LxMarkdownTextArea
     v-else-if="selectedComponent === 'markdownTextArea'"
@@ -3254,7 +3206,9 @@ function getCustomVariant(row) {
     :hasFileUploader="
       model?.[name]?.hasFileUploader || displaySchema?.properties[name]?.lx?.hasFileUploader
     "
-    :kind="model?.[name]?.kind || displaySchema?.properties[name]?.lx?.kind"
+    :selectionKind="
+      model?.[name]?.selectionKind || displaySchema?.properties[name]?.lx?.selectionKind
+    "
     :cameraSwitcherMode="
       model?.[name]?.cameraSwitcherMode || displaySchema?.properties[name]?.lx?.cameraSwitcherMode
     "
@@ -3268,8 +3222,8 @@ function getCustomVariant(row) {
     @error="(a) => componentEmit('error', name, a)"
   />
   <LxRating
-    v-else-if="selectedComponent === 'ratings'"
-    :mode="displaySchema?.properties[name]?.lx?.mode"
+    v-else-if="selectedComponent === 'rating'"
+    :readOnly="isReadOnly(displaySchema?.properties[name])"
     :kind="displaySchema?.properties[name]?.lx?.kind"
     :variant="displaySchema?.properties[name]?.lx?.variant"
     :disabled="displaySchema?.properties[name]?.lx?.disabled"
@@ -3312,9 +3266,9 @@ function getCustomVariant(row) {
   <LxVisualPicker
     v-else-if="selectedComponent === 'visualPicker'"
     :id="id + '-' + name"
-    :kind="displaySchema?.properties[name]?.lx?.type === 'string' ? 'single' : 'multiple'"
+    :kind="displaySchema?.properties[name]?.lx?.kind"
     :mode="displaySchema?.properties[name]?.lx?.mode"
-    :selectingKind="displaySchema?.properties[name]?.lx?.selectingKind"
+    :selectionKind="displaySchema?.properties[name]?.type === 'array' ? 'multiple' : 'single'"
     :readOnly="isReadOnly(displaySchema?.properties[name])"
     :labelId="displaySchema?.properties[name]?.lx?.labelId"
     :texts="displaySchema?.properties[name]?.lx?.texts"

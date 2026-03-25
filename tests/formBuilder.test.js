@@ -1,7 +1,7 @@
 import { test, expect, afterEach } from 'vitest';
-import { LxForm } from '@dativa-lv/lx-ui';
+import { LxForm, LxStack } from '@dativa-lv/lx-ui';
 import LxFormBuilder from '@/components/FormBuilder.vue';
-import { mount } from '@vue/test-utils';
+import { mount, flushPromises } from '@vue/test-utils';
 import { h } from 'vue';
 
 let wrapper;
@@ -19,21 +19,30 @@ const dummyClickAway = {
   unmounted() {},
 };
 
-test('LxFormBuilder with one row', () => {
-  const schema = { type: 'object', properties: { name: { type: 'string' } } };
-  wrapper = mount(LxForm, {
-    props: {
-      showHeader: false,
-    },
-    slots: {
-      default: h(LxFormBuilder, { schema }),
-    },
-    global: {
-      components: {
-        LxFormBuilder,
+const buildFormBuilderWrapper = (schema, { formProps = {}, builderProps = {}, global = {} } = {}) =>
+  mount(
+    {
+      components: { LxForm, LxFormBuilder },
+      setup() {
+        return () =>
+          h(
+            LxForm,
+            { showHeader: false, ...formProps },
+            { default: () => h(LxFormBuilder, { schema, ...builderProps }) }
+          );
       },
     },
+    { global }
+  );
+
+test('LxFormBuilder with one row', async () => {
+  const schema = { type: 'object', properties: { name: { type: 'string' } } };
+  wrapper = await buildFormBuilderWrapper(schema, {
+    global: {
+      stubs: ['LxStack'],
+    },
   });
+  await flushPromises();
   // process.stdout.write(`${wrapper.html()}\n`);
   expect(wrapper.find('.lx-row').exists()).toBe(true);
 });
@@ -44,19 +53,12 @@ test('LxFormBuilder LxRow label', async () => {
     properties: { name: { type: 'string', label: 'name' } },
   };
 
-  wrapper = mount(LxForm, {
-    props: {
-      showHeader: false,
-    },
-    slots: {
-      default: h(LxFormBuilder, { schema: schemaValue }),
-    },
+  wrapper = buildFormBuilderWrapper(schemaValue, {
     global: {
-      components: {
-        LxFormBuilder,
-      },
+      stubs: ['LxStack'],
     },
   });
+
   const label = wrapper.find('.lx-row').find('label');
   expect(label.text()).toBe('name');
 });
@@ -71,17 +73,9 @@ test('LxFormBuilder order', () => {
     },
   };
 
-  wrapper = mount(LxForm, {
-    props: {
-      showHeader: false,
-    },
-    slots: {
-      default: h(LxFormBuilder, { schema: schemaValue }),
-    },
+  wrapper = buildFormBuilderWrapper(schemaValue, {
     global: {
-      components: {
-        LxFormBuilder,
-      },
+      stubs: ['LxStack'],
     },
   });
   const label = wrapper.findAll('.lx-row');
@@ -101,12 +95,9 @@ test('LxFormBuilder order 2', () => {
     },
   };
 
-  wrapper = mount(LxForm, {
-    props: {
-      showHeader: false,
-    },
-    slots: {
-      default: h(LxFormBuilder, { schema: schemaValue }),
+  wrapper = buildFormBuilderWrapper(schemaValue, {
+    global: {
+      stubs: ['LxStack'],
     },
   });
   const label = wrapper.findAll('.lx-row');
@@ -119,116 +110,95 @@ test('LxFormBuilder order 2', () => {
 // Input component tests
 test('LxFormBuilder with LxTextInput', () => {
   const schemaValue = { type: 'object', properties: { name: { type: 'string' } } };
-  wrapper = mount(LxForm, {
-    props: {
-      showHeader: false,
-    },
-    slots: {
-      default: h(LxFormBuilder, { schema: schemaValue }),
+  wrapper = buildFormBuilderWrapper(schemaValue, {
+    global: {
+      stubs: ['LxStack'],
     },
   });
   expect(wrapper.find('.lx-text-input').exists()).toBe(true);
 });
 
-test('LxFormBuilder with LxTextArea', () => {
+test('LxFormBuilder with LxTextArea', async () => {
   const schemaValue = {
     type: 'object',
     properties: { name: { type: 'string', lx: { kind: 'multiline' } } },
   };
-  wrapper = mount(LxForm, {
-    props: {
-      showHeader: false,
-    },
-    slots: {
-      default: h(LxFormBuilder, { schema: schemaValue }),
+  wrapper = buildFormBuilderWrapper(schemaValue, {
+    global: {
+      stubs: ['LxStack'],
     },
   });
+  await flushPromises();
   expect(wrapper.find('.lx-text-area').exists()).toBe(true);
 });
 
-test('LxFormBuilder with LxDateTimePicker', () => {
+test('LxFormBuilder with LxDateTimePicker', async () => {
   const schemaValue = {
     type: 'object',
     properties: { name: { type: 'string', format: 'date' } },
   };
-  wrapper = mount(LxForm, {
-    props: {
-      showHeader: false,
-    },
-    slots: {
-      default: h(LxFormBuilder, { schema: schemaValue }),
-    },
+  wrapper = buildFormBuilderWrapper(schemaValue, {
     global: {
-      stubs: ['router-link'],
+      stubs: ['router-link', 'LxStack'],
       directives: {
         ClickAway: dummyClickAway,
       },
     },
   });
+  await flushPromises();
   expect(wrapper.find('.lx-date-time-picker').exists()).toBe(true);
 });
 
-test('LxFormBuilder with LxDateTimePicker time', () => {
+test('LxFormBuilder with LxDateTimePicker time', async () => {
   const schemaValue = {
     type: 'object',
     properties: { name: { type: 'string', format: 'time' } },
   };
-  wrapper = mount(LxForm, {
-    props: {
-      showHeader: false,
-    },
-    slots: {
-      default: h(LxFormBuilder, { schema: schemaValue }),
-    },
+  wrapper = buildFormBuilderWrapper(schemaValue, {
     global: {
-      stubs: ['router-link'],
+      stubs: ['router-link', 'LxStack'],
       directives: {
         ClickAway: dummyClickAway,
       },
     },
   });
+  await flushPromises();
   expect(wrapper.find('.lx-time').exists()).toBe(true);
 });
 
-test('LxFormBuilder with LxDateTimePicker dateTime', () => {
+test('LxFormBuilder with LxDateTimePicker dateTime', async () => {
   const schemaValue = {
     type: 'object',
     properties: { name: { type: 'string', format: 'date-time' } },
   };
-  wrapper = mount(LxForm, {
-    props: {
-      showHeader: false,
-    },
-    slots: {
-      default: h(LxFormBuilder, { schema: schemaValue }),
-    },
+  wrapper = buildFormBuilderWrapper(schemaValue, {
     global: {
-      stubs: ['router-link'],
+      stubs: ['router-link', 'LxStack'],
       directives: {
         ClickAway: dummyClickAway,
       },
     },
   });
+  await flushPromises();
   expect(wrapper.find('.lx-date-time').exists()).toBe(true);
 });
 
-test('LxFormBuilder with LxToggle', () => {
+test('LxFormBuilder with LxToggle', async () => {
   const schemaValue = {
     type: 'object',
     properties: { name: { type: 'boolean' } },
   };
-  wrapper = mount(LxForm, {
-    props: {
-      showHeader: false,
-    },
-    slots: {
-      default: h(LxFormBuilder, { schema: schemaValue }),
+
+  wrapper = buildFormBuilderWrapper(schemaValue, {
+    global: {
+      stubs: ['LxStack'],
     },
   });
+  await flushPromises();
   expect(wrapper.find('.lx-toggle').exists()).toBe(true);
 });
 
-test('LxFormBuilder with LxValuePicker default', () => {
+test('LxFormBuilder with LxValuePicker default', async () => {
   const schemaValue = {
     type: 'object',
     properties: {
@@ -244,14 +214,13 @@ test('LxFormBuilder with LxValuePicker default', () => {
       },
     },
   };
-  wrapper = mount(LxForm, {
-    props: {
-      showHeader: false,
-    },
-    slots: {
-      default: h(LxFormBuilder, { schema: schemaValue }),
+
+  wrapper = buildFormBuilderWrapper(schemaValue, {
+    global: {
+      stubs: ['LxStack'],
     },
   });
+  await flushPromises();
   expect(wrapper.find('.lx-value-picker-default-wrapper').exists()).toBe(true);
 });
 
@@ -271,18 +240,15 @@ test('LxFormBuilder with LxValuePicker tags', () => {
       },
     },
   };
-  wrapper = mount(LxForm, {
-    props: {
-      showHeader: false,
-    },
-    slots: {
-      default: h(LxFormBuilder, { schema: schemaValue }),
+  wrapper = buildFormBuilderWrapper(schemaValue, {
+    global: {
+      stubs: ['LxStack'],
     },
   });
   expect(wrapper.find('.lx-value-picker-tags').exists()).toBe(true);
 });
 
-test('LxFormBuilder with LxValuePicker multiple', () => {
+test('LxFormBuilder with LxValuePicker multiple', async () => {
   const schemaValue = {
     type: 'object',
     properties: {
@@ -297,20 +263,17 @@ test('LxFormBuilder with LxValuePicker multiple', () => {
       },
     },
   };
-  wrapper = mount(LxForm, {
-    props: {
-      showHeader: false,
-    },
-    slots: {
-      default: h(LxFormBuilder, { schema: schemaValue }),
+  wrapper = buildFormBuilderWrapper(schemaValue, {
+    global: {
+      stubs: ['LxStack'],
     },
   });
-
+  await flushPromises();
   const valuePicker = wrapper.find('.lx-value-picker-default-wrapper');
   expect(valuePicker.find('.lx-checkbox').exists()).toBe(true);
 });
 
-test('LxFormBuilder with LxValuePicker 4 items', () => {
+test('LxFormBuilder with LxValuePicker 4 items', async () => {
   const schemaValue = {
     type: 'object',
     properties: {
@@ -327,15 +290,12 @@ test('LxFormBuilder with LxValuePicker 4 items', () => {
       },
     },
   };
-  wrapper = mount(LxForm, {
-    props: {
-      showHeader: false,
-    },
-    slots: {
-      default: h(LxFormBuilder, { schema: schemaValue }),
+  wrapper = buildFormBuilderWrapper(schemaValue, {
+    global: {
+      stubs: ['LxStack'],
     },
   });
-
+  await flushPromises();
   const checkboxes = wrapper.find('.lx-value-picker-default-wrapper').findAll('.lx-checkbox');
   expect(checkboxes.length).toBe(4);
 });
@@ -350,12 +310,9 @@ test('LxFormBuilder with LxValuePicker 4 items using enum', () => {
       },
     },
   };
-  wrapper = mount(LxForm, {
-    props: {
-      showHeader: false,
-    },
-    slots: {
-      default: h(LxFormBuilder, { schema: schemaValue }),
+  wrapper = buildFormBuilderWrapper(schemaValue, {
+    global: {
+      stubs: ['LxStack'],
     },
   });
 
@@ -363,7 +320,7 @@ test('LxFormBuilder with LxValuePicker 4 items using enum', () => {
   expect(checkboxes.length).toBe(4);
 });
 
-test('LxFormBuilder with LxDataBlock', () => {
+test('LxFormBuilder with LxDataBlock', async () => {
   const schemaValue = {
     type: 'object',
     properties: {
@@ -374,66 +331,55 @@ test('LxFormBuilder with LxDataBlock', () => {
     },
   };
   const modelValue = { one: { name: 'one' } };
-  wrapper = mount(LxForm, {
-    props: {
-      showHeader: false,
-    },
-    slots: {
-      default: h(LxFormBuilder, { schema: schemaValue, modelValue }),
+  wrapper = buildFormBuilderWrapper(schemaValue, {
+    builderProps: { modelValue },
+    global: {
+      stubs: ['LxStack'],
     },
   });
+  await flushPromises();
   expect(wrapper.find('.lx-data-block').exists()).toBe(true);
 });
 
-test('LxFormBuilder with LxPlaceholder', () => {
-  const formB = mount(LxFormBuilder, {
-    props: {
-      schema: {
-        type: 'object',
-        properties: {
-          one: {
-            lx: {
-              wrapper: 'placeholder',
-            },
-          },
+test('LxFormBuilder with LxPlaceholder', async () => {
+  const schemaValue = {
+    type: 'object',
+    properties: {
+      one: {
+        lx: {
+          wrapper: 'placeholder',
         },
       },
     },
-  });
+  };
+  wrapper = buildFormBuilderWrapper(schemaValue);
+  await flushPromises();
+  expect(wrapper.find('.lx-placeholder').exists()).toBe(true);
+});
+
+test('LxFormBuilder cannot render LxRow', () => {
+  const schemaValue = {
+    type: 'object',
+    properties: {
+      one: {
+        type: 'object',
+      },
+    },
+  };
   wrapper = mount(LxForm, {
     props: {
       showHeader: false,
     },
     slots: {
-      default: formB.html(),
+      default: h(LxFormBuilder, { schema: schemaValue }),
     },
   });
   expect(wrapper.find('.lx-placeholder').exists()).toBe(true);
 });
 
-// test('LxFormBuilder cannot render LxRow', () => {
-//   const schemaValue = {
-//     type: 'object',
-//     properties: {
-//       one: {
-//         type: 'object',
-//       },
-//     },
-//   };
-//   wrapper = mount(LxForm, {
-//     props: {
-//       showHeader: false,
-//     },
-//     slots: {
-//       default: h(LxFormBuilder, { schema: schemaValue }),
-//     },
-//   });
-//   expect(wrapper.find('.lx-placeholder').exists()).toBe(true);
-// });
+// tests with LxAppendablelist and LxAppenableListSimple
 
-// testi ar LxAppendablelist  un LxAppenableListSimple
-
-test('LxFormBuilder with LxAppendableList', () => {
+test('LxFormBuilder with LxAppendableList', async () => {
   const schemaValue = {
     type: 'object',
     properties: {
@@ -458,17 +404,12 @@ test('LxFormBuilder with LxAppendableList', () => {
     },
   };
 
-  wrapper = mount(LxForm, {
-    props: {
-      showHeader: false,
-    },
-    slots: {
-      default: h(LxFormBuilder, { schema: schemaValue }),
-    },
+  wrapper = buildFormBuilderWrapper(schemaValue, {
     global: {
-      stubs: ['router-link'],
+      stubs: ['router-link', 'LxStack'],
     },
   });
+  await flushPromises();
   expect(wrapper.find('.lx-appendable-list').exists()).toBe(true);
 });
 test('LxFormBuilder with LxAppendableListSimple', () => {
@@ -484,15 +425,9 @@ test('LxFormBuilder with LxAppendableListSimple', () => {
       },
     },
   };
-  wrapper = mount(LxForm, {
-    props: {
-      showHeader: false,
-    },
-    slots: {
-      default: h(LxFormBuilder, { schema: schemaValue }),
-    },
+  wrapper = buildFormBuilderWrapper(schemaValue, {
     global: {
-      stubs: ['router-link'],
+      stubs: ['router-link', 'LxStack'],
     },
   });
   expect(wrapper.find('.lx-appendable-list-simple').exists()).toBe(true);

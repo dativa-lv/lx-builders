@@ -1,26 +1,25 @@
 <script setup>
 import { computed, onBeforeMount, watch, ref } from 'vue';
-import LxFormBuilder from '@/components/FormBuilder.vue';
-import LxFormBuilderItem from '@/components/FormBuilderItem.vue';
-import LxFormBuilderListItem from '@/components/FormBuilderListItem.vue';
-import LxFilterBuilder from '@/components/FilterBuilder.vue';
-import useLx from '@/hooks/useLx';
-
-import { useVuelidate } from '@vuelidate/core';
-import { required, helpers, minValue, maxValue, minLength, maxLength } from '@vuelidate/validators';
 
 import {
   LxStack,
-  LxViewLayout,
   LxForm,
   LxSection,
   LxRow,
   lxStringUtils,
   lxDevUtils,
+  lxFormatUtils,
 } from '@dativa-lv/lx-ui';
 
-// TODO: add export from lx/ui
+import LxFilterBuilder from '@/components/FilterBuilder.vue';
 import { getDisplayTexts } from '@/utils/generalUtils';
+import useLx from '@/hooks/useLx';
+import { useVuelidate } from '@vuelidate/core';
+import { required, helpers, minValue, maxValue, minLength, maxLength } from '@vuelidate/validators';
+import LxViewLayout from '@/components/ViewLayout.vue';
+import LxFormBuilder from '@/components/FormBuilder.vue';
+import LxFormBuilderItem from '@/components/FormBuilderItem.vue';
+import LxFormBuilderListItem from '@/components/FormBuilderListItem.vue';
 
 const props = defineProps({
   /**
@@ -111,7 +110,7 @@ const model = computed({
 
 const isSchemaValid = computed(() => {
   try {
-    JSON.parse(JSON.stringify(props.schema));
+    lxFormatUtils.objectClone(props.schema);
   } catch (e) {
     return false;
   }
@@ -158,10 +157,10 @@ function addDefaultValues() {
 
 const viewKind = computed(() => {
   const properties = Object.values(props.schema?.properties || {});
-  if (properties.find((v) => v?.lx?.displayType === 'form' && v?.type === 'object')) {
+  if (properties.some((v) => v?.lx?.displayType === 'form' && v?.type === 'object')) {
     return 'form';
   }
-  if (properties.find((v) => v?.lx?.displayType === 'filters' && v?.type === 'object')) {
+  if (properties.some((v) => v?.lx?.displayType === 'filters' && v?.type === 'object')) {
     return 'filters';
   }
   return 'default';
@@ -353,7 +352,7 @@ function validateOtherBuilders() {
 function validateModel() {
   const res = [];
   validateOtherBuilders();
-  const modelClone = JSON.parse(JSON.stringify(model.value));
+  const modelClone = lxFormatUtils.objectClone(model.value);
   vv.value = useVuelidate(rules, { modelClone }, { $autoDirty: true });
   vv.value.value.modelClone.$touch();
 
@@ -512,7 +511,7 @@ defineExpose({ validateModel, clearValidations });
           :orientation="row?.lx?.orientation"
           :hasSkipLink="row?.lx?.hasSkipLink"
           :texts="row?.lx?.texts"
-          @buttonClick="(a) => componentEmit('buttonClick', name, a)"
+          @actionClick="(a) => componentEmit('actionClick', name, a)"
         >
           <template #header>{{ row?.title }}</template>
           <template #pre-header v-if="row?.lx?.preHeader">

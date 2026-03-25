@@ -1,9 +1,10 @@
 import { test, expect } from 'vitest';
-import { mount, RouterLinkStub } from '@vue/test-utils';
+import { mount, RouterLinkStub, flushPromises } from '@vue/test-utils';
 import LxFilterBuilder from '@/components/FilterBuilder.vue';
-import { lxFormatUtils } from '@dativa-lv/lx-ui';
+import { LxRow, lxFormatUtils } from '@dativa-lv/lx-ui';
+import { nextTick } from 'vue';
 
-test('LxFilterBuilder with one row', () => {
+test('LxFilterBuilder with one row', async () => {
   const schema = { type: 'object', properties: { name: { type: 'string' } } };
   const wrapper = mount(LxFilterBuilder, {
     props: {
@@ -18,6 +19,8 @@ test('LxFilterBuilder with one row', () => {
       },
     },
   });
+  // drains the promise queue and lets the DOM settle
+  await flushPromises();
   expect(wrapper.find('.lx-row').exists()).toBe(true);
 });
 
@@ -38,7 +41,7 @@ const testSchema = {
   },
 };
 
-test('LxFilterBuilder schema with various inputs', () => {
+test('LxFilterBuilder schema with various inputs', async () => {
   const modelValue = { dateRange: {} };
   const wrapper = mount(LxFilterBuilder, {
     props: {
@@ -55,6 +58,7 @@ test('LxFilterBuilder schema with various inputs', () => {
     },
   });
 
+  await flushPromises();
   expect(wrapper.find('.lx-row').exists()).toBe(true);
   const rows = wrapper.findAll('.lx-row');
   expect(rows.length).toBe(5);
@@ -300,7 +304,7 @@ test('LxFilterBuilder input values description 7: dateTimeRange', async () => {
   const expanderDescription = wrapper.find('.lx-filter-wrapper').find('.lx-description');
   expect(expanderDescription.exists()).toBe(true);
   expect(expanderDescription.text()).toBe(
-    'John Doe, 30, isActive: Jā, 01.01.1990., 01.01.2023. - 31.12.2023.'
+    'John Doe, 30, isActive: Jā, 01.01.1990., 01.01.2023.-31.12.2023.'
   );
 
   await wrapper.setProps({
@@ -314,7 +318,7 @@ test('LxFilterBuilder input values description 7: dateTimeRange', async () => {
     },
   });
 
-  expect(expanderDescription.text()).toBe('John Doe, 30, isActive: Jā, 01.01.1990., 01.01.2023. -');
+  expect(expanderDescription.text()).toBe('John Doe, 30, isActive: Jā, 01.01.1990., 01.01.2023.-');
 
   await wrapper.setProps({
     modelValue: {
@@ -327,9 +331,7 @@ test('LxFilterBuilder input values description 7: dateTimeRange', async () => {
     },
   });
 
-  expect(expanderDescription.text()).toBe(
-    'John Doe, 30, isActive: Jā, 01.01.1990.,  - 31.12.2023.'
-  );
+  expect(expanderDescription.text()).toBe('John Doe, 30, isActive: Jā, 01.01.1990., -31.12.2023.');
 
   await wrapper.setProps({
     modelValue: {

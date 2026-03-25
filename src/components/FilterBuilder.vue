@@ -1,11 +1,10 @@
-<script setup lang="ts">
+<script setup>
 import { onMounted, ref, computed } from 'vue';
-import LxFormBuilder from '@/components/FormBuilder.vue';
-import useLx from '@/hooks/useLx';
-import { LxFilters, lxDevUtils, lxFormatUtils, lxDateUtils } from '@dativa-lv/lx-ui';
-
-// TODO: add export from lx/ui
 import { focusNextFocusableElement, getDisplayTexts } from '@/utils/generalUtils';
+import useLx from '@/hooks/useLx';
+import LxFormBuilder from '@/components/FormBuilder.vue';
+
+import { LxFilters, lxDevUtils, lxFormatUtils, lxDateUtils } from '@dativa-lv/lx-ui';
 
 const props = defineProps({
   /**
@@ -143,7 +142,7 @@ const props = defineProps({
    * @default 'default'
    * @since 1.9.0-beta.3
    */
-  badgeType: { type: String, default: 'default' }, // default, good, info, warning, important
+  badgeType: { type: String, default: 'default' }, // default, info, success, warning, error
   /**
    * Badge title to be displayed on the filter badge when badge is provided.
    * @type {String}
@@ -180,6 +179,22 @@ const props = defineProps({
    * @since 1.10.0-beta.13
    */
   closeOnFilter: { type: Boolean, default: true },
+  /**
+   * Determines whether the reset button is shown in the collapsed state.
+   * @type {Boolean}
+   * @default false
+   * @since 2.0.3
+   */
+  hasShortlistReset: { type: Boolean, default: false },
+  /**
+   * The object containing filtered model values.
+   * @type {Object}
+   * @since 2.0.4
+   */
+  filteredModelValue: {
+    type: Object,
+    default: undefined,
+  },
   /**
    * The object containing text translations.
    * @type {Object}
@@ -285,6 +300,10 @@ function arraysEqual(arr1, arr2) {
   return false;
 }
 
+const resultingFilterModel = computed(() =>
+  props.filteredModelValue !== undefined ? props.filteredModelValue : model.value
+);
+
 function formatDateDescription(format, description, modelValueKey) {
   if (format === 'dateTime' || format === 'date-time')
     return `${description || ''}${lxDateUtils.formatDateTime(modelValueKey)}`;
@@ -296,40 +315,41 @@ function formatValuePicker(value, key) {
   if (value?.type === 'string') {
     // if enum then there is no nameAttribute to map to
     if (value?.enum) {
-      return `${value?.lx?.filterDescription || ''}${model.value[key]}`;
+      return `${value?.lx?.filterDescription || ''}${resultingFilterModel.value[key]}`;
     }
     if (value?.lx?.items && typeof value?.lx?.items !== 'function') {
       return `${value?.lx?.filterDescription || ''}${
-        value?.lx?.items?.find((x) => x?.[value?.lx?.idAttribute || 'id'] === model.value[key])?.[
-          value?.lx?.nameAttribute || 'name'
-        ]
+        value?.lx?.items?.find(
+          (x) => x?.[value?.lx?.idAttribute || 'id'] === resultingFilterModel.value[key]
+        )?.[value?.lx?.nameAttribute || 'name']
       }`;
     }
-  } else if (model.value?.[key]?.length > 0) {
+  } else if (resultingFilterModel.value?.[key]?.length > 0) {
     if (
-      !arraysEqual(model.value?.[key], defaultValues.value?.[key]) &&
-      model.value?.[key]?.length > 0
+      !arraysEqual(resultingFilterModel.value?.[key], defaultValues.value?.[key]) &&
+      resultingFilterModel.value?.[key]?.length > 0
     ) {
       const desc =
         value?.lx?.filterDescription || (value?.title ? `${value?.title}: ` : `${key}: `);
-      return `${desc}${model.value?.[key]?.length}`;
+      return `${desc}${resultingFilterModel.value?.[key]?.length}`;
     }
   }
   return null;
 }
 
 function formatNoSchemaDescription(value, key) {
-  if (value && value !== model.value?.[key]) {
-    if (typeof model.value?.[key] === 'string') {
-      return `${model.value?.[key]}`;
+  if (value && value !== resultingFilterModel.value?.[key]) {
+    if (typeof resultingFilterModel.value?.[key] === 'string') {
+      return `${resultingFilterModel.value?.[key]}`;
     }
-    if (typeof model.value?.[key] === 'boolean') {
-      return `${key}: ${lxFormatUtils.formatValue(model.value[key], 'bool')}`;
+    if (typeof resultingFilterModel.value?.[key] === 'boolean') {
+      return `${key}: ${lxFormatUtils.formatValue(resultingFilterModel.value[key], 'bool')}`;
     }
-    if (Array.isArray(model.value?.[key])) {
-      if (model.value?.[key]?.length > 0) return `${key}: ${model.value?.[key]?.length}`;
+    if (Array.isArray(resultingFilterModel.value?.[key])) {
+      if (resultingFilterModel.value?.[key]?.length > 0)
+        return `${key}: ${resultingFilterModel.value?.[key]?.length}`;
     }
-    return `${model.value?.[key]}`;
+    return `${resultingFilterModel.value?.[key]}`;
   }
   return null;
 }
@@ -341,12 +361,12 @@ function formatDateRange(format, description, modelValueKey) {
   ) {
     return `${description || ''}${lxDateUtils.formatDateTime(
       modelValueKey?.startDate
-    )} - ${lxDateUtils.formatDateTime(modelValueKey?.endDate)}`;
+    )}-${lxDateUtils.formatDateTime(modelValueKey?.endDate)}`;
   }
   if (format === 'date' && (modelValueKey?.startDate || modelValueKey?.endDate)) {
     return `${description || ''}${lxDateUtils.formatDate(
       modelValueKey?.startDate
-    )} - ${lxDateUtils.formatDate(modelValueKey?.endDate)}`;
+    )}-${lxDateUtils.formatDate(modelValueKey?.endDate)}`;
   }
   if (modelValueKey?.startDate || modelValueKey?.endDate) {
     return `${description || ''}${modelValueKey?.startDate}-${modelValueKey?.endDate}`;
@@ -359,18 +379,26 @@ function formatDescription(value, key) {
     case 'textInputDefault':
     case 'textInputInteger':
     case 'textArea':
-      return `${value?.lx?.filterDescription || ''}${model.value[key]}`;
+      return `${value?.lx?.filterDescription || ''}${resultingFilterModel.value[key]}`;
 
     case 'dateTimePicker':
-      return formatDateDescription(value?.format, value?.lx?.filterDescription, model.value[key]);
+      return formatDateDescription(
+        value?.format,
+        value?.lx?.filterDescription,
+        resultingFilterModel.value[key]
+      );
 
     case 'dateTimeRange':
-      return formatDateRange(value?.format, value?.lx?.filterDescription, model.value[key]);
+      return formatDateRange(
+        value?.format,
+        value?.lx?.filterDescription,
+        resultingFilterModel.value[key]
+      );
 
     case 'toggle':
       return `${
         value?.lx?.filterDescription || (value?.title ? `${value?.title}: ` : `${key}: `)
-      }${lxFormatUtils.formatValue(model.value[key], 'bool')}`;
+      }${lxFormatUtils.formatValue(resultingFilterModel.value[key], 'bool')}`;
 
     case 'valuePicker':
     case 'autoComplete':
@@ -385,12 +413,12 @@ function formatDescription(value, key) {
     case 'appendableList':
     case 'smallAppendableList':
       if (
-        !arraysEqual(model.value?.[key], defaultValues.value?.[key]) &&
-        model.value?.[key]?.length > 0
+        !arraysEqual(resultingFilterModel.value?.[key], defaultValues.value?.[key]) &&
+        resultingFilterModel.value?.[key]?.length > 0
       )
         return `${
           value?.lx?.filterDescription || (value?.title ? `${value?.title}: ` : `${key}: `)
-        }${model.value?.[key]?.length}`;
+        }${resultingFilterModel.value?.[key]?.length}`;
       return null;
 
     case 'objectList':
@@ -422,12 +450,13 @@ const filterDescription = computed(() => {
     if (props.schema?.properties && props.mode !== 'no-schema') {
       const res = Object.entries(props.schema?.properties).reduce((acc, [key, value]) => {
         if (
-          model.value?.[key] !== null &&
-          model.value?.[key] !== undefined &&
-          model.value?.[key] !== '' &&
-          ((!isObject(model.value?.[key]) && model.value?.[key] !== defaultValues.value?.[key]) ||
-            (isObject(model.value?.[key]) &&
-              !deepEqual(model.value?.[key], defaultValues.value?.[key])))
+          resultingFilterModel.value?.[key] !== null &&
+          resultingFilterModel.value?.[key] !== undefined &&
+          resultingFilterModel.value?.[key] !== '' &&
+          ((!isObject(resultingFilterModel.value?.[key]) &&
+            resultingFilterModel.value?.[key] !== defaultValues.value?.[key]) ||
+            (isObject(resultingFilterModel.value?.[key]) &&
+              !deepEqual(resultingFilterModel.value?.[key], defaultValues.value?.[key])))
         ) {
           const formattedDesc = formatDescription(value, key);
           if (formattedDesc) acc.push(formattedDesc);
@@ -472,7 +501,6 @@ defineExpose({
   <LxFilters
     ref="filterElement"
     v-model:expanded="isExpanded"
-    kind="form"
     :label="label"
     :description="description || (isExpanded ? '' : filterDescription)"
     :usesFilters="
@@ -484,14 +512,15 @@ defineExpose({
     :fastIdAttribute="fastIdAttribute"
     :fastNameAttribute="fastNameAttribute"
     :badge="badge"
-    :badge-icon="badgeIcon"
-    :badge-type="badgeType"
-    :badge-title="badgeTitle"
+    :badgeIcon="badgeIcon"
+    :badgeType="badgeType"
+    :badgeTitle="badgeTitle"
     :columnCount="columnCount || 3"
+    :hasShortlistReset="hasShortlistReset"
     :texts="displayTexts"
     @filter="filter"
     @resetFilters="() => emits('resetFilters')"
-    @fast-filter-click="(e) => emits('fastFilterClick', e)"
+    @fastFilterClick="(e) => emits('fastFilterClick', e)"
   >
     <LxFormBuilder
       ref="formBuilder"
