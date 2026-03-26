@@ -1,5 +1,5 @@
 import { test, expect, afterEach } from 'vitest';
-import { LxForm, LxStack } from '@dativa-lv/lx-ui';
+import { LxForm } from '@dativa-lv/lx-ui';
 import LxFormBuilder from '@/components/FormBuilder.vue';
 import { mount, flushPromises } from '@vue/test-utils';
 import { h } from 'vue';
@@ -44,6 +44,7 @@ test('LxFormBuilder with one row', async () => {
   });
   await flushPromises();
   // process.stdout.write(`${wrapper.html()}\n`);
+  console.log(wrapper.html());
   expect(wrapper.find('.lx-row').exists()).toBe(true);
 });
 

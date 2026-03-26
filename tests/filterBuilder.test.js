@@ -1,8 +1,7 @@
 import { test, expect } from 'vitest';
 import { mount, RouterLinkStub, flushPromises } from '@vue/test-utils';
 import LxFilterBuilder from '@/components/FilterBuilder.vue';
-import { LxRow, lxFormatUtils } from '@dativa-lv/lx-ui';
-import { nextTick } from 'vue';
+import { lxFormatUtils } from '@dativa-lv/lx-ui';
 
 test('LxFilterBuilder with one row', async () => {
   const schema = { type: 'object', properties: { name: { type: 'string' } } };
@@ -16,6 +15,7 @@ test('LxFilterBuilder with one row', async () => {
       },
       stubs: {
         RouterLink: RouterLinkStub,
+        LxStack: true,
       },
     },
   });
@@ -54,6 +54,7 @@ test('LxFilterBuilder schema with various inputs', async () => {
       },
       stubs: {
         RouterLink: RouterLinkStub,
+        LxStack: true,
       },
     },
   });
@@ -91,6 +92,7 @@ test('LxFilterBuilder input values description', async () => {
       },
       stubs: {
         RouterLink: RouterLinkStub,
+        LxStack: true,
       },
     },
   });
@@ -114,6 +116,7 @@ test('LxFilterBuilder input values description 2', async () => {
       },
       stubs: {
         RouterLink: RouterLinkStub,
+        LxStack: true,
       },
     },
   });
@@ -149,6 +152,7 @@ test('LxFilterBuilder input values description 3', async () => {
       },
       stubs: {
         RouterLink: RouterLinkStub,
+        LxStack: true,
       },
     },
   });
@@ -185,6 +189,7 @@ test('LxFilterBuilder input values description 4: override', () => {
       },
       stubs: {
         RouterLink: RouterLinkStub,
+        LxStack: true,
       },
     },
   });
@@ -210,6 +215,7 @@ test('LxFilterBuilder input values description 5: expanded/collapsed description
       },
       stubs: {
         RouterLink: RouterLinkStub,
+        LxStack: true,
       },
     },
   });
@@ -250,6 +256,7 @@ test('LxFilterBuilder input values description 6: filterDescription', async () =
       },
       stubs: {
         RouterLink: RouterLinkStub,
+        LxStack: true,
       },
     },
   });
@@ -286,6 +293,7 @@ test('LxFilterBuilder input values description 7: dateTimeRange', async () => {
       },
       stubs: {
         RouterLink: RouterLinkStub,
+        LxStack: true,
       },
     },
   });
@@ -366,6 +374,7 @@ test('LxFilterBuilder input values description 8: valuePicker', async () => {
       },
       stubs: {
         RouterLink: RouterLinkStub,
+        LxStack: true,
       },
     },
   });
@@ -433,6 +442,7 @@ test('LxFilterBuilder input values description 9: valuePicker', async () => {
       },
       stubs: {
         RouterLink: RouterLinkStub,
+        LxStack: true,
       },
     },
   });
@@ -474,6 +484,7 @@ test('LxFilterBuilder usesFilters', async () => {
       },
       stubs: {
         RouterLink: RouterLinkStub,
+        LxStack: true,
       },
     },
   });
@@ -516,6 +527,7 @@ test('LxFilterBuilder useDefaults', async () => {
       },
       stubs: {
         RouterLink: RouterLinkStub,
+        LxStack: true,
       },
     },
   });
@@ -556,6 +568,7 @@ test('LxFilterBuilder defaultValues', async () => {
       },
       stubs: {
         RouterLink: RouterLinkStub,
+        LxStack: true,
       },
     },
   });
