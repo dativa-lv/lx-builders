@@ -9,6 +9,7 @@ import {
   lxStringUtils,
   lxDevUtils,
   lxFormatUtils,
+  LxViewLayout,
 } from '@dativa-lv/lx-ui';
 
 import LxFilterBuilder from '@/components/FilterBuilder.vue';
@@ -16,7 +17,6 @@ import { getDisplayTexts } from '@/utils/generalUtils';
 import useLx from '@/hooks/useLx';
 import { useVuelidate } from '@vuelidate/core';
 import { required, helpers, minValue, maxValue, minLength, maxLength } from '@vuelidate/validators';
-import LxViewLayout from '@/components/ViewLayout.vue';
 import LxFormBuilder from '@/components/FormBuilder.vue';
 import LxFormBuilderItem from '@/components/FormBuilderItem.vue';
 import LxFormBuilderListItem from '@/components/FormBuilderListItem.vue';

@@ -7,6 +7,7 @@ settings:
 overrides:
   cross-spawn: 7.0.6
   minimatch: 10.2.3
+  jsrsasign: 11.1.1
 
 pnpmfileChecksum: sha256-tEJH+4scrycfILgUh+QDVnC2cG3HNoZTIO/YYgkXzXQ=
 
@@ -2685,8 +2686,8 @@ packages:
   jsonfile@4.0.0:
     resolution: {integrity: sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg==}
 
-  jsrsasign@11.1.0:
-    resolution: {integrity: sha512-Ov74K9GihaK9/9WncTe1mPmvrO7Py665TUfUKvraXBpu+xcTWitrtuOwcjf4KMU9maPaYn0OuaWy0HOzy/GBXg==}
+  jsrsasign@11.1.1:
+    resolution: {integrity: sha512-6w95OOXH8DNeGxakqLndBEqqwQ6A70zGaky1oxfg8WVLWOnghTfJsc5Tknx+Z88MHSb1bGLcqQHImOF8Lk22XA==}
 
   jsx-ast-utils@3.3.5:
     resolution: {integrity: sha512-ZZow9HBI5O6EPgSJLUb8n2NKgmVWTwCvHGwFuJlMjvLFqlGG6pjirPhtdsseaLZjSibD8eegzmYpUZwoIlj2cQ==}
@@ -4200,7 +4201,7 @@ snapshots:
       focus-trap: 7.6.4
       glob: 10.5.0
       i18n-iso-countries: 7.14.0
-      jsrsasign: 11.1.0
+      jsrsasign: 11.1.1
       jszip: 3.10.1
       linkifyjs: 4.3.2
       marked: 15.0.7
@@ -7075,7 +7076,7 @@ snapshots:
     optionalDependencies:
       graceful-fs: 4.2.11
 
-  jsrsasign@11.1.0: {}
+  jsrsasign@11.1.1: {}
 
   jsx-ast-utils@3.3.5:
     dependencies:
