@@ -79,11 +79,13 @@
     "overrides": {
       "cross-spawn": "7.0.6",
       "minimatch": "10.2.3",
-      "jsrsasign": "11.1.1"
+      "jsrsasign": "11.1.1",
+      "lodash": "4.18.1",
+      "@xmldom/xmldom": "0.9.10"
     }
   },
   "peerDependencies": {
     "vue": "^3.5.17",
-    "@dativa-lv/lx-ui": "2.0.7"
+    "@dativa-lv/lx-ui": "2.1.5"
   }
 }
