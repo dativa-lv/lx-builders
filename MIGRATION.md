@@ -1,5 +1,20 @@
 # LX/UI Builder Migration Guide
 
+## 2.1.8
+
+### Breaking changes
+
+#### ViewBuilder changes
+
+LxViewBuilder form section behavior has been unified.
+
+You must now explicitly define the default section - it is no longer created automatically.
+The first defined section will be treated as the default.
+
+See the [ViewBuilder guide](/docs/ViewBuilder.md)  for updated schema examples.
+
+The schema and logic for LxFormBuilder and LxFilterBuilder have remained the same.
+
 ## createLxBuilders
 
 Make sure you're using [`myApp.use(createLxBuilders)`](src/main.js) in your project.

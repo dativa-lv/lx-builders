@@ -204,6 +204,17 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  name: { type: String, default: null },
+  builderOptions: {
+    type: Object,
+    default: () => ({
+      schemaPath: null,
+      componentStack: null,
+      useRegistry: false,
+      defaultSectionSchemaPath: null,
+    }),
+  },
+  id: { type: String, default: null },
 });
 
 const emits = defineEmits([
@@ -492,6 +503,10 @@ onMounted(() => {
   initialModelValues.value = lxFormatUtils.objectClone(props.modelValue || {});
 });
 
+const formBuilderName = computed(
+  () => `${props.name}.${props.builderOptions?.defaultSectionSchemaPath}`
+);
+
 defineExpose({
   validateModel,
   clearValidations,
@@ -500,6 +515,7 @@ defineExpose({
 <template>
   <LxFilters
     ref="filterElement"
+    :id="id"
     v-model:expanded="isExpanded"
     :label="label"
     :description="description || (isExpanded ? '' : filterDescription)"
@@ -518,18 +534,28 @@ defineExpose({
     :columnCount="columnCount || 3"
     :hasShortlistReset="hasShortlistReset"
     :texts="displayTexts"
+    :builderOptions="builderOptions"
     @filter="filter"
     @resetFilters="() => emits('resetFilters')"
     @fastFilterClick="(e) => emits('fastFilterClick', e)"
   >
     <LxFormBuilder
       ref="formBuilder"
+      :id="id"
       :schema="schema"
       v-model="model"
       :readOnly="readOnly"
       :mode="mode"
       :texts="displayTexts"
       :validations="validations"
+      :builderOptions="{
+        componentStack: builderOptions?.componentStack?.concat(
+          { id: `${id}-form`, name: 'LxForm' },
+          { id: `${id}-form-default`, name: 'LxSection' }
+        ),
+        useRegistry: builderOptions?.useRegistry,
+        schemaPath: formBuilderName,
+      }"
       @rowActionClick="
         (action, value, schemaName, index) =>
           emits('rowActionClick', action, value, schemaName, index)

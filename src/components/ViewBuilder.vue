@@ -71,6 +71,12 @@ const props = defineProps({
    * @since 1.9.0-beta.9
    */
   texts: { type: Object, default: () => {} },
+  builderOptions: {
+    type: Object,
+    default: () => ({
+      useRegistry: false,
+    }),
+  },
 });
 
 const textsDefault = {
@@ -161,7 +167,7 @@ const viewKind = computed(() => {
     return 'form';
   }
   if (properties.some((v) => v?.lx?.displayType === 'filters' && v?.type === 'object')) {
-    return 'filters';
+    return 'list';
   }
   return 'default';
 });
@@ -182,127 +188,122 @@ function isNumber(type) {
   return type === 'number' || type === 'integer';
 }
 
-// Creates rule for 'modelValue' validation based on the provided schema
-const buildRules = (schema) => {
-  const req = schema?.required;
-  const res = {};
-
-  req?.forEach((property) => {
-    res[property] = res[property] || {};
-    res[property].required = helpers.withMessage(() => displayTexts.value.required, required);
-  });
-
-  if (schema?.properties) {
-    Object.entries(schema.properties).forEach(([key, value]) => {
-      // Recursively handle nested objects
-      if (value?.type === 'object' && value?.properties) {
-        res[key] = buildRules(value);
-      } else {
-        if (isNumber(value?.type)) {
-          if (value?.minimum !== undefined) {
-            res[key] = res[key] || {};
-            res[key].minValue = helpers.withMessage(
-              ({ $params }) => replaceErrorMessage(displayTexts.value.minimum, $params.min),
-              minValue(value.minimum)
-            );
-          }
-          if (value?.exclusiveMinimum !== undefined) {
-            const exclusiveMinimum = (param) =>
-              helpers.withParams(
-                { type: 'exclusiveMinimum', value: param },
-                (targetValue) => targetValue > param
-              );
-            res[key] = res[key] || {};
-            res[key].exclusiveMinimum = helpers.withMessage(
-              () =>
-                replaceErrorMessage(displayTexts.value.exclusiveMinimum, value.exclusiveMinimum),
-              exclusiveMinimum(value.exclusiveMinimum)
-            );
-          }
-          if (value?.maximum !== undefined) {
-            res[key] = res[key] || {};
-            res[key].maxValue = helpers.withMessage(
-              ({ $params }) => replaceErrorMessage(displayTexts.value.maximum, $params.max),
-              maxValue(value.maximum)
-            );
-          }
-          if (value?.exclusiveMaximum !== undefined) {
-            const exclusiveMaximum = (param) =>
-              helpers.withParams(
-                { type: 'exclusiveMaximum', value: param },
-                (targetValue) => targetValue < param
-              );
-            res[key] = res[key] || {};
-            res[key].exclusiveMaximum = helpers.withMessage(
-              () =>
-                replaceErrorMessage(displayTexts.value.exclusiveMaximum, value.exclusiveMaximum),
-              exclusiveMaximum(value.exclusiveMaximum)
-            );
-          }
-          if (value?.multipleOf !== undefined) {
-            const multipleOf = (param) =>
-              helpers.withParams(
-                { type: 'multipleOf', value: param },
-                (targetValue) => targetValue % param === 0
-              );
-            res[key] = res[key] || {};
-            res[key].multipleOf = helpers.withMessage(
-              () => replaceErrorMessage(displayTexts.value.multipleOf, value.multipleOf),
-              multipleOf(value.multipleOf)
-            );
-          }
-        }
-        if (value?.minLength !== undefined && value?.type === 'string') {
-          res[key] = res[key] || {};
-          res[key].minLength = helpers.withMessage(
-            ({ $params }) => replaceErrorMessage(displayTexts.value.minLength, $params.min),
-            minLength(value.minLength)
-          );
-        }
-        if (value?.maxLength !== undefined && value?.type === 'string') {
-          res[key] = res[key] || {};
-          res[key].maxLength = helpers.withMessage(
-            ({ $params }) => replaceErrorMessage(displayTexts.value.maxLength, $params.max),
-            maxLength(value.maxLength)
-          );
-        }
-        if (value?.pattern && value?.type === 'string') {
-          const pattern = (param) =>
-            helpers.withParams({ type: 'pattern', value: param }, (targetValue) =>
-              new RegExp(param).test(targetValue)
-            );
-          res[key] = res[key] || {};
-          res[key].pattern = helpers.withMessage(
-            () => replaceErrorMessage(displayTexts.value.pattern, value.pattern),
-            pattern(value.pattern)
-          );
-        }
-        if (value?.minItems !== undefined && value?.type === 'array') {
-          res[key] = res[key] || {};
-          res[key].minItems = helpers.withMessage(
-            ({ $params }) => replaceErrorMessage(displayTexts.value.minItems, $params.min),
-            minLength(value.minItems)
-          );
-        }
-        if (value?.maxItems !== undefined && value?.type === 'array') {
-          res[key] = res[key] || {};
-          res[key].maxItems = helpers.withMessage(
-            ({ $params }) => replaceErrorMessage(displayTexts.value.maxItems, $params.max),
-            maxLength(value.maxItems)
-          );
-        }
-        if (value?.uniqueItems && value?.type === 'array') {
-          const uniqueItems = (targetValue) => new Set(targetValue)?.size === targetValue?.length;
-          res[key] = res[key] || {};
-          res[key].uniqueItems = helpers.withMessage(
-            () => displayTexts.value.uniqueItems,
-            uniqueItems
-          );
-        }
-      }
-    });
+function addNumberRules(res, key, value) {
+  if (value?.minimum !== undefined) {
+    res[key] = res[key] || {};
+    res[key].minValue = helpers.withMessage(
+      ({ $params }) => replaceErrorMessage(displayTexts.value.minimum, $params.min),
+      minValue(value.minimum)
+    );
   }
+  if (value?.exclusiveMinimum !== undefined) {
+    const exclusiveMinimum = (param) =>
+      helpers.withParams(
+        { type: 'exclusiveMinimum', value: param },
+        (targetValue) => targetValue > param
+      );
+    res[key] = res[key] || {};
+    res[key].exclusiveMinimum = helpers.withMessage(
+      () => replaceErrorMessage(displayTexts.value.exclusiveMinimum, value.exclusiveMinimum),
+      exclusiveMinimum(value.exclusiveMinimum)
+    );
+  }
+  if (value?.maximum !== undefined) {
+    res[key] = res[key] || {};
+    res[key].maxValue = helpers.withMessage(
+      ({ $params }) => replaceErrorMessage(displayTexts.value.maximum, $params.max),
+      maxValue(value.maximum)
+    );
+  }
+  if (value?.exclusiveMaximum !== undefined) {
+    const exclusiveMaximum = (param) =>
+      helpers.withParams(
+        { type: 'exclusiveMaximum', value: param },
+        (targetValue) => targetValue < param
+      );
+    res[key] = res[key] || {};
+    res[key].exclusiveMaximum = helpers.withMessage(
+      () => replaceErrorMessage(displayTexts.value.exclusiveMaximum, value.exclusiveMaximum),
+      exclusiveMaximum(value.exclusiveMaximum)
+    );
+  }
+  if (value?.multipleOf !== undefined) {
+    const multipleOf = (param) =>
+      helpers.withParams(
+        { type: 'multipleOf', value: param },
+        (targetValue) => targetValue % param === 0
+      );
+    res[key] = res[key] || {};
+    res[key].multipleOf = helpers.withMessage(
+      () => replaceErrorMessage(displayTexts.value.multipleOf, value.multipleOf),
+      multipleOf(value.multipleOf)
+    );
+  }
+}
 
+function addStringRules(res, key, value) {
+  if (value?.minLength !== undefined) {
+    res[key] = res[key] || {};
+    res[key].minLength = helpers.withMessage(
+      ({ $params }) => replaceErrorMessage(displayTexts.value.minLength, $params.min),
+      minLength(value.minLength)
+    );
+  }
+  if (value?.maxLength !== undefined) {
+    res[key] = res[key] || {};
+    res[key].maxLength = helpers.withMessage(
+      ({ $params }) => replaceErrorMessage(displayTexts.value.maxLength, $params.max),
+      maxLength(value.maxLength)
+    );
+  }
+  if (value?.pattern) {
+    const pattern = (param) =>
+      helpers.withParams({ type: 'pattern', value: param }, (targetValue) =>
+        new RegExp(param).test(targetValue)
+      );
+    res[key] = res[key] || {};
+    res[key].pattern = helpers.withMessage(
+      () => replaceErrorMessage(displayTexts.value.pattern, value.pattern),
+      pattern(value.pattern)
+    );
+  }
+}
+
+function addArrayRules(res, key, value) {
+  if (value?.minItems !== undefined) {
+    res[key] = res[key] || {};
+    res[key].minItems = helpers.withMessage(
+      ({ $params }) => replaceErrorMessage(displayTexts.value.minItems, $params.min),
+      minLength(value.minItems)
+    );
+  }
+  if (value?.maxItems !== undefined) {
+    res[key] = res[key] || {};
+    res[key].maxItems = helpers.withMessage(
+      ({ $params }) => replaceErrorMessage(displayTexts.value.maxItems, $params.max),
+      maxLength(value.maxItems)
+    );
+  }
+  if (value?.uniqueItems) {
+    const uniqueItems = (targetValue) => new Set(targetValue)?.size === targetValue?.length;
+    res[key] = res[key] || {};
+    res[key].uniqueItems = helpers.withMessage(() => displayTexts.value.uniqueItems, uniqueItems);
+  }
+}
+
+function addPropertyRules(res, key, value) {
+  if (isNumber(value?.type)) {
+    addNumberRules(res, key, value);
+  }
+  if (value?.type === 'string') {
+    addStringRules(res, key, value);
+  }
+  if (value?.type === 'array') {
+    addArrayRules(res, key, value);
+  }
+}
+
+function addObjectLevelRules(res, schema) {
   if (schema?.minProperties !== undefined && schema?.type === 'object') {
     const minProperties = (param) =>
       helpers.withParams(
@@ -325,6 +326,29 @@ const buildRules = (schema) => {
       maxProperties(schema.maxProperties)
     );
   }
+}
+
+// Creates rule for 'modelValue' validation based on the provided schema
+const buildRules = (schema) => {
+  const req = schema?.required;
+  const res = {};
+
+  req?.forEach((property) => {
+    res[property] = res[property] || {};
+    res[property].required = helpers.withMessage(() => displayTexts.value.required, required);
+  });
+
+  if (schema?.properties) {
+    Object.entries(schema.properties).forEach(([key, value]) => {
+      if (value?.type === 'object' && value?.properties) {
+        res[key] = buildRules(value);
+      } else {
+        addPropertyRules(res, key, value);
+      }
+    });
+  }
+
+  addObjectLevelRules(res, schema);
 
   return res;
 };
@@ -455,18 +479,122 @@ const displaySchema = computed(() => {
   return props.schema;
 });
 
+function filterOutDefaultSection(item) {
+  const res = lxFormatUtils.objectClone(item);
+  let sectionFound = false;
+  const entries = Object.entries(res || {});
+
+  entries.forEach(([key, value]) => {
+    if (!sectionFound && value?.lx?.displayType === 'section' && value?.type === 'object') {
+      delete res[key];
+      sectionFound = true;
+    }
+  });
+  return res;
+}
+
+function keepOnlyDefaultSection(item) {
+  const res = lxFormatUtils.objectClone(item);
+  const entries = Object.entries(res || {});
+  let sectionFound = false;
+
+  entries.forEach(([key, value]) => {
+    if (!sectionFound && value?.lx?.displayType === 'section' && value?.type === 'object') {
+      sectionFound = true;
+    } else {
+      delete res[key];
+    }
+  });
+  return res;
+}
+
+function getDefaultSection(item) {
+  const entries = Object.entries(item || {});
+
+  const result = entries.find(
+    ([, value]) => value?.lx?.displayType === 'section' && value?.type === 'object'
+  );
+
+  return result ? result[1] : null;
+}
+
+function getDefaultSectionKey(item) {
+  const entries = Object.entries(item || {});
+
+  const result = entries.find(
+    ([, value]) => value?.lx?.displayType === 'section' && value?.type === 'object'
+  );
+
+  return result ? result[0] : null;
+}
+
+function getFilterModelValue(name, row) {
+  const sectionKey = getDefaultSectionKey(row?.properties);
+
+  if (!sectionKey) {
+    return model.value?.[name] || {};
+  }
+
+  return model.value?.[name]?.[sectionKey] || {};
+}
+
+function updateFilterModelValue(name, row, value) {
+  const sectionKey = getDefaultSectionKey(row?.properties);
+  const nextModel = lxFormatUtils.objectClone(model.value || {});
+
+  if (!sectionKey) {
+    nextModel[name] = value;
+    model.value = nextModel;
+    return;
+  }
+
+  nextModel[name] = nextModel[name] || {};
+  nextModel[name][sectionKey] = value;
+  model.value = nextModel;
+}
+
+function getDefaultFormIndex(item) {
+  const res = [];
+  let defaultFlag = false;
+  Object.entries(item || {}).forEach(([key, value]) => {
+    if (value?.lx?.displayType === 'section' && value?.type === 'object') {
+      const obj = {};
+      obj.id = defaultFlag ? key : 'default';
+      obj.name = key;
+
+      if (!defaultFlag) {
+        obj.isCurrentStep = true;
+        obj.state = 'current';
+      }
+      res.push(obj);
+      defaultFlag = true;
+    }
+  });
+  return res;
+}
+
 defineExpose({ validateModel, clearValidations });
 </script>
 <template>
-  <LxViewLayout v-if="isSchemaValid" :kind="viewKind">
+  <LxViewLayout
+    v-if="isSchemaValid"
+    :kind="viewKind"
+    :id="id"
+    :builderOptions="{
+      schemaPath: null,
+      componentStack: [],
+      useRegistry: builderOptions?.useRegistry,
+    }"
+  >
     <template #filters>
       <template v-for="(row, name) in displaySchema?.properties" :key="name">
         <LxFilterBuilder
           v-if="row?.lx?.displayType === 'filters' && row?.type === 'object'"
-          :ref="(el) => (otherBuilderRefs[id + '-' + name] = el)"
-          v-model="model[name]"
-          :schema="row"
-          :id="id + '-' + name"
+          :ref="(el) => (otherBuilderRefs[`${id}-${name}`] = el)"
+          :modelValue="getFilterModelValue(name, row)"
+          :schema="row?.properties?.[getDefaultSectionKey(row?.properties)]"
+          :name="name"
+          :id="`${id}-${name}`"
           :readOnly="readOnly"
           :defaultValues="row?.lx?.defaultValues"
           :useDefaults="row?.lx?.useDefaults"
@@ -474,7 +602,6 @@ defineExpose({ validateModel, clearValidations });
           :description="row?.description"
           :usesFilter="row?.lx?.usesFilter"
           :filterButtonKind="row?.lx?.filterButtonKind"
-          :columnCount="row?.lx?.columnCount"
           :expanded="row?.lx?.expanded"
           :disabled="row?.lx?.disabled"
           :fastFilters="row?.lx?.fastFilters"
@@ -483,6 +610,17 @@ defineExpose({ validateModel, clearValidations });
           :badge="row?.lx?.badge"
           :badgeType="row?.lx?.badgeType"
           :texts="row?.lx?.texts"
+          :columnCount="getDefaultSection(row?.properties)?.lx?.columnCount || row?.lx?.columnCount"
+          :builderOptions="{
+            schemaPath: `${name}`,
+            componentStack: [
+              { id, name: 'LxViewLayout' },
+              { id: `${id}-${name}`, name: 'LxFilters' },
+            ],
+            useRegistry: builderOptions?.useRegistry,
+            defaultSectionSchemaPath: getDefaultSectionKey(row?.properties),
+          }"
+          @update:modelValue="(value) => updateFilterModelValue(name, row, value)"
           @filter="() => componentEmit('filter', name)"
           @resetFilter="() => componentEmit('resetFilter', name)"
           @fastFilterClick="(a) => componentEmit('fastFilterClick', name, a)"
@@ -495,30 +633,39 @@ defineExpose({ validateModel, clearValidations });
       <template v-for="(row, name) in displaySchema?.properties" :key="name">
         <LxForm
           v-if="row?.lx?.displayType === 'form' && row?.type === 'object'"
-          :id="id + '-' + name"
-          :columnCount="row?.lx?.columnCount"
+          :id="`${id}-${name}`"
           :showHeader="row?.lx?.showHeader"
           :stickyHeader="row?.lx?.stickyHeader"
           :showFooter="row?.lx?.showFooter"
           :stickyFooter="row?.lx?.stickyFooter"
           :showPreHeaderInfo="row?.lx?.showPreHeaderInfo"
           :showPostHeaderInfo="row?.lx?.showPostHeaderInfo"
-          :index="row?.lx?.index"
+          :index="row?.lx?.index || getDefaultFormIndex(row?.properties)"
           :indexType="row?.lx?.indexType"
           :actionDefinitions="row?.lx?.actionDefinitions"
-          :requiredMode="row?.lx?.requiredMode"
           :kind="row?.lx?.kind"
-          :orientation="row?.lx?.orientation"
           :hasSkipLink="row?.lx?.hasSkipLink"
           :texts="row?.lx?.texts"
+          :columnCount="getDefaultSection(row?.properties)?.lx?.columnCount"
+          :requiredMode="getDefaultSection(row?.properties)?.lx?.requiredMode"
+          :orientation="getDefaultSection(row?.properties)?.lx?.orientation"
+          :builderOptions="{
+            schemaPath: `${name}`,
+            componentStack: [
+              { id, name: 'LxViewLayout' },
+              { id: `${id}-${name}`, name: 'LxForm' },
+            ],
+            useRegistry: builderOptions?.useRegistry,
+            defaultSectionSchemaPath: getDefaultSectionKey(row?.properties),
+          }"
           @actionClick="(a) => componentEmit('actionClick', name, a)"
         >
           <template #header>{{ row?.title }}</template>
-          <template #pre-header v-if="row?.lx?.preHeader">
+          <template #preHeader v-if="row?.lx?.preHeader">
             <template v-for="(item, itemName) in row?.lx?.preHeader?.properties" :key="itemName">
               <LxStack
                 v-if="item?.lx?.displayType === 'stack'"
-                :id="id + '-' + name + '-' + itemName"
+                :id="`${id}-${name}-${itemName}`"
                 :orientation="item?.lx?.orientation"
                 :kind="item?.lx?.kind"
                 :mode="item?.lx?.mode"
@@ -533,7 +680,7 @@ defineExpose({ validateModel, clearValidations });
                 >
                   <LxStack
                     v-if="nestedItem?.lx?.displayType === 'stack'"
-                    :id="id + '-' + name + '-' + itemName + '-' + nestedItemName"
+                    :id="`${id}-${name}-${itemName}-${nestedItemName}`"
                     :orientation="nestedItem?.lx?.orientation"
                     :kind="nestedItem?.lx?.kind"
                     :mode="nestedItem?.lx?.mode"
@@ -562,7 +709,7 @@ defineExpose({ validateModel, clearValidations });
               <LxFormBuilderListItem :itemValue="item" :itemName="itemName" v-else />
             </template>
           </template>
-          <template #pre-header-info v-if="row?.lx?.preHeaderInfo">
+          <template #preHeaderInfo v-if="row?.lx?.preHeaderInfo">
             <LxRow
               v-for="(item, itemName) in row?.lx?.preHeaderInfo?.properties"
               :label="item?.title"
@@ -572,7 +719,7 @@ defineExpose({ validateModel, clearValidations });
               <LxFormBuilderListItem :itemValue="item" :itemName="itemName" />
             </LxRow>
           </template>
-          <template #post-header-info v-if="row?.lx?.postHeaderInfo">
+          <template #postHeaderInfo v-if="row?.lx?.postHeaderInfo">
             <LxRow
               v-for="(item, itemName) in row?.lx?.postHeaderInfo?.properties"
               :label="item?.title"
@@ -582,11 +729,11 @@ defineExpose({ validateModel, clearValidations });
               <LxFormBuilderListItem :itemValue="item" :itemName="itemName" />
             </LxRow>
           </template>
-          <template #post-header v-if="row?.lx?.postHeader">
+          <template #postHeader v-if="row?.lx?.postHeader">
             <template v-for="(item, itemName) in row?.lx?.postHeader?.properties" :key="itemName">
               <LxStack
                 v-if="item?.lx?.displayType === 'stack'"
-                :id="id + '-' + name + '-' + itemName"
+                :id="`${id}-${name}-${itemName}`"
                 :orientation="item?.lx?.orientation"
                 :kind="item?.lx?.kind"
                 :mode="item?.lx?.mode"
@@ -601,7 +748,7 @@ defineExpose({ validateModel, clearValidations });
                 >
                   <LxStack
                     v-if="nestedItem?.lx?.displayType === 'stack'"
-                    :id="id + '-' + name + '-' + itemName + '-' + nestedItemName"
+                    :id="`${id}-${name}-${itemName}-${nestedItemName}`"
                     :orientation="nestedItem?.lx?.orientation"
                     :kind="nestedItem?.lx?.kind"
                     :mode="nestedItem?.lx?.mode"
@@ -632,12 +779,14 @@ defineExpose({ validateModel, clearValidations });
           </template>
           <template #sections>
             <template
-              v-for="(item, itemName) in schema?.properties?.[name]?.properties"
+              v-for="(item, itemName) in filterOutDefaultSection(
+                schema?.properties?.[name]?.properties
+              )"
               :key="itemName"
             >
               <LxSection
                 v-if="item?.lx?.displayType === 'section' && item?.type === 'object'"
-                :id="id + '-' + name + '-' + itemName"
+                :id="`${itemName}`"
                 :label="item?.title"
                 :description="item?.description"
                 :columnCount="item?.lx?.columnCount"
@@ -649,17 +798,34 @@ defineExpose({ validateModel, clearValidations });
                 :actionDefinitions="item?.lx?.actionDefinitions"
                 :orientation="item?.lx?.orientation"
                 :texts="item?.lx?.texts"
+                :builderOptions="{
+                  schemaPath: `${name}.${itemName}`,
+                  componentStack: [
+                    { id, name: 'LxViewLayout' },
+                    { id: `${id}-${name}`, name: 'LxForm' },
+                  ],
+                  useRegistry: builderOptions?.useRegistry,
+                }"
                 @actionClick="(a) => componentEmit('actionClick', `${name}.${itemName}`, a)"
               >
                 <LxFormBuilder
                   v-if="model?.[name]"
-                  :ref="(el) => (otherBuilderRefs[id + '-' + name + '-' + itemName] = el)"
+                  :ref="(el) => (otherBuilderRefs[`${id}-${name}-${itemName}`] = el)"
                   v-model="model[name][itemName]"
                   :schema="item"
                   :readOnly="readOnly"
                   :texts="displayTexts"
                   :validations="validations?.[name]?.[itemName]"
                   mode="view-builder"
+                  :builderOptions="{
+                    componentStack: [
+                      { id, name: 'LxViewLayout' },
+                      { id: `${id}-${name}`, name: 'LxForm' },
+                      { id: `${id}-${name}-${itemName}`, name: 'LxSection' },
+                    ],
+                    useRegistry: builderOptions?.useRegistry,
+                    schemaPath: `${name}.${itemName}`,
+                  }"
                   @rowActionClick="
                     (a, b, c, d) => rowActionClicked(a, b, `${name}.${itemName}.${c}`, d)
                   "
@@ -669,22 +835,41 @@ defineExpose({ validateModel, clearValidations });
             </template>
           </template>
 
-          <LxFormBuilder
-            v-if="model"
-            :ref="(el) => (otherBuilderRefs[id + '-' + name] = el)"
-            v-model="model[name]"
-            :schema="row"
-            :readOnly="readOnly"
-            :texts="displayTexts"
-            :validations="validations?.[name]"
-            mode="view-builder"
-            @rowActionClick="(a, b, c, d) => rowActionClicked(a, b, `${name}.${c}`, d)"
-            @emit="(a, b, c, d) => componentEmit(a, `${name}.${b}`, c, d)"
-          />
+          <!-- TODO: change from the filter object to first section -->
+          <template
+            v-for="(item, itemName) in keepOnlyDefaultSection(
+              schema?.properties?.[name]?.properties
+            )"
+            :key="itemName"
+          >
+            <LxFormBuilder
+              v-if="model?.[name]"
+              :ref="(el) => (otherBuilderRefs[`${id}-${name}-${itemName}`] = el)"
+              v-model="model[name][itemName]"
+              :schema="item"
+              :readOnly="readOnly"
+              :texts="displayTexts"
+              :validations="validations?.[name]?.[itemName]"
+              mode="view-builder"
+              :builderOptions="{
+                componentStack: [
+                  { id, name: 'LxViewLayout' },
+                  { id: `${id}-${name}`, name: 'LxForm' },
+                  { id: `${id}-${name}-default`, name: 'LxSection' },
+                ],
+                useRegistry: builderOptions?.useRegistry,
+                schemaPath: `${name}.${itemName}`,
+              }"
+              @rowActionClick="
+                (a, b, c, d) => rowActionClicked(a, b, `${name}.${itemName}.${c}`, d)
+              "
+              @emit="(a, b, c, d) => componentEmit(a, `${name}.${itemName}.${b}`, c, d)"
+            />
+          </template>
         </LxForm>
         <LxStack
           v-else-if="row?.lx?.displayType === 'stack'"
-          :id="id + '-' + name"
+          :id="`${id}-${name}`"
           :orientation="row?.lx?.orientation"
           :kind="row?.lx?.kind"
           :mode="row?.lx?.mode"
@@ -699,7 +884,7 @@ defineExpose({ validateModel, clearValidations });
           >
             <LxStack
               v-if="item?.lx?.displayType === 'stack'"
-              :id="id + '-' + name + '-' + itemName"
+              :id="`${id}-${name}-${itemName}`"
               :orientation="item?.lx?.orientation"
               :kind="item?.lx?.kind"
               :mode="item?.lx?.mode"
@@ -761,6 +946,10 @@ defineExpose({ validateModel, clearValidations });
           :texts="displayTexts"
           :vv="vv"
           :validations="validations"
+          :builderOptions="{
+            componentStack: [{ id, name: 'LxViewLayout' }],
+            useRegistry: builderOptions?.useRegistry,
+          }"
           @rowActionClick="(a, b, c, d) => rowActionClicked(a, b, c, d)"
           @emit="(a, b, c, d) => componentEmit(a, b, c, d)"
         />

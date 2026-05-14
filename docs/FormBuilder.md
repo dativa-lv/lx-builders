@@ -16,16 +16,16 @@ LxFormBuilder implements these **standard** JSON schema attributes:
     - **string**: 
       - If `lx.kind` is not defined → LxTextInput with mask that is defined in `lx.mask` attribute. 
       - If `lx.kind="multiline"` → LxTextArea
-      - If `lx.variant="default"` or `lx.variant="dropdown"` or `lx.variant="tiles"` or `lx.variant="tags"` → LxValuePicker with `kind="single"`
+      - If `lx.variant="default"` or `lx.variant="dropdown"` or `lx.variant="tiles"` or `lx.variant="tags"` → LxValuePicker with `selectionKind="single"`
       - If `format="date"` → LxDateTimePicker with `kind="date"`
       - If `format="time"` → LxDateTimePicker with `kind="time"`
       - If `format="date-time"` → LxDateTimePicker with `kind="dateTime"`
-      - If `enum` is defined → LxValuePicker with `kind="single"` and enum array values as items
+      - If `enum` is defined → LxValuePicker with `selectionKind="single"` and enum array values as items
     - **integer**: LxTextInput with `mask="integer"`
     - **number**: LxTextInput with mask that is defined in `lx.mask` attribute (default mask - `decimal`)
     - **boolean**: LxToggle
     - **array**:
-      - If `kind="multiple"` and `items` is Array → LxValuePicker
+      - If `selectionKind="multiple"` and `items` is Array → LxValuePicker
       - If `items` is Object and `items.type = 'object'` → LxAppendableList
       - If `items` is Object and `items.type != 'object'` → LxAppendableListSimple
     - **object**: LxForm inside of LxDataBlock
@@ -58,7 +58,8 @@ For more LX features, use custom schema attribute `lx` with these parameters:
 ### for `type="string"` or `type="integer"` or `type="number"`:
 
 - `mask` - LxTextInput `mask` prop
-- `kind` - LxTextInput, LxValuePicker `kind` prop
+- `kind` - LxTextInput, `kind` prop
+- `selectionKind` - LxValuePicker `selectionKind` prop
 - `scale` - LxTextInput `scale` prop for `mask="decimal"`
 - `uppercase` - LxTextInput `uppercase` prop
 - `convertToString` - LxInput `convertToString` prop
@@ -89,6 +90,8 @@ For more LX features, use custom schema attribute `lx` with these parameters:
 - `specialDates` LxDateTimePicker `specialDates` prop
 - `dictionary` LxDateTimePicker `dictionary` prop
 - `variant` - LxDateTimePicker `variant` prop
+- `cadenceOfMinutes` - LxDateTimePicker `cadenceOfMinutes` prop
+- `cadenceOfSeconds` - LxDateTimePicker `cadenceOfSeconds` prop
 ### `type="array"`
 - `items` - LxValuePicker `items` prop
 - `variant` - LxValuePicker `variant` prop
@@ -157,7 +160,7 @@ For more LX features, use custom schema attribute `lx` with these parameters:
  - `icon` - LxDataBlock `icon` prop
  - `nameAttribute` - LxDataBlock `name` prop
  - `columnCount` - LxForm `columnCount` prop
- - `forceUppercase` - LxDataBlock `forceUppercase` prop
+ - `uppercase` - LxDataBlock `uppercase` prop
  - `size` - LxDataBlock `size` prop
  - `iconSet` - LxDataBlock `iconSet` prop
  - `descriptionAttribute` - LxDataBlock `description` prop
@@ -180,19 +183,19 @@ Each attribute mentioned in properties list is an LxRow by itself, therefore all
 
 The only exception is that LxAppendableList cannot be used inside another LxAppendableList, so an array of objects inside an array of objects won't render even if defined.
 
-### LX attributes for LxAppendable List
+### LX attributes for LxAppendableList
   - `readOnly` - LxAppendableList readOnly prop
   - `expandable` - LxAppendableList expandable prop
   - `nameAttribute` - LxAppendableList nameAttribute prop
   - `columnCount` - LxAppendableList columnCount prop
   - `kind` - LxAppendableList kind prop
   - `requiredMode` - LxAppendableList required prop
-  - `forceUppercase` - LxAppendableList forceUppercase prop
+  - `uppercase` - LxAppendableList uppercase prop
   - `defaultExpanded` - LxAppendableList defaultExpanded prop
   - `expandedAttribute` - LxAppendableList expandedAttribute prop
   - `texts` - LxAppendableList texts prop
 
-## LxAppendableListSimle
+## LxAppendableListSimple
 
 When schema defines an array of objects (property `type="array"` and `items` is `string`, `number`, `integer` or `boolean`), Form Builder is using LxAppendableListSimple to render that.
 
@@ -542,14 +545,14 @@ This schema would generate 15 rows:
   - LxRow occupies 1 LxForm column (default)
   - LxRow label is "Favorite game"
   - LxRow has no info slot
-  - LxValuePicker component with `kind="single"` is generated in this row
+  - LxValuePicker component with `selectionKind="single"` is generated in this row
   - LxValuePicker has 4 items and variant set to "dropdown"
   - LxValuePicker has search
 6. **dislikedGames**
   - LxRow occupies 1 LxForm column (default)
   - LxRow label is "Disliked games"
   - LxRow has no info slot
-  - LxValuePicker component with `kind="multiple"` is generated in this row
+  - LxValuePicker component with `selectionKind="multiple"` is generated in this row
   - LxValuePicker has 4 items and variant set to "default"
 7. **birthDate**
   - LxRow occupies 1 LxForm column (default)
@@ -1026,7 +1029,8 @@ In this example in form there is going to be 3 input fields:
       preloadedItems: null,
       labelId: null,
       hasSelectAll: false,
-      searchAttributes: null
+      searchAttributes: null,
+      enableAdditionalText: false,
     }
   }
 }
@@ -1318,7 +1322,7 @@ modelValue:
 }
 ```
 
-### LxFileUplader
+### LxFileUploader
 
 ```js
 {
@@ -1326,7 +1330,7 @@ modelValue:
     type: 'array',
     lx: {
       displayType: 'file',
-      kind: 'multiple',
+      selectionKind: 'multiple',
       mode: 'default',
       draggable: false,
       dataType: 'meta',
@@ -1634,6 +1638,7 @@ modelValue:
       stepMultiplier: 5,
       hasInput: false,
       labelId: null,
+      disabled: false,
     }
   }
 }
@@ -1649,6 +1654,7 @@ modelValue:
     lx: {
       displayType: 'personDisplay'
       name: 'Name Surname',
+      kind: 'default',
       size: 'm',
       variant: 'full',
       description: 'Admin',
@@ -1728,7 +1734,7 @@ modelValue:
     lx: {
       displayType: 'qrScanner'
       hasFileUploader: true,
-      kind: 'single',
+      selectionKind: 'single',
       cameraSwitcherMode: 'list',
       hasFlashlightToggle: false,
       showAlerts: true,
@@ -1746,7 +1752,7 @@ modelValue:
     type: 'integer',
     lx: {
       displayType: 'ratings'
-      mode: 'edit',
+      readOnly: false,
       variant: 'default',
       disabled: false,
     }
@@ -1870,7 +1876,7 @@ modelValue:
 ```js
 {
   stateDisplay: { 
-    value: 'sucess',
+    value: 'success',
     dictionary: [
       {
         value: 'success',
