@@ -3195,6 +3195,7 @@ const builderOptions = computed(() => ({
     :labelId="displaySchema?.properties[name]?.lx?.labelId"
     :texts="displaySchema?.properties[name]?.lx?.texts"
     v-model="model[name]"
+    :builderOptions="builderOptions"
     @notification="(a) => componentEmit('notification', name, a)"
     @preparedImage="
       (a, b, c, d) => componentEmit('preparedImage', name, { base64: a, id: b, alt: c, title: d })

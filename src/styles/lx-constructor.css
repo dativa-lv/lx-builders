@@ -48,7 +48,7 @@
 
 .lx-panel > .panel-side .panel-main > .button-group > .lx-button {
   --color-button-secondary-background: var(--color-region-2);
-  --color-button-secondary: var(--color-data);
+  --color-button-secondary-text: var(--color-data);
   --color-button-secondary-icon: var(--color-data);
   --button-secondary-border: 2px solid transparent;
 }

@@ -70,6 +70,9 @@ const textsDefault = {
   resetKey: 'Atiestatīt',
   searchProps: 'Meklēt propus',
   searchComponents: 'Meklēt komponenti',
+  clear: 'Notīrīt',
+  noItems: 'Nav ierakstu',
+  notFoundSearch: 'Nav atrasts:',
   actionPanel: 'Darbību panelis',
   save: 'Saglabāt',
   additionalLabel: 'Additional',
@@ -134,6 +137,7 @@ const usageGroupDefinitions = computed(() => [
 const lxComponents = ref(getLXComponents());
 
 const componentItems = computed(() => {
+  if (!props.componentName) return [];
   let res = [...lxComponents.value];
   res = res.map((x) => ({
     ...x,
@@ -167,7 +171,7 @@ const componentItems = computed(() => {
     }
   );
 
-  return res.filter((x) => x.clickable);
+  return res.filter((x) => x.clickable)?.sort((a, b) => a?.name?.localeCompare(b?.name));
 });
 
 // Highlight newly selected element
@@ -412,6 +416,25 @@ function propsToSchema(component, propValues) {
     res.lx.labelId = propValues.labelId;
     res.lx.texts = propValues.texts;
     res.readOnly = propValues.readOnly ?? false;
+  } else if (component === 'LxMarkdownTextArea') {
+    res.type = 'string';
+    res.lx = res.lx || {};
+    res.lx.placeholder = propValues.placeholder;
+    res.lx.rows = propValues.rows;
+    res.maxLength = propValues.maxlength;
+    res.lx.disabled = propValues.disabled ?? false;
+    res.lx.showColorPicker = propValues.showColorPicker ?? false;
+    res.lx.showLinkEditor = propValues.showLinkEditor ?? true;
+    res.lx.tooltip = propValues.tooltip;
+    res.lx.showPlaceholderPicker = propValues.showPlaceholderPicker ?? false;
+    res.lx.showImagePicker = propValues.showImagePicker ?? false;
+    res.lx.showUnderlineToggle = propValues.showUnderlineToggle ?? false;
+    res.lx.showHeadingPicker = propValues.showHeadingPicker ?? false;
+    res.lx.imageMaxSize = propValues.imageMaxSize ?? 3000000;
+    res.lx.dictionary = propValues.dictionary;
+    res.lx.labelId = propValues.labelId;
+    res.lx.texts = propValues.texts;
+    res.readOnly = propValues.readOnly ?? false;
   } else if (component === 'LxSection') {
     res.type = 'object';
     res.lx = res.lx || {};
@@ -634,6 +657,9 @@ function isDeletable() {
             icon="add"
             :texts="{
               placeholder: displayTexts?.searchComponents,
+              clear: displayTexts?.clear,
+              noItems: displayTexts?.noItems,
+              notFoundSearch: displayTexts?.notFoundSearch,
             }"
             @actionClick="(_, id) => emits('componentAdd', id)"
           />

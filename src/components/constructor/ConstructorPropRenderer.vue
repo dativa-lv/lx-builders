@@ -1,6 +1,14 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { LxForm, LxRow, LxExpander, LxTextInput, LxButton, LxStack } from '@dativa-lv/lx-ui';
+import {
+  LxForm,
+  LxRow,
+  LxExpander,
+  LxTextInput,
+  LxButton,
+  LxStack,
+  LxEmptyState,
+} from '@dativa-lv/lx-ui';
 import { useDebounceFn } from '@vueuse/core';
 import PropRendererItem from '@/components/constructor/PropRendererItem.vue';
 
@@ -34,6 +42,7 @@ const props = defineProps({
       save: 'Saglabāt',
       close: 'Aizvērt',
       edit: 'Labot',
+      notFoundSearch: 'Nav atrasts:',
     }),
   },
   schemaKey: {
@@ -202,6 +211,14 @@ function resetSchemaKeyInput() {
 </script>
 
 <template>
+  <LxEmptyState
+    :label="`${texts.notFoundSearch} ${JSON.stringify(props.searchString)}`"
+    v-if="
+      !Object.keys(mainProps).length &&
+      !Object.keys(additionalProps).length &&
+      !Object.keys(modeProps).length
+    "
+  />
   <LxForm kind="stripped" v-if="Object.keys(mainProps).length">
     <LxRow
       v-for="(item, key) in mainProps"

@@ -6,7 +6,6 @@ import {
   LxButton,
   LxStack,
   builderRegistry,
-  LxViewBuilder,
   LxModal,
   LxToolbar,
   LxFileUploader,
@@ -16,6 +15,8 @@ import {
   LxIcon,
   LxDialog,
 } from '@dativa-lv/lx-ui';
+
+import LxViewBuilder from '@/components/ViewBuilder.vue';
 import { useWindowSize } from '@vueuse/core';
 import { getNewItemSchema } from '@/utils/constructorUtils';
 import Panel from '@/components/constructor/Panel.vue';
@@ -50,27 +51,27 @@ const textsDefault = {
   download: 'Lejupielādēt',
   copy: 'Kopēt',
   editSchemaModal: 'Struktūras labošana',
-  componentAddModal: 'Komponešu pievienošana',
+  componentAddModal: 'Komponenšu pievienošana',
   componentAddDescription:
     'Vai pievienot elementu iekš izvēlētā elementa vai aiz izvēlētā elementa?',
   componentAddInside: 'Pievienot kā apakšelementu',
   componentAddNext: 'Pievienot ārpus elementa',
   componentAddInsideDescription: 'Ievietot komponenti kā daļu no izvēlētā elementa',
-  componentAddNextDescription: 'Ievietot komponeti ārpus izvēlētā elementa',
-  importModal: 'Pievienošana no faila',
+  componentAddNextDescription: 'Ievietot komponenti ārpus izvēlētā elementa',
+  importModal: 'Pievienošana no datnes',
   importFile: 'Datnes augšupielāde',
   importText: 'Teksta ievade',
   editModelModal: 'Datu labošana',
   confirmDelete: 'Vai tiešām vēlaties dzēst šo komponenti?',
-  componentAddChoice: 'Izvēlies, kur pievienot komponenti',
+  componentAddChoice: 'Izvēlieties, kur pievienot komponenti',
   invalidJsonError: 'Nederīgs JSON objekts',
   parseJsonError: 'Kļūda, apstrādājot JSON saturu',
   schemaKeyEmptyError: 'Atslēga nedrīkst būt tukša',
-  schemaKeyParentError: 'Vecākelementis nav atrasts',
+  schemaKeyParentError: 'Vecākelements nav atrasts',
   schemaKeyDuplicateError: 'Atslēga "{0}" jau eksistē. Tai jābūt unikālai',
   schemaKeyUpdateError: 'Kļūda atslēgas atjaunināšanā. Mēģiniet vēlreiz!',
   export: 'Saglabāt struktūru',
-  import: 'Pievienot no faila',
+  import: 'Pievienot no datnes',
   editSchema: 'Labot struktūru',
   editModel: 'Labot datus',
   reportIssue: 'Ziņot par kļūdu',
@@ -84,6 +85,9 @@ const textsDefault = {
   resetKey: 'Atiestatīt',
   searchProps: 'Meklēt propus',
   searchComponents: 'Meklēt komponenti',
+  clear: 'Notīrīt',
+  noItems: 'Nav ierakstu',
+  notFoundSearch: 'Nav atrasts:',
   actionPanel: 'Darbību panelis',
   additionalLabel: 'Additional',
   modeLabel: 'Mode',
@@ -91,6 +95,21 @@ const textsDefault = {
   inputs: 'Ievadlauki',
   containers: 'Konteineri',
   edit: 'Labot',
+
+  fileUploader: {
+    clear: 'Notīrīt',
+    draggablePlaceholder: 'Ievelciet datnes, vai nospiediet šeit, lai augšupielādētu',
+    close: 'Aizvērt',
+    infoButton: 'Skatīt detaļas',
+    download: 'Lejupielādēt',
+    metaPreviewLabel: 'Priekšskatījums',
+    metaPreviewDescription: 'priekšskatījums',
+    metaMainLabel: 'Galvenie dati',
+    metaMainAuthor: 'Autors',
+    metaMainFormat: 'Formāts',
+    metaMainLastModified: 'Pēdējās izmaiņas',
+    metaMainDataSize: 'Datnes izmērs',
+  },
 };
 
 const displayTexts = computed(() => getDisplayTexts(props.texts, textsDefault));
@@ -620,7 +639,7 @@ function selectComponentBySchemaPath(newSchemaPath) {
 function initializeModelValueForAddedComponent(componentId, key, schemaContainerPath) {
   if (!key) return;
 
-  if (componentId === 'dateTimeRange') {
+  if (componentId === 'LxDateTimeRange') {
     const modelClone = lxFormatUtils.objectClone(model.value || {});
     const modelContainerPath = getModelPathFromSchemaPath(schemaContainerPath);
     setValueByPath(modelClone, [...modelContainerPath, key], {});
@@ -1027,7 +1046,7 @@ function decodeBase64Utf8(base64Value) {
 // Handles file upload from LxFileUploader component
 function fileUpload(file) {
   if (file?.length === 0) {
-    importFile.value = null;
+    importFile.value = [];
     fileContent.value = null;
     return;
   }
@@ -1395,6 +1414,7 @@ const schemaInfo = computed(() => {
           :draggable="true"
           :allowedFileExtensions="['.json']"
           dataType="content"
+          :texts="displayTexts?.fileUploader"
           @update:modelValue="fileUpload"
         />
       </div>

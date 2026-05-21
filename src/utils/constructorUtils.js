@@ -214,7 +214,6 @@ export function getLXComponents() {
       name: 'LxDateTimeRange',
       usageGroup: 'inputs',
     },
-
     {
       id: 'LxAutoComplete',
       name: 'LxAutoComplete',
@@ -273,6 +272,11 @@ export function getLXComponents() {
     {
       id: 'LxCamera',
       name: 'LxCamera',
+      usageGroup: 'inputs',
+    },
+    {
+      id: 'LxMarkdownTextArea',
+      name: 'LxMarkdownTextArea',
       usageGroup: 'inputs',
     },
   ];
