@@ -15,8 +15,8 @@ importers:
   .:
     dependencies:
       '@dativa-lv/lx-ui':
-        specifier: 2.1.10
-        version: 2.1.10(leaflet@1.9.4)(sortablejs@1.14.0)(typescript@5.9.3)(vue@3.5.17(typescript@5.9.3))
+        specifier: 2.1.11
+        version: 2.1.11(leaflet@1.9.4)(sortablejs@1.14.0)(typescript@5.9.3)(vue@3.5.17(typescript@5.9.3))
       '@vue/test-utils':
         specifier: ^2.4.3
         version: 2.4.6
@@ -342,8 +342,8 @@ packages:
     resolution: {integrity: sha512-Vd/9EVDiu6PPJt9yAh6roZP6El1xHrdvIVGjyBsHR0RYwNHgL7FJPyIIW4fANJNG6FtyZfvlRPpFI4ZM/lubvw==}
     engines: {node: '>=18'}
 
-  '@dativa-lv/lx-ui@2.1.10':
-    resolution: {integrity: sha512-/blcP1VqtH6GuVbKTAGgycJ5qj8xzAUIb/ME17uQpADzovxGhlQ1+K3ILkRltaeUJFy8b+HiGnAH18dryRrj7A==}
+  '@dativa-lv/lx-ui@2.1.11':
+    resolution: {integrity: sha512-zqtH5O9cQ3GLW9/SikDyaWBpc/8SbvQXNj7Ap84yadoU9qXT2EGzcoJ1bnMdwbp5JwtMWKS2jJvgw5WqYA4Ukw==}
     peerDependencies:
       vue: ^3.5.17
 
@@ -2142,8 +2142,8 @@ packages:
     resolution: {integrity: sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==}
     engines: {node: '>=10'}
 
-  exifreader@4.27.0:
-    resolution: {integrity: sha512-wrjtidE4MN5yQGI0ydeJm0Yw+HeCrziQGj5MccnHS0G+IyDoF8cyazKabXxj9F5LjXxqYTKiXm9nTYqvKAESzg==}
+  exifreader@4.38.1:
+    resolution: {integrity: sha512-VUQ8pnWJHpnQXPQLgx4XBwjhj+eE0f5t4KhVFn6BnnTYKLf79DfjVRntR5061qE9NZgx2ohvE+JLXe/FWfCaAA==}
 
   exit@0.1.2:
     resolution: {integrity: sha512-Zk/eNKV2zbjpKzrsQ+n1G6poVbErQxJ0LBOJXaKZ1EViLzH+hrLu9cdXI4zw9dBQJslwBEpbQ2P1oS7nDxs6jQ==}
@@ -4279,7 +4279,7 @@ snapshots:
   '@csstools/css-tokenizer@3.0.4':
     optional: true
 
-  '@dativa-lv/lx-ui@2.1.10(leaflet@1.9.4)(sortablejs@1.14.0)(typescript@5.9.3)(vue@3.5.17(typescript@5.9.3))':
+  '@dativa-lv/lx-ui@2.1.11(leaflet@1.9.4)(sortablejs@1.14.0)(typescript@5.9.3)(vue@3.5.17(typescript@5.9.3))':
     dependencies:
       '@braintree/sanitize-url': 7.1.1
       '@floating-ui/vue': 1.1.6(vue@3.5.17(typescript@5.9.3))
@@ -4308,7 +4308,7 @@ snapshots:
       c2pa: 0.22.6
       cyrillic-to-translit-js: 3.2.1
       date-fns: 4.0.0
-      exifreader: 4.27.0
+      exifreader: 4.38.1
       focus-trap: 7.6.4
       glob: 10.5.0
       i18n-iso-countries: 7.14.0
@@ -6358,7 +6358,7 @@ snapshots:
       signal-exit: 3.0.7
       strip-final-newline: 2.0.0
 
-  exifreader@4.27.0:
+  exifreader@4.38.1:
     optionalDependencies:
       '@xmldom/xmldom': 0.9.10
 
