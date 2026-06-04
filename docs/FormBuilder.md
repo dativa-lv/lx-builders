@@ -1369,7 +1369,7 @@ modelValue:
       showPrintButton: false,
       showFullScreenButton: true,
       primaryDownloadButton: false,
-      stickyHeader: true,
+      stickyToolbar: true,
       zoomLevel: null,
       downloadType: 'default',
       preloadLibs: [],

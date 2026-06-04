@@ -446,11 +446,7 @@ const builderOptions = computed(() => ({
   <LxDateTimePicker
     v-else-if="selectedComponent === 'dateTimePicker'"
     :id="`${id}-${name}`"
-    :kind="
-      displaySchema?.properties[name]?.format === 'date-time'
-        ? 'dateTime'
-        : displaySchema?.properties[name]?.format
-    "
+    :kind="displaySchema?.properties[name]?.format"
     :placeholder="examplesValue(displaySchema?.properties[name])"
     :tooltip="displaySchema?.properties[name]?.lx?.tooltip"
     :min-date="displaySchema?.properties[name]?.lx?.minDate"
@@ -721,7 +717,7 @@ const builderOptions = computed(() => ({
           />
           <LxDateTimePicker
             v-else-if="componentSelect(item, itemName) === 'dateTimePicker'"
-            :kind="item?.format === 'date-time' ? 'dateTime' : item?.format"
+            :kind="item?.format"
             :placeholder="examplesValue(item)"
             :tooltip="item?.lx?.tooltip"
             :min-date="item?.lx?.minDate"
@@ -947,7 +943,7 @@ const builderOptions = computed(() => ({
             />
             <LxDateTimePicker
               v-else-if="componentSelect(item, itemName) === 'dateTimePicker'"
-              :kind="item?.format === 'date-time' ? 'dateTime' : item?.format"
+              :kind="item?.format"
               :placeholder="examplesValue(item)"
               :tooltip="item?.lx?.tooltip"
               :min-date="item?.lx?.minDate"
@@ -1401,7 +1397,7 @@ const builderOptions = computed(() => ({
             />
             <LxDateTimePicker
               v-else-if="componentSelect(itemValue, itemName) === 'dateTimePicker'"
-              :kind="itemValue?.format === 'date-time' ? 'dateTime' : itemValue?.format"
+              :kind="itemValue?.format"
               :placeholder="examplesValue(itemValue)"
               :tooltip="itemValue?.lx?.tooltip"
               :min-date="itemValue?.lx?.minDate"
@@ -1929,7 +1925,7 @@ const builderOptions = computed(() => ({
             />
             <LxDateTimePicker
               v-else-if="componentSelect(itemValue, itemName) === 'dateTimePicker'"
-              :kind="itemValue?.format === 'date-time' ? 'dateTime' : itemValue?.format"
+              :kind="itemValue?.format"
               :placeholder="examplesValue(itemValue)"
               :tooltip="itemValue?.lx?.tooltip"
               :min-date="itemValue?.lx?.minDate"
@@ -2119,9 +2115,7 @@ const builderOptions = computed(() => ({
                         componentSelect(appendableItem, appendableItemName) === 'dateTimePicker'
                       "
                       :id="`${name}-${appendableItemName}-${index}`"
-                      :kind="
-                        appendableItem?.format === 'date-time' ? 'dateTime' : appendableItem?.format
-                      "
+                      :kind="appendableItem?.format"
                       :placeholder="examplesValue(appendableItem)"
                       :tooltip="appendableItem?.lx?.tooltip"
                       :min-date="appendableItem?.lx?.minDate"
@@ -2366,7 +2360,7 @@ const builderOptions = computed(() => ({
           <LxDateTimePicker
             v-else-if="componentSelect(appendableItem, appendableItemName) === 'dateTimePicker'"
             :id="`${name}-${appendableItemName}-${index}`"
-            :kind="appendableItem?.format === 'date-time' ? 'dateTime' : appendableItem?.format"
+            :kind="appendableItem?.format"
             :placeholder="examplesValue(appendableItem)"
             :tooltip="appendableItem?.lx?.tooltip"
             :min-date="appendableItem?.lx?.minDate"
@@ -2612,7 +2606,7 @@ const builderOptions = computed(() => ({
         </LxToggle>
         <LxDateTimePicker
           v-else-if="componentSelect(row?.items, name) === 'dateTimePicker'"
-          :kind="row?.items?.format === 'date-time' ? 'dateTime' : row?.items?.format"
+          :kind="row?.items?.format"
           :tooltip="row?.items?.lx?.tooltip"
           :placeholder="examplesValue(row?.items)"
           :min-date="row?.items?.lx?.minDate"
@@ -2879,11 +2873,7 @@ const builderOptions = computed(() => ({
     :id="`${id}-${name}`"
     v-model:startDate="model[name].startDate"
     v-model:endDate="model[name].endDate"
-    :kind="
-      displaySchema?.properties[name]?.format === 'date-time'
-        ? 'dateTime'
-        : displaySchema?.properties[name]?.format
-    "
+    :kind="displaySchema?.properties[name]?.format"
     :placeholder="examplesValue(displaySchema?.properties[name])"
     :tooltip="displaySchema?.properties[name]?.lx?.tooltip"
     :minDate="displaySchema?.properties[name]?.lx?.minDate"
@@ -3072,7 +3062,7 @@ const builderOptions = computed(() => ({
     :showPrintButton="displaySchema?.properties[name]?.lx?.showPrintButton"
     :showFullScreenButton="displaySchema?.properties[name]?.lx?.showFullScreenButton"
     :primaryDownloadButton="displaySchema?.properties[name]?.lx?.primaryDownloadButton"
-    :stickyHeader="displaySchema?.properties[name]?.lx?.stickyHeader"
+    :stickyToolbar="displaySchema?.properties[name]?.lx?.stickyToolbar"
     :zoomLevel="displaySchema?.properties[name]?.lx?.zoomLevel"
     :downloadType="displaySchema?.properties[name]?.lx?.downloadType"
     :preloadLibs="displaySchema?.properties[name]?.lx?.preloadLibs"

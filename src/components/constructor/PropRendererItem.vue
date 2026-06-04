@@ -57,6 +57,10 @@ const availableIcons = computed(() =>
   lxIconUtils.getAvailableIcons('cds')?.map((i) => ({ id: i, name: i }))
 );
 
+function getAvailableIconsByIconSet(iconSet = 'cds') {
+  return lxIconUtils.getAvailableIcons(iconSet || 'cds')?.map((i) => ({ id: i, name: i }));
+}
+
 function isPropNumber(data) {
   return (
     data.type.name === 'Number' ||
@@ -264,11 +268,11 @@ function getValuePickerVariant(options) {
             />
           </LxRow>
           <LxRow label="icon" columnSpan="2">
-            <LxAutoComplete v-model="item.icon" :items="availableIcons">
-              <template #customItem="item">
+            <LxAutoComplete v-model="item.icon" :items="getAvailableIconsByIconSet(item?.iconSet)">
+              <template #customItem="iconItem">
                 <div class="custom-auto-complete-item-with-icon lx-item-display">
-                  <LxIcon :value="item.name" />
-                  <p>{{ item.name }}</p>
+                  <LxIcon :value="iconItem.name" :iconSet="item?.iconSet || 'cds'" />
+                  <p>{{ iconItem.name }}</p>
                 </div>
               </template>
             </LxAutoComplete>
@@ -291,8 +295,8 @@ function getValuePickerVariant(options) {
                   name: 'brand',
                 },
                 {
-                  id: 'additional',
-                  name: 'additional',
+                  id: 'phosphor',
+                  name: 'phosphor',
                 },
               ]"
             />
@@ -386,11 +390,14 @@ function getValuePickerVariant(options) {
               <LxTextInput v-model="item.name" />
             </LxRow>
             <LxRow label="icon">
-              <LxAutoComplete v-model="item.icon" :items="availableIcons">
-                <template #customItem="item">
+              <LxAutoComplete
+                v-model="item.icon"
+                :items="getAvailableIconsByIconSet(item?.iconSet)"
+              >
+                <template #customItem="iconItem">
                   <div class="custom-auto-complete-item-with-icon lx-item-display">
-                    <LxIcon :value="item.name" />
-                    <p>{{ item.name }}</p>
+                    <LxIcon :value="iconItem.name" :iconSet="item?.iconSet || 'cds'" />
+                    <p>{{ iconItem.name }}</p>
                   </div>
                 </template>
               </LxAutoComplete>
@@ -413,8 +420,8 @@ function getValuePickerVariant(options) {
                     name: 'brand',
                   },
                   {
-                    id: 'additional',
-                    name: 'additional',
+                    id: 'phosphor',
+                    name: 'phosphor',
                   },
                 ]"
               />

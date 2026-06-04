@@ -33,42 +33,51 @@
   fill: var(--color-nav-foreground);
 }
 
+.lx-panel > .panel-side .config-header .lx-dropdown-toggler .header-wrapper:has(p) {
+  cursor: pointer;
+}
+
 .lx-panel > .panel-side .panel-main > .button-group {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  border: 1px solid var(--color-chrome);
+  border: var(--border-width-1) solid var(--color-chrome);
+  border-right: none;
 }
 
 .lx-panel > .panel-side .settings-wrapper{
-  padding: 0.75rem ;
+  padding: var(--space-0750);
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--space-0750);
 }
 
 .lx-panel > .panel-side .panel-main > .button-group > .lx-button {
   --color-button-secondary-background: var(--color-region-2);
   --color-button-secondary-text: var(--color-data);
   --color-button-secondary-icon: var(--color-data);
-  --button-secondary-border: 2px solid transparent;
+  --button-secondary-border: var(--border-width-2) solid transparent;
 }
 
-.lx-panel > .panel-side  .button-group > .lx-button:first-child::before{
+.lx-panel > .panel-side  .button-group > .lx-button:first-child::after{
   position: absolute;
   content: " ";
   height: 2rem;
-  left: 7.75rem;
-  border-right: 1px solid var(--color-chrome);
+  right: 0;
+  border-right: var(--border-width-1) solid var(--color-chrome);
   opacity: 1;
   transition: opacity .1s ease-out;
-  z-index: 0;
+  z-index: 1;
+}
+
+.lx-panel > .panel-side  .button-group > .lx-button:first-child:hover:not(.lx-disabled)::after{
+  opacity: 0;
 }
 
 .lx-panel {
   position: fixed;
-  top: 10vh;
+  top: calc(var(--nav-row-size) + 10vh);
   z-index: 1000;
-    right: 0;
+  right: 0;
   display: flex;
   flex-direction: row-reverse;
 }
@@ -87,7 +96,7 @@
 .highlight {
   position: absolute;
   box-sizing: border-box;
-  border: 2px solid var(--color-blue);
+  border: var(--border-width-2) solid var(--color-blue);
   background: transparent;
   z-index: 100;
   pointer-events: none;
@@ -105,7 +114,7 @@
 }
 
 .highlight .highlight-toolbar > span{
-  padding-inline: 0.25rem;
+  padding-inline: var(--space-0250);
   color: white; /* TODO: fix */
 }
 
@@ -120,11 +129,11 @@
 }
 
 .lx:not(.lx-theme-contrast) .lx-panel .panel-side{
-  --region-border-transparent: 1px solid var(--color-chrome);
+  --region-border-transparent: var(--border-width-1) solid var(--color-chrome);
 }
 
 .lx.lx-no-transparency .lx-panel .panel-side {
-  --shadow-dropdown: inset 0 0 0 1px var(--color-chrome);
+  --shadow-dropdown: inset 0 0 0 var(--border-width-1) var(--color-chrome);
 }
 
 .lx-panel .panel-side {
@@ -143,12 +152,11 @@
 }
 
 .no-component-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  padding: 2rem 1rem;
+  padding: var(--space-0250);
+}
+
+.no-component-wrapper > .lx-empty-state-wrapper{
+  width: 100%;
 }
 
 .panel-main .lx-form-grid>.lx-main .lx-row {
@@ -158,7 +166,7 @@
 .code-display > .code {
   white-space: pre;
   font-family: var(--font-family-mono);
-  padding: 2rem;
+  padding: var(--space-2000);
   grid-column: 1 / 3;
   overflow: auto;
   background-color: var(--color-region-2);
@@ -166,7 +174,7 @@
 }
 
 .import-switcher {
-  padding-bottom: 1rem;  
+  padding-bottom: var(--space-1000);  
 }
 
 .highlight .highlight-toolbar-remove {
@@ -195,4 +203,38 @@
 .custom-auto-complete-item-with-icon svg {
   width: 1.5rem;
   height: 1.5rem;
+}
+
+.component-add-text {
+  margin-bottom: var(--space-1000);
+}
+
+.lx-panel > .panel-side .config-header.has-selected-element {
+  background-color: var(--color-blue);
+  cursor: pointer;
+}
+
+.lx-panel > .panel-side .config-header.has-selected-element:hover {
+  background-color: var(--color-interactive-hover-background);
+}
+
+.lx-panel>.button-side>.lx-button {
+  --color-button-secondary-background: var(--color-nav-background);
+  --color-button-secondary-background-hover: var(--color-interactive-hover-background);
+  --color-button-active-mode-background: var(--color-nav-item-background-selected);
+  --color-button-secondary-icon: var(--color-nav-foreground);
+  --color-button-active-mode-icon: var(--color-nav-item-icon-selected);
+  --button-secondary-border: var(--button-secondary-border-width) solid transparent;
+}
+
+.lx-panel > .panel-side .prop-search {
+  border-left: var(--border-width-1) solid var(--color-chrome);
+}
+
+.lx-panel > .panel-side .config-header.has-selected-element .header-wrapper p {
+  color: var(--color-focus-foreground);
+}
+
+.lx-panel > .panel-side .config-header.has-selected-element .header-wrapper svg {
+  fill: var(--color-focus-foreground);
 }

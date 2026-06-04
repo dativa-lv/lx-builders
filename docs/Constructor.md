@@ -9,8 +9,8 @@ Support for additional components and more layout options will be added later.
 ## Requirements
 
 - Vue (v3.5.17 or later)
-- @dativa-lv/lx-ui (v2.1.7) 
-- @dativa-lv/lx-builders (v2.1.8)
+- @dativa-lv/lx-ui (v2.1.7 or later) 
+- @dativa-lv/lx-builders (v2.1.8 or later)
 
 To use Constructor locally, make sure your project includes the required Vue and LX dependencies.
 
@@ -55,12 +55,12 @@ npm create vue@latest
 
 Install the lx-ui library:
 ```bash
-npm install @dativa-lv/lx-ui@2.1.7
+npm install @dativa-lv/lx-ui@latest
 ```
 
 Install the lx-builders library:
 ```bash
-npm install @dativa-lv/lx-builders@2.1.8
+npm install @dativa-lv/lx-builders@latest
 ```
 
 Start the project:

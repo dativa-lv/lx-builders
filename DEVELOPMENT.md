@@ -20,7 +20,7 @@
 
 ## Setup
 
-1. Clone **[lx/ui](https://github.com/wntrtech/builders)** repository
+1. Clone **[lx/builders](https://github.com/wntrtech/builders)** repository
 2. Run `pnpm install` to install all dependencies
 3. Run `pnpm build` to build the package
 

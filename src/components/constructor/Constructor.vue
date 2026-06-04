@@ -42,8 +42,8 @@ const textsDefault = {
   next: 'Pārvietot uz priekšu',
   delete: 'Dzēst',
   exportModal: 'Saglabāšana',
-  moveOutside: 'Pārvietot ārā',
-  moveInside: 'Pārvietot iekšā',
+  moveOutside: 'Izvietot ārpusē',
+  moveInside: 'Ievietot iekšpusē',
   close: 'Aizvērt',
   save: 'Saglabāt',
   yes: 'Jā',
@@ -54,8 +54,8 @@ const textsDefault = {
   componentAddModal: 'Komponenšu pievienošana',
   componentAddDescription:
     'Vai pievienot elementu iekš izvēlētā elementa vai aiz izvēlētā elementa?',
-  componentAddInside: 'Pievienot kā apakšelementu',
-  componentAddNext: 'Pievienot ārpus elementa',
+  componentAddInside: 'Ievietot iekšpusē',
+  componentAddNext: 'Izvietot ārpusē',
   componentAddInsideDescription: 'Ievietot komponenti kā daļu no izvēlētā elementa',
   componentAddNextDescription: 'Ievietot komponenti ārpus izvēlētā elementa',
   importModal: 'Pievienošana no datnes',
@@ -63,6 +63,9 @@ const textsDefault = {
   importText: 'Teksta ievade',
   editModelModal: 'Datu labošana',
   confirmDelete: 'Vai tiešām vēlaties dzēst šo komponenti?',
+  confirmImport: 'Vai tiešām vēlaties pievienot datni?',
+  confirmImportDescription:
+    'Esošā struktūra tiks aizvietota ar pievienoto un visi nesaglabātie dati tiks zaudēti',
   componentAddChoice: 'Izvēlieties, kur pievienot komponenti',
   invalidJsonError: 'Nederīgs JSON objekts',
   parseJsonError: 'Kļūda, apstrādājot JSON saturu',
@@ -70,9 +73,9 @@ const textsDefault = {
   schemaKeyParentError: 'Vecākelements nav atrasts',
   schemaKeyDuplicateError: 'Atslēga "{0}" jau eksistē. Tai jābūt unikālai',
   schemaKeyUpdateError: 'Kļūda atslēgas atjaunināšanā. Mēģiniet vēlreiz!',
-  export: 'Saglabāt struktūru',
-  import: 'Pievienot no datnes',
-  editSchema: 'Labot struktūru',
+  export: 'Saglabāt',
+  import: 'Atvērt',
+  editSchema: 'Labot shēmu',
   editModel: 'Labot datus',
   reportIssue: 'Ziņot par kļūdu',
   reset: 'Atiestatīt vērtības',
@@ -88,10 +91,11 @@ const textsDefault = {
   clear: 'Notīrīt',
   noItems: 'Nav ierakstu',
   notFoundSearch: 'Nav atrasts:',
+  notFoundProps: 'Nav atrasts',
   actionPanel: 'Darbību panelis',
   additionalLabel: 'Additional',
   modeLabel: 'Mode',
-  noComponentSelected: 'Nav izvēlēts neviens elements',
+  noComponentSelected: 'Nav izvēlēts elements',
   inputs: 'Ievadlauki',
   containers: 'Konteineri',
   edit: 'Labot',
@@ -116,7 +120,7 @@ const displayTexts = computed(() => getDisplayTexts(props.texts, textsDefault));
 
 const model = ref({});
 
-const emits = defineEmits(['update:schema', 'update:modelValue', 'error']);
+const emits = defineEmits(['update:schema', 'update:modelValue', 'error', 'schemaCopy']);
 
 const schemaModel = computed({
   get() {
@@ -180,6 +184,18 @@ const isUploadable = computed(() => !fileContent.value);
 const componentAddModal = ref(null);
 const componentToAdd = ref(null);
 const schemaKeyError = ref(null);
+
+const panelTabl = ref(null);
+
+const confirmDialog = ref();
+
+const confirmDialogObject = ref({
+  label: null,
+  description: null,
+  kind: 'danger',
+  primaryAction: null,
+  secondaryAction: null,
+});
 
 const elementInfo = ref({
   canMoveBack: false, // can move before previous sibling
@@ -265,6 +281,20 @@ function hasContainerProperties(item) {
   return Object.values(item.properties).some((child) => getItemDisplayType(child) === 'section');
 }
 
+function checkIfInsideFilterSection(navigationStack) {
+  if (!Array.isArray(navigationStack)) return false;
+
+  const navigationNames = navigationStack.map((item) => item?.name);
+  const filtersIndex = navigationNames.indexOf('LxFilters');
+
+  if (filtersIndex < 0) return false;
+
+  const formIndex = navigationNames.indexOf('LxForm', filtersIndex + 1);
+  if (formIndex < 0) return false;
+
+  return navigationNames.indexOf('LxSection', formIndex + 1) >= 0;
+}
+
 // Updated infomration about the currenly selected element:
 // Can it be moved to left or right, can it be moved outside or inside and more
 function getPositionInfo(schema, currentSchema) {
@@ -292,7 +322,8 @@ function getPositionInfo(schema, currentSchema) {
   elementInfo.value.canMoveForward = !!nextKey;
 
   // Move inside is allowed only forward
-  elementInfo.value.canMoveForwardIn = hasContainerProperties(nextSchema);
+  elementInfo.value.canMoveForwardIn =
+    hasContainerProperties(nextSchema) && componentName.value !== 'LxSection';
 
   const grandParentPath = parentPath?.includes('.')
     ? parentPath?.split('.')?.slice(0, -1).join('.')
@@ -300,7 +331,7 @@ function getPositionInfo(schema, currentSchema) {
   const parentKey = parentPath?.split('.')?.slice(-1)[0] || null;
   const canMoveOut = !!parentPath && !!parentKey && !!grandParentPath;
 
-  elementInfo.value.moveOut = canMoveOut;
+  elementInfo.value.moveOut = canMoveOut && !checkIfInsideFilterSection(navigation.value);
 }
 
 // Listens for click on the constructor area
@@ -355,6 +386,9 @@ function clickEventListener() {
 
     // Update information about selected element
     getPositionInfo(schemaModel.value, currentItem.value);
+
+    // Open the tab with component configuration
+    panelTabl.value = 'config';
   });
 }
 
@@ -445,6 +479,40 @@ function getUniqueKeyForLevel(preferredKey, levelProperties) {
   return generatedKey;
 }
 
+// Gets the modeLValue value from the provided path
+function getModelPathFromSchemaPath(schemaPathArray) {
+  if (!Array.isArray(schemaPathArray)) return [];
+
+  return schemaPathArray.filter((pathPart) => pathPart !== 'properties');
+}
+
+// Gets the modelValue path from the current schemaPath
+function getSchemaPathFromPositionPath(positionPath) {
+  return getModelPathFromSchemaPath(positionPath).join('.');
+}
+
+// Makes component selected based on provided schemaPath
+function selectComponentBySchemaPath(newSchemaPath) {
+  if (!newSchemaPath) return;
+
+  nextTick(() => {
+    const registryItems = Array.from(builderRegistry.all().entries());
+    const targetEntry = registryItems.find(([, item]) => item?.builderName === newSchemaPath);
+    if (!targetEntry) return;
+
+    const [itemId] = targetEntry;
+
+    let elem = document.querySelector(`[data-id="${itemId}"]`);
+    if (!elem) {
+      elem = document.getElementById(`${itemId}-wrapper`) || document.getElementById(itemId);
+    }
+
+    if (elem) {
+      elem.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    }
+  });
+}
+
 function moveElementInside() {
   if (!schemaPath.value) return;
 
@@ -509,6 +577,9 @@ function moveElementInside() {
   }
 
   schemaModel.value = schemaClone;
+
+  const movedSchemaPath = [targetContainerPath, movedKey].filter(Boolean).join('.');
+  selectComponentBySchemaPath(movedSchemaPath);
 }
 
 // Moves element outside of current container
@@ -599,40 +670,10 @@ function moveElementOutside(position) {
   }
 
   schemaModel.value = schemaClone;
-}
 
-// Gets the modeLValue value from the provided path
-function getModelPathFromSchemaPath(schemaPathArray) {
-  if (!Array.isArray(schemaPathArray)) return [];
-
-  return schemaPathArray.filter((pathPart) => pathPart !== 'properties');
-}
-
-// Gets the modelValue path from the current schemaPath
-function getSchemaPathFromPositionPath(positionPath) {
-  return getModelPathFromSchemaPath(positionPath).join('.');
-}
-
-// Makes component selected based on provided schemaPath
-function selectComponentBySchemaPath(newSchemaPath) {
-  if (!newSchemaPath) return;
-
-  nextTick(() => {
-    const registryItems = Array.from(builderRegistry.all().entries());
-    const targetEntry = registryItems.find(([, item]) => item?.builderName === newSchemaPath);
-    if (!targetEntry) return;
-
-    const [itemId] = targetEntry;
-
-    let elem = document.querySelector(`[data-id="${itemId}"]`);
-    if (!elem) {
-      elem = document.getElementById(`${itemId}-wrapper`) || document.getElementById(itemId);
-    }
-
-    if (elem) {
-      elem.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-    }
-  });
+  const outsideSchemaPath = getSchemaPathFromPositionPath(outsideContainerSchemaPath);
+  const movedSchemaPath = [outsideSchemaPath, movedKey].filter(Boolean).join('.');
+  selectComponentBySchemaPath(movedSchemaPath);
 }
 
 // Initializes the modelValue for the newly added component
@@ -824,12 +865,18 @@ function openAddComponentOptions(id) {
     addComponentInside(id);
   } else if (
     componentName.value === 'LxForm' ||
-    componentName.value === 'LxFilters' ||
+    // componentName.value === 'LxFilters' ||
     componentName.value === 'LxSection'
   ) {
     if (id === 'LxSection') {
       addComponentInside(id);
-    } else componentAddModal.value.open();
+    } else if (navigation.value.some((nav) => nav.name === 'LxFilters')) {
+      // If LxSection is inside LxFilters then component can be added only inside it
+      addComponentInside(id);
+    } else {
+      // Else have option to add it inside or outside
+      componentAddModal.value.open();
+    }
   } else addComponent(id);
 }
 
@@ -927,6 +974,10 @@ function duplicateCurrentComponent() {
   const schemaClone = lxFormatUtils.objectClone(schemaModel.value);
   setValueByPath(schemaClone, positionPath, positionValue);
   schemaModel.value = schemaClone;
+
+  const parentSchemaPath = getSchemaPathFromPositionPath(positionPath);
+  const duplicatedSchemaPath = [parentSchemaPath, newKey].filter(Boolean).join('.');
+  selectComponentBySchemaPath(duplicatedSchemaPath);
 }
 
 // Moves the selected component up of down in schema in the same nesting level
@@ -993,6 +1044,7 @@ function exportClicked() {
 
 function copySchema() {
   navigator.clipboard.writeText(JSON.stringify(schemaModel.value, null, 2));
+  emits('schemaCopy');
 }
 
 // Saves the current schema as .json file
@@ -1063,6 +1115,15 @@ function fileUpload(file) {
   fileContent.value = text;
 }
 
+function clearSelectedElement() {
+  highlight.value.visible = false;
+  componentName.value = null;
+  navigation.value = [];
+  currentItem.value = null;
+  resetNextElementInfo();
+  resetLowerNestingInfo();
+}
+
 // Handles import modal actions
 function importActionClicked(actionId) {
   if (actionId === 'save' && fileContent.value) {
@@ -1077,10 +1138,40 @@ function importActionClicked(actionId) {
       const parsed = JSON.parse(fileContent.value);
       schemaModel.value = parsed;
       importModal.value.close();
+
+      // Clear selection after import
+      clearSelectedElement();
     } catch (e) {
       importInvalidMessage.value = displayTexts.value?.errorParsingJsonContent;
       emits('error', 'Error parsing JSON content');
     }
+  }
+}
+
+const importFileSave = ref(null);
+
+function confirmFileImport(actionId) {
+  if (actionId === 'save' && fileContent.value) {
+    importFileSave.value = importFile.value;
+    importModal.value.close();
+    confirmDialogObject.value = {
+      label: displayTexts.value?.confirmImport,
+      description: displayTexts.value?.confirmImportDescription,
+      kind: 'question',
+      primaryAction: () => {
+        importFile.value = importFileSave.value;
+        fileUpload(importFileSave.value);
+        importActionClicked('save');
+        confirmDialog.value.close();
+      },
+      secondaryAction: () => {
+        confirmDialog.value.close();
+        importModal.value.open();
+        importFile.value = importFileSave.value;
+        fileUpload(importFileSave.value);
+      },
+    };
+    confirmDialog.value.open();
   }
 }
 
@@ -1172,10 +1263,18 @@ watch(
   }
 );
 
-const confirmDialog = ref();
-
 // Opens the confirmation dialog for component removal
 function openRemoveComponentConfirmation() {
+  confirmDialogObject.value = {
+    label: displayTexts.value?.confirmDelete,
+    description: null,
+    kind: 'warning',
+    primaryAction: () => {
+      removeCurrentComponent();
+      confirmDialog.value.close();
+    },
+    secondaryAction: null,
+  };
   confirmDialog.value.open();
 }
 
@@ -1272,7 +1371,17 @@ const schemaInfo = computed(() => {
   const hasFilters = Object.values(schemaModel.value?.properties || {}).some(
     (prop) => prop.type === 'object' && prop.lx?.displayType === 'filters'
   );
-  return { hasForm, hasFilters };
+  const isSectionInFilterForm =
+    hasFilters &&
+    Object.values(schemaModel.value?.properties || {}).some(
+      (prop) =>
+        prop.type === 'object' &&
+        prop.lx?.displayType === 'filters' &&
+        Object.values(prop.properties || {}).some(
+          (childProp) => childProp.type === 'object' && childProp.lx?.displayType === 'section'
+        )
+    );
+  return { hasForm, hasFilters, isSectionInFilterForm };
 });
 </script>
 <template>
@@ -1339,6 +1448,7 @@ const schemaInfo = computed(() => {
       :schemaKey="schemaKey"
       :schemaKeyError="schemaKeyError"
       :schemaInfo="schemaInfo"
+      v-model:selectedTab="panelTabl"
       :texts="displayTexts"
       @update:componentModel="updateSchemaFromPanel"
       @componentAdd="openAddComponentOptions"
@@ -1390,7 +1500,7 @@ const schemaInfo = computed(() => {
         { id: 'save', name: displayTexts?.save, kind: 'primary', disabled: isUploadable },
         { id: 'close', name: displayTexts?.close, kind: 'secondary' },
       ]"
-      @actionClick="importActionClicked"
+      @actionClick="confirmFileImport"
       @close="
         () => {
           importFile = null;
@@ -1451,7 +1561,7 @@ const schemaInfo = computed(() => {
       :label="displayTexts?.componentAddModal"
       :description="displayTexts?.componentAddModalDescription"
     >
-      {{ displayTexts?.componentAddChoice }}
+      <p class="component-add-text">{{ displayTexts?.componentAddChoice }}</p>
       <LxList
         :items="[
           {
@@ -1504,14 +1614,23 @@ const schemaInfo = computed(() => {
 
     <LxDialog
       ref="confirmDialog"
-      :label="displayTexts?.confirmDelete"
-      kind="warning"
+      :label="confirmDialogObject?.label"
+      :description="confirmDialogObject?.description"
+      :kind="confirmDialogObject?.kind"
       :actionDefinitions="[
         { id: 'save', name: displayTexts?.yes, kind: 'primary' },
         { id: 'cancel', name: displayTexts?.no, kind: 'secondary' },
       ]"
-      :buttonSecondaryIsCancel="true"
-      @actionClick="removeCurrentComponent(), confirmDialog.close()"
+      :buttonSecondaryIsCancel="confirmDialogObject?.secondaryAction ? false : true"
+      @actionClick="
+        (actionId) => {
+          if (actionId === 'save' && confirmDialogObject?.primaryAction) {
+            confirmDialogObject.primaryAction();
+          } else if (actionId === 'cancel' && confirmDialogObject?.secondaryAction) {
+            confirmDialogObject.secondaryAction();
+          }
+        }
+      "
     />
   </div>
 </template>

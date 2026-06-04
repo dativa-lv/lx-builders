@@ -44,7 +44,6 @@ test('LxFormBuilder with one row', async () => {
   });
   await flushPromises();
   // process.stdout.write(`${wrapper.html()}\n`);
-  console.log(wrapper.html());
   expect(wrapper.find('.lx-row').exists()).toBe(true);
 });
 

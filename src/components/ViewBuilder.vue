@@ -145,6 +145,7 @@ function addDefaultValues() {
       if (
         (value?.properties && value?.lx?.displayType === 'stack') ||
         value?.lx?.displayType === 'form' ||
+        value?.lx?.displayType === 'section' ||
         value?.items?.properties
       ) {
         // eslint-disable-next-line no-param-reassign
@@ -600,7 +601,7 @@ defineExpose({ validateModel, clearValidations });
           :useDefaults="row?.lx?.useDefaults"
           :label="row?.title"
           :description="row?.description"
-          :usesFilter="row?.lx?.usesFilter"
+          :usesFilters="row?.lx?.usesFilters"
           :filterButtonKind="row?.lx?.filterButtonKind"
           :expanded="row?.lx?.expanded"
           :disabled="row?.lx?.disabled"

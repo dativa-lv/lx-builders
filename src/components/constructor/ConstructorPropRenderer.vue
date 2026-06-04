@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, nextTick } from 'vue';
 import {
   LxForm,
   LxRow,
@@ -33,6 +33,10 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  navigation: {
+    type: Array,
+    default: () => [],
+  },
   texts: {
     type: Object,
     default: () => ({
@@ -43,6 +47,7 @@ const props = defineProps({
       close: 'Aizvērt',
       edit: 'Labot',
       notFoundSearch: 'Nav atrasts:',
+      notFoundProps: 'Nav atrasts',
     }),
   },
   schemaKey: {
@@ -77,7 +82,7 @@ const compModel = computed({
 
 function getNonPropItems(componentName) {
   // Define non-prop items for specific components
-  if (componentName === 'LxForm') {
+  if (componentName === 'LxForm' && !props.navigation?.some((nav) => nav?.name === 'LxFilters')) {
     const res = {
       header: {
         name: 'header',
@@ -136,6 +141,47 @@ function filterByGroup(object, group) {
   return Object.fromEntries(searched);
 }
 
+function filterMainProps(propValues, component) {
+  if (component === 'LxForm' && props.navigation?.some((nav) => nav?.name === 'LxFilters')) {
+    return {};
+  }
+  if (component === 'LxSection' && props.navigation?.some((nav) => nav?.name === 'LxFilters')) {
+    const { columnCount } = propValues;
+    return columnCount ? { columnCount } : {};
+  }
+  return propValues;
+}
+
+function filterAdditionalProps(propValues, component) {
+  if (component === 'LxForm' && props.navigation?.some((nav) => nav?.name === 'LxFilters')) {
+    return {};
+  }
+  if (component === 'LxSection' && props.navigation?.some((nav) => nav?.name === 'LxFilters')) {
+    return {};
+  }
+  return propValues;
+}
+
+const hasSchemaKeyEdit = computed(() => {
+  if (!props.componentName) return false;
+  if (
+    props.componentName === 'LxForm' &&
+    props.navigation?.some((nav) => nav?.name === 'LxFilters')
+  ) {
+    return false;
+  }
+  if (props.componentName === 'LxViewLayout') return false;
+  return true;
+});
+
+const isSchemaKeyVisible = computed(() => {
+  if (!hasSchemaKeyEdit.value) return false;
+  if (props.searchString) {
+    return 'schemaKey'?.includes(props.searchString?.toLowerCase());
+  }
+  return true;
+});
+
 const mainProps = computed(() => {
   const res = filterByGroup(props.componentPropsDefinitions, 'main');
 
@@ -145,11 +191,14 @@ const mainProps = computed(() => {
     return { ...res, ...nonPropItems };
   }
 
-  return res;
+  return filterMainProps(res, props.componentName);
 });
 
 const additionalProps = computed(() =>
-  filterByGroup(props.componentPropsDefinitions, 'additional')
+  filterAdditionalProps(
+    filterByGroup(props.componentPropsDefinitions, 'additional'),
+    props.componentName
+  )
 );
 const modeProps = computed(() => filterByGroup(props.componentPropsDefinitions, 'mode'));
 
@@ -179,7 +228,23 @@ function updateFormHeader(key, value) {
     };
   }
 
+  if (key === 'preHeaderInfo') {
+    updatedModel.lx.showPreHeaderInfo = !compModel.value.lx.showPreHeaderInfo;
+  } else if (key === 'postHeaderInfo') {
+    updatedModel.lx.showPostHeaderInfo = !compModel.value.lx.showPostHeaderInfo;
+  }
+
   compModel.value = updatedModel;
+
+  // Fix for the preHeaderInfo and postHeaderInfo slots not showing after updating them from null
+  nextTick(() => {
+    if (key === 'preHeaderInfo') {
+      updatedModel.lx.showPreHeaderInfo = !compModel.value.lx.showPreHeaderInfo;
+    } else if (key === 'postHeaderInfo') {
+      updatedModel.lx.showPostHeaderInfo = !compModel.value.lx.showPostHeaderInfo;
+    }
+    compModel.value = updatedModel;
+  });
 }
 
 function getFormHeaderValue(item, key) {
@@ -212,11 +277,16 @@ function resetSchemaKeyInput() {
 
 <template>
   <LxEmptyState
-    :label="`${texts.notFoundSearch} ${JSON.stringify(props.searchString)}`"
+    :label="
+      searchString
+        ? `${texts.notFoundSearch} ${JSON.stringify(props.searchString)}`
+        : texts.notFoundProps
+    "
     v-if="
       !Object.keys(mainProps).length &&
       !Object.keys(additionalProps).length &&
-      !Object.keys(modeProps).length
+      !Object.keys(modeProps).length &&
+      !isSchemaKeyVisible
     "
   />
   <LxForm kind="stripped" v-if="Object.keys(mainProps).length">
@@ -244,17 +314,10 @@ function resetSchemaKeyInput() {
   </LxForm>
   <LxExpander
     :label="texts.additionalLabel"
-    v-if="
-      Object.keys(additionalProps).length ||
-      (componentName && componentName !== 'LxViewLayout' && !searchString) ||
-      (searchString && 'schemaKey'?.includes(searchString?.toLowerCase()))
-    "
+    v-if="Object.keys(additionalProps).length || isSchemaKeyVisible"
   >
     <LxForm kind="stripped">
-      <LxRow
-        label="schemaKey"
-        v-if="!searchString || (searchString && 'schemaKey'?.includes(searchString?.toLowerCase()))"
-      >
+      <LxRow label="schemaKey" v-if="isSchemaKeyVisible">
         <LxStack orientation="horizontal" kind="compact">
           <LxTextInput
             :key="schemaKeyRender"

@@ -7,6 +7,7 @@ import {
   LxTextInput,
   LxList,
   lxFormatUtils,
+  LxEmptyState,
 } from '@dativa-lv/lx-ui';
 
 import { useDebounceFn } from '@vueuse/core';
@@ -47,6 +48,10 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  selectedTab: {
+    type: String,
+    default: null,
+  },
   texts: {
     type: Object,
     default: () => ({}),
@@ -54,9 +59,9 @@ const props = defineProps({
 });
 
 const textsDefault = {
-  export: 'Saglabāt struktūru',
-  import: 'Pievienot no faila',
-  editSchema: 'Labot struktūru',
+  export: 'Saglabāt',
+  import: 'Atvērt',
+  editSchema: 'Labot shēmu',
   editModel: 'Labot datus',
   reportIssue: 'Ziņot par kļūdu',
   reset: 'Atiestatīt vērtības',
@@ -73,11 +78,12 @@ const textsDefault = {
   clear: 'Notīrīt',
   noItems: 'Nav ierakstu',
   notFoundSearch: 'Nav atrasts:',
+  notFoundProps: 'Nav atrasts',
   actionPanel: 'Darbību panelis',
   save: 'Saglabāt',
   additionalLabel: 'Additional',
   modeLabel: 'Mode',
-  noComponentSelected: 'Nav izvēlēts neviens elements',
+  noComponentSelected: 'Nav izvēlēts elements',
   inputs: 'Ievadlauki',
   containers: 'Konteineri',
   close: 'Aizvērt',
@@ -101,6 +107,7 @@ const emits = defineEmits([
   'update:componentProps',
   'update:viewLayout',
   'update:schemaKey',
+  'update:selectedTab',
 ]);
 
 const compModel = computed({
@@ -113,7 +120,15 @@ const compModel = computed({
 });
 
 const open = ref(true);
-const tab = ref('config');
+
+const tab = computed({
+  get() {
+    return props.selectedTab || (open.value ? 'config' : null);
+  },
+  set(value) {
+    emits('update:selectedTab', value);
+  },
+});
 
 function togglePanel(value) {
   open.value = !value;
@@ -126,15 +141,23 @@ const usageGroupDefinitions = computed(() => [
     id: 'inputs',
     name: displayTexts.value?.inputs,
     badgeTitle: displayTexts.value?.inputs,
+    expanded: true,
   },
   {
     id: 'containers',
     name: displayTexts.value?.containers,
     badgeTitle: displayTexts.value?.containers,
+    expanded: true,
   },
 ]);
 
 const lxComponents = ref(getLXComponents());
+
+// Can only add LxSection if:
+// It's plain LxForm, or it's LxForm inside LxFilters, but has no LxSection yet
+function canAddLxSection() {
+  return props.componentName === 'LxForm' && !props.schemaInfo?.isSectionInFilterForm;
+}
 
 const componentItems = computed(() => {
   if (!props.componentName) return [];
@@ -149,7 +172,7 @@ const componentItems = computed(() => {
       id: 'LxSection',
       name: 'LxSection',
       usageGroup: 'containers',
-      clickable: props.componentName === 'LxForm',
+      clickable: canAddLxSection(),
     },
     {
       id: 'LxForm',
@@ -203,14 +226,14 @@ function propsToSchema(component, propValues) {
     res.readOnly = propValues.readOnly || false;
   } else if (component === 'LxToggle') {
     res.type = 'boolean';
-    res.lx = {};
+    res.lx = res.lx || {};
     res.lx.size = propValues.size || 'm';
     res.lx.disabled = propValues.disabled || false;
     res.lx.tooltip = propValues.tooltip;
     res.readOnly = propValues.readOnly || false;
   } else if (component === 'LxValuePicker') {
     res.type = propValues.selectionKind === 'multiple' ? 'array' : 'string';
-    res.lx = {};
+    res.lx = res.lx || {};
     res.lx.items = propValues.items || [];
     res.lx.idAttribute = propValues.idAttribute;
     res.lx.nameAttribute = propValues.nameAttribute;
@@ -249,7 +272,7 @@ function propsToSchema(component, propValues) {
     res.readOnly = propValues.readOnly || false;
   } else if (component === 'LxDateTimePicker') {
     res.type = 'string';
-    res.lx = {};
+    res.lx = res.lx || {};
     res.format = propValues.kind || 'date';
     res.lx.placeholder = propValues.placeholder;
     res.lx.tooltip = propValues.tooltip;
@@ -476,7 +499,7 @@ function propsToSchema(component, propValues) {
     res.description = propValues.description;
     res.lx.defaultValues = propValues.defaultValues || {};
     res.lx.useDefaults = propValues.useDefaults || false;
-    res.lx.usesFilter = propValues.usesFilter || false;
+    res.lx.usesFilters = propValues.usesFilters || false;
     res.lx.filterButtonKind = propValues.filterButtonKind || 'tertiary';
     res.lx.columnCount = propValues.columnCount || 3;
     res.lx.expanded = propValues.expanded || false;
@@ -545,6 +568,14 @@ const propSearchModel = ref(null);
 function isDeletable() {
   return props.componentName && props.componentName !== 'LxViewLayout';
 }
+
+function isDuplicatable() {
+  return (
+    props.componentName &&
+    props.componentName !== 'LxViewLayout' &&
+    props.componentName !== 'LxFilters'
+  );
+}
 </script>
 <template>
   <div class="lx-panel">
@@ -586,7 +617,10 @@ function isDeletable() {
     </div>
     <div class="panel-side" v-if="open">
       <div>
-        <div class="config-header">
+        <div
+          class="config-header"
+          :class="[{ 'has-selected-element': componentName && tab === 'config' }]"
+        >
           <LxDropDownMenu
             v-if="tab === 'config'"
             :actionDefinitions="navigation"
@@ -600,7 +634,9 @@ function isDeletable() {
             </div>
           </LxDropDownMenu>
           <div v-else class="header-wrapper">
-            <p>{{ displayTexts?.actionPanel }}</p>
+            <p v-if="tab === 'components'">{{ displayTexts?.components }}</p>
+            <p v-else-if="tab === 'settings'">{{ displayTexts?.settings }}</p>
+            <p v-else>{{ displayTexts?.actionPanel }}</p>
           </div>
         </div>
 
@@ -610,7 +646,7 @@ function isDeletable() {
               icon="copy"
               kind="secondary"
               :label="displayTexts?.duplicate"
-              :disabled="!isDeletable()"
+              :disabled="!isDuplicatable()"
               @click="emits('duplicateComponent')"
             />
 
@@ -629,6 +665,7 @@ function isDeletable() {
             kind="search"
             :placeholder="displayTexts?.searchProps"
             :disabled="!componentName"
+            class="prop-search"
           />
 
           <ConstructorPropRenderer
@@ -640,10 +677,11 @@ function isDeletable() {
             v-model:componentModel="compModel"
             v-model:schemaKey="schemaKeyModel"
             :schemaKeyError="schemaKeyError"
+            :navigation="navigation"
             :texts="displayTexts"
           />
           <div v-else class="no-component-wrapper">
-            <p class="lx-secondary">{{ displayTexts?.noComponentSelected }}</p>
+            <LxEmptyState :label="displayTexts?.noComponentSelected" />
           </div>
         </div>
         <div v-if="tab === 'components'" class="panel-main lx-region" style="padding: 0.25rem">
@@ -668,15 +706,15 @@ function isDeletable() {
           <div class="settings-wrapper">
             <LxButton
               kind="secondary"
-              :label="displayTexts?.export"
-              icon="save"
-              @click="emits('export')"
-            />
-            <LxButton
-              kind="secondary"
               :label="displayTexts?.import"
               icon="upload"
               @click="emits('import')"
+            />
+            <LxButton
+              kind="secondary"
+              :label="displayTexts?.export"
+              icon="save"
+              @click="emits('export')"
             />
             <LxButton
               kind="secondary"
