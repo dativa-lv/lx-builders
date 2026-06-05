@@ -8,7 +8,7 @@ overrides:
   minimatch: 10.2.3
   js-cookie: 3.0.7
   flatted: 3.4.2
-  postcss: 8.5.6
+  postcss: 8.5.10
   markdown-it: 14.1.1
   picomatch: 2.3.2
   js-yaml: 3.14.2
@@ -3147,8 +3147,8 @@ packages:
     resolution: {integrity: sha512-Q8qQfPiZ+THO/3ZrOrO0cJJKfpYCagtMUkXbnEfmgUjwXg6z/WBeOyS9APBBPCTSiDV+s4SwQGu8yFsiMRIudg==}
     engines: {node: '>=4'}
 
-  postcss@8.5.6:
-    resolution: {integrity: sha512-3Ybi1tAuwAP9s0r1UQ2J4n5Y0G05bJkpUIO0/bI9MhwmD70S5aTWbXGBwxHrelT+XM1k6dM0pk+SwNkpTRN7Pg==}
+  postcss@8.5.10:
+    resolution: {integrity: sha512-pMMHxBOZKFU6HgAZ4eyGnwXF/EvPGGqUr0MnZ5+99485wwW41kW91A4LOGxSHhgugZmSChL5AlElNdwlNgcnLQ==}
     engines: {node: ^10 || ^12 || >=14}
 
   prelude-ls@1.2.1:
@@ -5283,7 +5283,7 @@ snapshots:
       '@vue/shared': 3.5.17
       estree-walker: 2.0.2
       magic-string: 0.30.17
-      postcss: 8.5.6
+      postcss: 8.5.10
       source-map-js: 1.2.1
 
   '@vue/compiler-ssr@3.5.17':
@@ -7539,7 +7539,7 @@ snapshots:
       cssesc: 3.0.0
       util-deprecate: 1.0.2
 
-  postcss@8.5.6:
+  postcss@8.5.10:
     dependencies:
       nanoid: 3.3.11
       picocolors: 1.1.1
@@ -8247,7 +8247,7 @@ snapshots:
       esbuild: 0.27.7
       fdir: 6.5.0(picomatch@2.3.2)
       picomatch: 2.3.2
-      postcss: 8.5.6
+      postcss: 8.5.10
       rollup: 4.60.4
       tinyglobby: 0.2.16
     optionalDependencies:
