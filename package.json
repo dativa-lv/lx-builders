@@ -11,6 +11,11 @@
   "bugs": {
     "url": "https://github.com/dativa-lv/lx-builders/issues"
   },
+    "repository": {
+    "type": "git",
+    "url": "https://github.com/dativa-lv/lx-builders.git"
+  },
+  "homepage": "https://lx-ui.dev/",
   "main": "./dist/wntr-lx-ui.umd.js",
   "typings": "./dist/wntr-lx-ui.d.ts",
   "module": "./dist/wntr-lx-ui.esm.js",
