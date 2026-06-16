@@ -14,13 +14,13 @@ import {
   LxList,
   LxIcon,
   LxDialog,
+  lxGeneralUtils,
 } from '@dativa-lv/lx-ui';
 
 import LxViewBuilder from '@/components/ViewBuilder.vue';
 import { useWindowSize } from '@vueuse/core';
 import { getNewItemSchema } from '@/utils/constructorUtils';
 import Panel from '@/components/constructor/Panel.vue';
-import { getDisplayTexts } from '@/utils/generalUtils';
 
 const props = defineProps({
   schema: {
@@ -116,7 +116,7 @@ const textsDefault = {
   },
 };
 
-const displayTexts = computed(() => getDisplayTexts(props.texts, textsDefault));
+const displayTexts = computed(() => lxGeneralUtils.getDisplayTexts(props.texts, textsDefault));
 
 const model = ref({});
 
@@ -243,7 +243,7 @@ function isLxRowClicked(id) {
 
 // Reads a value from a nested object using provided path
 function getValueByPath(obj, path) {
-  return path?.reduce((o, key) => (o != null ? o[key] : undefined), obj);
+  return path?.reduce((o, key) => (lxGeneralUtils.isNil(o) ? undefined : o[key]), obj);
 }
 
 // Finds the correct position in schema based on components provided schemaPath
@@ -253,8 +253,7 @@ function findPositionInSchema(path = null) {
 
   schemaPropertiesStack.value = pathToUse?.split('.');
   schemaPropertiesStack.value?.forEach((x) => {
-    res.push('properties');
-    res.push(x);
+    res.push('properties', x);
   });
   return res;
 }
@@ -292,7 +291,7 @@ function checkIfInsideFilterSection(navigationStack) {
   const formIndex = navigationNames.indexOf('LxForm', filtersIndex + 1);
   if (formIndex < 0) return false;
 
-  return navigationNames.indexOf('LxSection', formIndex + 1) >= 0;
+  navigationNames.includes('LxSection', formIndex + 1);
 }
 
 // Updated infomration about the currenly selected element:
@@ -342,19 +341,16 @@ function clickEventListener() {
     let registryElem = null;
     // Walk up the DOM tree until we find an element with an id in the registry
     while (elem) {
-      if (
-        (elem.getAttribute('data-id') && builderRegistry.get(elem.getAttribute('data-id'))) ||
-        isLxRowClicked(elem.id)
-      ) {
-        // Get LxRow wrapper
+      if ((elem.dataset.id && builderRegistry.get(elem.dataset.id)) || isLxRowClicked(elem.id)) {
         if (isLxRowClicked(elem.id)) {
           const lxRowWrapper = elem.id?.replace(/-wrapper$/, '');
           registryElem = builderRegistry.get(lxRowWrapper);
         } else {
-          registryElem = builderRegistry.get(elem.getAttribute('data-id') || elem.id);
+          registryElem = builderRegistry.get(elem.dataset.id || elem.id);
         }
         break;
       }
+
       elem = elem.parentElement;
     }
 
@@ -432,8 +428,7 @@ function updateSchemaFromPanel(newSchema) {
   const res = [];
   schemaPropertiesStack.value = schemaPath.value?.split('.');
   schemaPropertiesStack.value?.forEach((x) => {
-    res.push('properties');
-    res.push(x);
+    res.push('properties', x);
   });
 
   const schemaClone = lxFormatUtils.objectClone(schemaModel.value);
@@ -1057,7 +1052,7 @@ function saveToFile() {
   a.download = 'schema.json';
   document.body.appendChild(a);
   a.click();
-  document.body.removeChild(a);
+  a.remove();
   URL.revokeObjectURL(url);
 }
 

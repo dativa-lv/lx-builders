@@ -1,7 +1,6 @@
 <script setup>
 import { computed, onMounted } from 'vue';
-import { getDisplayTexts } from '@/utils/generalUtils';
-import { LxForm, LxButton } from '@dativa-lv/lx-ui';
+import { LxForm, LxButton, lxGeneralUtils } from '@dativa-lv/lx-ui';
 
 const props = defineProps({
   modelValue: { type: Array, default: null },
@@ -29,7 +28,7 @@ const textsDefault = {
   addButtonLabel: 'Pievienot ierakstu',
 };
 
-const displayTexts = computed(() => getDisplayTexts(props.texts, textsDefault));
+const displayTexts = computed(() => lxGeneralUtils.getDisplayTexts(props.texts, textsDefault));
 
 function removeItem(index) {
   model.value.splice(index, 1);

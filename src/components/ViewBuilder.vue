@@ -10,10 +10,10 @@ import {
   lxDevUtils,
   lxFormatUtils,
   LxViewLayout,
+  lxGeneralUtils,
 } from '@dativa-lv/lx-ui';
 
 import LxFilterBuilder from '@/components/FilterBuilder.vue';
-import { getDisplayTexts } from '@/utils/generalUtils';
 import useLx from '@/hooks/useLx';
 import { useVuelidate } from '@vuelidate/core';
 import { required, helpers, minValue, maxValue, minLength, maxLength } from '@vuelidate/validators';
@@ -100,7 +100,7 @@ const textsDefault = {
   addObject: 'Pievienot objektu',
 };
 
-const displayTexts = computed(() => getDisplayTexts(props.texts, textsDefault));
+const displayTexts = computed(() => lxGeneralUtils.getDisplayTexts(props.texts, textsDefault));
 
 const emits = defineEmits(['update:modelValue', 'rowActionClick', 'emit']);
 
@@ -836,7 +836,6 @@ defineExpose({ validateModel, clearValidations });
             </template>
           </template>
 
-          <!-- TODO: change from the filter object to first section -->
           <template
             v-for="(item, itemName) in keepOnlyDefaultSection(
               schema?.properties?.[name]?.properties

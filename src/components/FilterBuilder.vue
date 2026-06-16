@@ -1,10 +1,15 @@
 <script setup>
 import { onMounted, ref, computed } from 'vue';
-import { focusNextFocusableElement, getDisplayTexts } from '@/utils/generalUtils';
 import useLx from '@/hooks/useLx';
 import LxFormBuilder from '@/components/FormBuilder.vue';
 
-import { LxFilters, lxDevUtils, lxFormatUtils, lxDateUtils } from '@dativa-lv/lx-ui';
+import {
+  LxFilters,
+  lxDevUtils,
+  lxFormatUtils,
+  lxDateUtils,
+  lxGeneralUtils,
+} from '@dativa-lv/lx-ui';
 
 const props = defineProps({
   /**
@@ -250,7 +255,7 @@ const defaultTexts = {
   addObject: 'Pievienot objektu',
 };
 
-const displayTexts = computed(() => getDisplayTexts(props.texts, defaultTexts));
+const displayTexts = computed(() => lxGeneralUtils.getDisplayTexts(props.texts, defaultTexts));
 
 const model = computed({
   get() {
@@ -267,11 +272,11 @@ const internalExpanded = ref(false);
 
 const isExpanded = computed({
   get() {
-    return props.expanded !== undefined ? props.expanded : internalExpanded.value;
+    return props.expanded === undefined ? internalExpanded.value : props.expanded;
   },
   set(value) {
-    if (props.expanded !== undefined) emits('update:expanded', value);
-    else internalExpanded.value = value;
+    if (props.expanded === undefined) internalExpanded.value = value;
+    else emits('update:expanded', value);
   },
 });
 
@@ -280,7 +285,7 @@ const filterElement = ref();
 function filter() {
   if (props.closeOnFilter) {
     isExpanded.value = false;
-    focusNextFocusableElement(filterElement.value?.$el);
+    lxGeneralUtils.focusNextFocusableElement(filterElement.value?.$el);
   }
   emits('filter');
 }
@@ -312,7 +317,7 @@ function arraysEqual(arr1, arr2) {
 }
 
 const resultingFilterModel = computed(() =>
-  props.filteredModelValue !== undefined ? props.filteredModelValue : model.value
+  props.filteredModelValue === undefined ? model.value : props.filteredModelValue
 );
 
 function formatDateDescription(format, description, modelValueKey) {

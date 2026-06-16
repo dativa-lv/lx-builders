@@ -8,12 +8,12 @@ import {
   LxList,
   lxFormatUtils,
   LxEmptyState,
+  lxGeneralUtils,
 } from '@dativa-lv/lx-ui';
 
 import { useDebounceFn } from '@vueuse/core';
 import { getLXComponents } from '@/utils/constructorUtils';
 import ConstructorPropRenderer from '@/components/constructor/ConstructorPropRenderer.vue';
-import { getDisplayTexts } from '@/utils/generalUtils';
 
 const props = defineProps({
   componentName: {
@@ -90,7 +90,7 @@ const textsDefault = {
   edit: 'Labot',
 };
 
-const displayTexts = computed(() => getDisplayTexts(props.texts, textsDefault));
+const displayTexts = computed(() => lxGeneralUtils.getDisplayTexts(props.texts, textsDefault));
 
 const emits = defineEmits([
   'export',
@@ -132,8 +132,8 @@ const tab = computed({
 
 function togglePanel(value) {
   open.value = !value;
-  if (!value) tab.value = 'config';
-  else tab.value = null;
+  if (value) tab.value = null;
+  else tab.value = 'config';
 }
 
 const usageGroupDefinitions = computed(() => [
