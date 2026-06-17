@@ -423,6 +423,35 @@ function setValueByPath(obj, path, value) {
   }, obj);
 }
 
+function removeValueByPath(obj, path) {
+  if (!Array.isArray(path) || path.length === 0) return;
+
+  const parentPath = path.slice(0, -1);
+  const keyToRemove = path[path.length - 1];
+  const parentValue = parentPath.length ? getValueByPath(obj, parentPath) : obj;
+
+  if (!parentValue || !Object.prototype.hasOwnProperty.call(parentValue, keyToRemove)) {
+    return;
+  }
+
+  delete parentValue[keyToRemove];
+}
+
+function moveModelValueBranch(fromSchemaPath, toSchemaPath) {
+  const fromModelPath = fromSchemaPath?.split('.')?.filter(Boolean) || [];
+  const toModelPath = toSchemaPath?.split('.')?.filter(Boolean) || [];
+
+  if (!fromModelPath.length || !toModelPath.length) return;
+
+  const currentValue = getValueByPath(model.value, fromModelPath);
+  if (lxGeneralUtils.isNil(currentValue)) return;
+
+  const modelClone = lxFormatUtils.objectClone(model.value || {});
+  setValueByPath(modelClone, toModelPath, currentValue);
+  removeValueByPath(modelClone, fromModelPath);
+  model.value = modelClone;
+}
+
 // Updates the current location in shcema, with the provided new value
 function updateSchemaFromPanel(newSchema) {
   const res = [];
@@ -511,6 +540,7 @@ function selectComponentBySchemaPath(newSchemaPath) {
 function moveElementInside() {
   if (!schemaPath.value) return;
 
+  const currentSchemaPath = schemaPath.value;
   const currentKey = schemaPath.value?.split('.')?.slice(-1)[0];
   const parentPath = schemaPath.value?.includes('.')
     ? schemaPath.value?.split('.')?.slice(0, -1)?.join('.')
@@ -574,6 +604,7 @@ function moveElementInside() {
   schemaModel.value = schemaClone;
 
   const movedSchemaPath = [targetContainerPath, movedKey].filter(Boolean).join('.');
+  moveModelValueBranch(currentSchemaPath, movedSchemaPath);
   selectComponentBySchemaPath(movedSchemaPath);
 }
 
@@ -581,6 +612,7 @@ function moveElementInside() {
 function moveElementOutside(position) {
   if (!schemaPath.value || (position !== 'next' && position !== 'previous')) return;
 
+  const currentSchemaPath = schemaPath.value;
   const currentKey = schemaPath.value?.split('.')?.slice(-1)[0];
   const parentPath = schemaPath.value?.includes('.')
     ? schemaPath.value?.split('.')?.slice(0, -1)?.join('.')
@@ -668,6 +700,7 @@ function moveElementOutside(position) {
 
   const outsideSchemaPath = getSchemaPathFromPositionPath(outsideContainerSchemaPath);
   const movedSchemaPath = [outsideSchemaPath, movedKey].filter(Boolean).join('.');
+  moveModelValueBranch(currentSchemaPath, movedSchemaPath);
   selectComponentBySchemaPath(movedSchemaPath);
 }
 

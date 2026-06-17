@@ -423,6 +423,8 @@ const builderOptions = computed(() => ({
     :invalid="isInvalid"
     :invalidation-message="invalidMessage"
     :custom-mask-value="displaySchema?.properties[name]?.lx?.customMaskValue"
+    :autocomplete="displaySchema?.properties[name]?.lx?.autocomplete"
+    :options="displaySchema?.properties[name]?.lx?.options"
     v-model="model[name]"
     :builderOptions="builderOptions"
     @keyup.enter="emits('filterBuilderFilter')"
@@ -540,6 +542,7 @@ const builderOptions = computed(() => ({
     :search-attributes="displaySchema?.properties[name]?.lx?.searchAttributes"
     :has-select-all="displaySchema?.properties[name]?.lx?.hasSelectAll"
     :read-only-render-type="displaySchema?.properties[name]?.lx?.readOnlyRenderType"
+    :stickyToolbar="displaySchema?.properties[name]?.lx?.stickyToolbar"
     :invalid="isInvalid"
     :invalidation-message="invalidMessage"
     :builderOptions="builderOptions"
@@ -645,7 +648,9 @@ const builderOptions = computed(() => ({
     :disabled="displaySchema?.properties[name]?.lx?.disabled"
     :loading="displaySchema?.properties[name]?.lx?.loading"
     :busy="displaySchema?.properties[name]?.lx?.busy"
+    :actionDefinitions="displaySchema?.properties[name]?.lx?.actionDefinitions"
     class="form-builder-data-block"
+    @actionClick="(a, b) => componentEmit('actionClick', name, a, b)"
   >
     <LxForm
       :showHeader="false"
@@ -680,6 +685,8 @@ const builderOptions = computed(() => ({
             :signed="item?.lx?.signed"
             :readOnly="isReadOnly(item)"
             :custom-mask-value="item?.lx?.customMaskValue"
+            :autocomplete="item?.lx?.autocomplete"
+            :options="item?.lx?.options"
             v-model="model[name][itemName]"
           />
           <LxTextArea
@@ -757,6 +764,7 @@ const builderOptions = computed(() => ({
             :search-attributes="item?.lx?.searchAttributes"
             :has-select-all="item?.lx?.hasSelectAll"
             :read-only-render-type="item?.lx?.readOnlyRenderType"
+            :stickyToolbar="item?.lx?.stickyToolbar"
             :readOnly="isReadOnly(item)"
             v-model="model[name][itemName]"
           >
@@ -905,6 +913,8 @@ const builderOptions = computed(() => ({
               :signed="item?.lx?.signed"
               :readOnly="isReadOnly(item)"
               :custom-mask-value="item?.lx?.customMaskValue"
+              :autocomplete="item?.lx?.autocomplete"
+              :options="item?.lx?.options"
               v-model="model[name][itemName]"
             />
             <LxTextArea
@@ -984,6 +994,7 @@ const builderOptions = computed(() => ({
               :search-attributes="item?.lx?.searchAttributes"
               :has-select-all="item?.lx?.hasSelectAll"
               :read-only-render-type="item?.lx?.readOnlyRenderType"
+              :stickyToolbar="item?.lx?.stickyToolbar"
               v-model="model[name][itemName]"
             >
               <template #customItem="customItem" v-if="item?.lx?.hasCustomItems === 'default'">
@@ -1105,11 +1116,32 @@ const builderOptions = computed(() => ({
     :busy="displaySchema?.properties[name]?.lx?.busy"
     :hideFilteredItems="displaySchema?.properties[name]?.lx?.hideFilteredItems"
     :includeUnspecifiedGroups="displaySchema?.properties[name]?.lx?.includeUnspecifiedGroups"
+    :toolbarActionDefinitions="displaySchema?.properties[name]?.lx?.toolbarActionDefinitions"
+    :actionsLayout="displaySchema?.properties[name]?.lx?.actionsLayout"
+    :emptyStateActionDefinitions="displaySchema?.properties[name]?.lx?.emptyStateActionDefinitions"
+    :showLoadMore="displaySchema?.properties[name]?.lx?.showLoadMore"
+    :hasSelecting="displaySchema?.properties[name]?.lx?.hasSelecting"
+    :selectionKind="displaySchema?.properties[name]?.lx?.selectionKind"
+    :selectionActionDefinitions="displaySchema?.properties[name]?.lx?.selectionActionDefinitions"
+    :itemStates="displaySchema?.properties[name]?.lx?.itemStates"
+    :mode="displaySchema?.properties[name]?.lx?.mode"
+    :searchMode="displaySchema?.properties[name]?.lx?.searchMode"
+    :hasSkipLink="displaySchema?.properties[name]?.lx?.hasSkipLink"
+    :hasVirtualization="displaySchema?.properties[name]?.lx?.hasVirtualization"
+    :stickyToolbar="displaySchema?.properties[name]?.lx?.stickyToolbar"
     :texts="displaySchema?.properties[name]?.lx?.texts"
     @actionClick="
       (val, item) =>
         deleteArrayObject(val, item, name, displaySchema?.properties[name]?.lx?.actionDefinitions)
     "
+    @toolbarActionClick="(a, b) => componentEmit('toolbarActionClick', name, a, b)"
+    @emptyStateActionClick="(a, b) => componentEmit('emptyStateActionClick', name, a, b)"
+    @selectionChange="(selection) => componentEmit('selectionChange', name, selection)"
+    @selectionActionClick="(a, b) => componentEmit('selectionActionClick', name, a, b)"
+    @loadMore="() => componentEmit('loadMore', name)"
+    @update:searchString="(a) => componentEmit('update:searchString', name, a)"
+    @update:itemStates="(a) => componentEmit('update:itemStates', name, a)"
+    @search="(a) => componentEmit('search', name, a)"
   >
     <template
       #customItem="item"
@@ -1224,11 +1256,34 @@ const builderOptions = computed(() => ({
       :busy="displaySchema?.properties[name]?.lx?.busy"
       :hideFilteredItems="displaySchema?.properties[name]?.lx?.hideFilteredItems"
       :includeUnspecifiedGroup="displaySchema?.properties[name]?.lx?.includeUnspecifiedGroup"
+      :toolbarActionDefinitions="displaySchema?.properties[name]?.lx?.toolbarActionDefinitions"
+      :actionsLayout="displaySchema?.properties[name]?.lx?.actionsLayout"
+      :emptyStateActionDefinitions="
+        displaySchema?.properties[name]?.lx?.emptyStateActionDefinitions
+      "
+      :showLoadMore="displaySchema?.properties[name]?.lx?.showLoadMore"
+      :hasSelecting="displaySchema?.properties[name]?.lx?.hasSelecting"
+      :selectionKind="displaySchema?.properties[name]?.lx?.selectionKind"
+      :selectionActionDefinitions="displaySchema?.properties[name]?.lx?.selectionActionDefinitions"
+      :itemStates="displaySchema?.properties[name]?.lx?.itemStates"
+      :mode="displaySchema?.properties[name]?.lx?.mode"
+      :searchMode="displaySchema?.properties[name]?.lx?.searchMode"
+      :hasSkipLink="displaySchema?.properties[name]?.lx?.hasSkipLink"
+      :hasVirtualization="displaySchema?.properties[name]?.lx?.hasVirtualization"
+      :stickyToolbar="displaySchema?.properties[name]?.lx?.stickyToolbar"
       :texts="displaySchema?.properties[name]?.lx?.texts"
-      @action-click="
+      @actionClick="
         (val, item) =>
           listModalAction(val, item, name, displaySchema?.properties[name]?.lx?.actionDefinitions)
       "
+      @toolbarActionClick="(a, b) => componentEmit('toolbarActionClick', name, a, b)"
+      @emptyStateActionClick="(a, b) => componentEmit('emptyStateActionClick', name, a, b)"
+      @selectionChange="(selection) => componentEmit('selectionChange', name, selection)"
+      @selectionActionClick="(a, b) => componentEmit('selectionActionClick', name, a, b)"
+      @loadMore="() => componentEmit('loadMore', name)"
+      @update:searchString="(a) => componentEmit('update:searchString', name, a)"
+      @update:itemStates="(a) => componentEmit('update:itemStates', name, a)"
+      @search="(a) => componentEmit('search', name, a)"
     >
       <template #toolbar>
         <LxButton
@@ -1359,6 +1414,8 @@ const builderOptions = computed(() => ({
               :signed="itemValue?.lx?.signed"
               :readOnly="isReadOnly(itemValue)"
               :custom-mask-value="itemValue?.lx?.customMaskValue"
+              :autocomplete="itemValue?.lx?.autocomplete"
+              :options="itemValue?.lx?.options"
               v-model="arrayModelValue[`${id}-${name}`][itemName]"
             />
             <LxTextArea
@@ -1438,6 +1495,7 @@ const builderOptions = computed(() => ({
               :has-select-all="itemValue?.lx?.hasSelectAll"
               :search-attributes="itemValue?.lx?.searchAttributes"
               :read-only-render-type="itemValue?.lx?.readOnlyRenderType"
+              :stickyToolbar="itemValue?.lx?.stickyToolbar"
               v-model="arrayModelValue[`${id}-${name}`][itemName]"
             >
               <template #customItem="customItem" v-if="itemValue?.lx?.hasCustomItems === 'default'">
@@ -1568,6 +1626,8 @@ const builderOptions = computed(() => ({
                       :signed="appendableItem?.lx?.signed"
                       :readOnly="isReadOnly(appendableItem)"
                       :custom-mask-value="appendableItem?.lx?.customMaskValue"
+                      :autocomplete="appendableItem?.lx?.autocomplete"
+                      :options="appendableItem?.lx?.options"
                       v-model="item[appendableItemName]"
                     />
                     <LxTextArea
@@ -1661,6 +1721,7 @@ const builderOptions = computed(() => ({
                       :has-select-all="appendableItem?.lx?.hasSelectAll"
                       :search-attributes="appendableItem?.lx?.searchAttributes"
                       :read-only-render-type="appendableItem?.lx?.readOnlyRenderType"
+                      :stickyToolbar="appendableItem?.lx?.stickyToolbar"
                       v-model="item[appendableItemName]"
                     >
                       <template
@@ -1825,6 +1886,23 @@ const builderOptions = computed(() => ({
       "
       :defaultActionName="displaySchema?.properties[name]?.lx?.defaultActionName || 'open'"
       :toolbarActionDefinitions="displaySchema?.properties[name]?.lx?.toolbarActionDefinitions"
+      :hasVirtualization="displaySchema?.properties[name]?.lx?.hasVirtualization"
+      :stickyHeader="displaySchema?.properties[name]?.lx?.stickyHeader"
+      :hasPaging="displaySchema?.properties[name]?.lx?.hasPaging"
+      :hasSelecting="displaySchema?.properties[name]?.lx?.hasSelecting"
+      :selectionKind="displaySchema?.properties[name]?.lx?.selectionKind"
+      :sortingSide="displaySchema?.properties[name]?.lx?.sortingSide"
+      :emptyStateActionDefinitions="
+        displaySchema?.properties[name]?.lx?.emptyStateActionDefinitions
+      "
+      :emptyStateIcon="displaySchema?.properties[name]?.lx?.emptyStateIcon"
+      :hasSearch="displaySchema?.properties[name]?.lx?.hasSearch"
+      :searchMode="displaySchema?.properties[name]?.lx?.searchMode"
+      :searchString="displaySchema?.properties[name]?.lx?.searchString"
+      :locale="displaySchema?.properties[name]?.lx?.locale"
+      :fullBleed="displaySchema?.properties[name]?.lx?.fullBleed"
+      :badgeDefinitions="displaySchema?.properties[name]?.lx?.badgeDefinitions"
+      :stickyToolbar="displaySchema?.properties[name]?.lx?.stickyToolbar"
       :texts="displaySchema?.properties[name]?.lx?.texts"
       @actionClick="
         (val, item, additional) =>
@@ -1837,6 +1915,16 @@ const builderOptions = computed(() => ({
           )
       "
       @toolbarActionClick="(val) => componentEmit('toolbarActionClick', name, val)"
+      @selectionActionClick="
+        (val, items) => componentEmit('selectionActionClick', name, val, items)
+      "
+      @update:searchString="(val) => componentEmit('update:searchString', name, val)"
+      @search="(val) => componentEmit('search', name, val)"
+      @selectPage="(val) => componentEmit('selectPage', name, val)"
+      @sortingChange="(val) => componentEmit('sortingChange', name, val)"
+      @selectionChange="(val) => componentEmit('selectionChange', name, val)"
+      @itemsPerPageChange="(val) => componentEmit('itemsPerPageChange', name, val)"
+      @emptyStateActionClick="(val) => componentEmit('emptyStateActionClick', name, val)"
     >
       <template #toolbar>
         <LxButton
@@ -1887,6 +1975,8 @@ const builderOptions = computed(() => ({
               :signed="itemValue?.lx?.signed"
               :readOnly="isReadOnly(itemValue)"
               :custom-mask-value="itemValue?.lx?.customMaskValue"
+              :autocomplete="itemValue?.lx?.autocomplete"
+              :options="itemValue?.lx?.options"
               v-model="arrayModelValue[`${id}-${name}`][itemName]"
             />
             <LxTextArea
@@ -1966,6 +2056,7 @@ const builderOptions = computed(() => ({
               :has-select-all="itemValue?.lx?.hasSelectAll"
               :search-attributes="itemValue?.lx?.searchAttributes"
               :read-only-render-type="itemValue?.lx?.readOnlyRenderType"
+              :stickyToolbar="itemValue?.lx?.stickyToolbar"
               v-model="arrayModelValue[`${id}-${name}`][itemName]"
             >
               <template #customItem="customItem" v-if="itemValue?.lx?.hasCustomItems === 'default'">
@@ -2096,6 +2187,8 @@ const builderOptions = computed(() => ({
                       :signed="appendableItem?.lx?.signed"
                       :readOnly="isReadOnly(appendableItem)"
                       :custom-mask-value="appendableItem?.lx?.customMaskValue"
+                      :autocomplete="appendableItem?.lx?.autocomplete"
+                      :options="appendableItem?.lx?.options"
                       v-model="item[appendableItemName]"
                     />
                     <LxTextArea
@@ -2189,6 +2282,7 @@ const builderOptions = computed(() => ({
                       :has-select-all="appendableItem?.lx?.hasSelectAll"
                       :search-attributes="appendableItem?.lx?.searchAttributes"
                       :read-only-render-type="appendableItem?.lx?.readOnlyRenderType"
+                      :stickyToolbar="appendableItem?.lx?.stickyToolbar"
                       v-model="item[appendableItemName]"
                     >
                       <template
@@ -2298,6 +2392,11 @@ const builderOptions = computed(() => ({
     :readOnly="isReadOnly(displaySchema?.properties[name])"
     :expandable="displaySchema?.properties[name]?.lx?.expandable"
     :nameAttribute="displaySchema?.properties[name]?.lx?.nameAttribute"
+    :descriptionAttribute="displaySchema?.properties[name]?.lx?.descriptionAttribute"
+    :iconAttribute="displaySchema?.properties[name]?.lx?.iconAttribute"
+    :hideRemoveAttribute="displaySchema?.properties[name]?.lx?.hideRemoveAttribute"
+    :removeEnableByAttribute="displaySchema?.properties[name]?.lx?.removeEnableByAttribute"
+    :removeVisibleByAttribute="displaySchema?.properties[name]?.lx?.removeVisibleByAttribute"
     :columnCount="displaySchema?.properties[name]?.lx?.columnCount"
     :kind="displaySchema?.properties[name]?.lx?.kind"
     :requiredMode="displaySchema?.properties[name]?.lx?.requiredMode"
@@ -2305,7 +2404,17 @@ const builderOptions = computed(() => ({
     :uppercase="displaySchema?.properties[name]?.lx?.uppercase"
     :defaultExpanded="displaySchema?.properties[name]?.lx?.defaultExpanded"
     :expandedAttribute="displaySchema?.properties[name]?.lx?.expandedAttribute"
+    :actionDefinitions="displaySchema?.properties[name]?.lx?.actionDefinitions"
+    :toolbarActionDefinitions="displaySchema?.properties[name]?.lx?.toolbarActionDefinitions"
+    :hasSelecting="displaySchema?.properties[name]?.lx?.hasSelecting"
+    :selectionKind="displaySchema?.properties[name]?.lx?.selectionKind"
+    :invalidAttribute="displaySchema?.properties[name]?.lx?.invalidAttribute"
+    :selectedValues="displaySchema?.properties[name]?.lx?.selectedValues"
+    :stickyToolbar="displaySchema?.properties[name]?.lx?.stickyToolbar"
     :texts="displaySchema?.properties[name]?.lx?.texts"
+    @actionClick="(val, item, index) => componentEmit('actionClick', name, val, { item, index })"
+    @toolbarActionClick="(id, val) => componentEmit('toolbarActionClick', name, id, val)"
+    @update:selectedValues="(val) => componentEmit('update:selectedValues', name, val)"
   >
     <template #customItem="{ item, index }">
       <template
@@ -2343,6 +2452,8 @@ const builderOptions = computed(() => ({
             :signed="appendableItem?.lx?.signed"
             :readOnly="isReadOnly(appendableItem)"
             :custom-mask-value="appendableItem?.lx?.customMaskValue"
+            :autocomplete="appendableItem?.lx?.autocomplete"
+            :options="appendableItem?.lx?.options"
             v-model="item[appendableItemName]"
           />
           <LxTextArea
@@ -2428,6 +2539,7 @@ const builderOptions = computed(() => ({
             :has-select-all="appendableItem?.lx?.hasSelectAll"
             :search-attributes="appendableItem?.lx?.searchAttributes"
             :read-only-render-type="appendableItem?.lx?.readOnlyRenderType"
+            :stickyToolbar="appendableItem?.lx?.stickyToolbar"
             v-model="item[appendableItemName]"
           >
             <template
@@ -2561,6 +2673,8 @@ const builderOptions = computed(() => ({
           :signed="row?.items?.lx?.signed"
           :readOnly="isReadOnly(row?.items)"
           :custom-mask-value="row?.items?.lx?.customMaskValue"
+          :autocomplete="row?.items?.lx?.autocomplete"
+          :options="row?.items?.lx?.options"
           v-model="model[name][index]"
         />
         <LxTextInput
@@ -2734,10 +2848,20 @@ const builderOptions = computed(() => ({
         ? model[name]?.badge
         : displaySchema?.properties[name]?.lx?.badge
     "
+    :badgeIcon="
+      displaySchema?.properties[name]?.type === 'object'
+        ? model[name]?.badgeIcon
+        : displaySchema?.properties[name]?.lx?.badgeIcon
+    "
     :badgeType="
       displaySchema?.properties[name]?.type === 'object'
         ? model[name]?.badgeType
         : displaySchema?.properties[name]?.lx?.badgeType
+    "
+    :badgeTitle="
+      displaySchema?.properties[name]?.type === 'object'
+        ? model[name]?.badgeTitle
+        : displaySchema?.properties[name]?.lx?.badgeTitle
     "
     :active="
       displaySchema?.properties[name]?.type === 'object'
@@ -2769,9 +2893,12 @@ const builderOptions = computed(() => ({
     :imageSize="displaySchema?.properties[name]?.lx?.imageSize"
     :preferencesId="displaySchema?.properties[name]?.lx?.preferencesId"
     :labelId="displaySchema?.properties[name]?.lx?.labelId"
+    :actionDefinitions="displaySchema?.properties[name]?.lx?.actionDefinitions"
+    :stickyToolbar="displaySchema?.properties[name]?.lx?.stickyToolbar"
     :texts="displaySchema?.properties[name]?.lx?.texts"
     v-model="model[name]"
     :builderOptions="builderOptions"
+    @actionClick="(a, b) => componentEmit('actionClick', name, a, b)"
   />
   <LxCheckbox
     v-else-if="selectedComponent === 'checkbox'"
@@ -2890,14 +3017,43 @@ const builderOptions = computed(() => ({
     :labelId="displaySchema?.properties[name]?.lx?.labelId"
     :texts="displaySchema?.properties[name]?.lx?.texts"
     :builderOptions="builderOptions"
+    @outOfRange:startDate="(x) => componentEmit('outOfRange:startDate', name, x)"
+    @outOfRange:endDate="(x) => componentEmit('outOfRange:endDate', name, x)"
+    @outOfRange="(x) => componentEmit('outOfRange', name, x)"
   />
   <LxDropDownMenu
     v-else-if="selectedComponent === 'dropDownMenu'"
+    :placement="
+      displaySchema?.properties[name]?.type === 'object'
+        ? model[name]?.placement
+        : displaySchema?.properties[name]?.lx?.placement
+    "
     :disabled="
       displaySchema?.properties[name]?.type === 'object'
         ? model[name]?.disabled
         : displaySchema?.properties[name]?.lx?.disabled
     "
+    :triggerClick="
+      displaySchema?.properties[name]?.type === 'object'
+        ? model[name]?.triggerClick
+        : displaySchema?.properties[name]?.lx?.triggerClick
+    "
+    :offsetSkid="
+      displaySchema?.properties[name]?.type === 'object'
+        ? model[name]?.offsetSkid
+        : displaySchema?.properties[name]?.lx?.offsetSkid
+    "
+    :actionDefinitions="
+      displaySchema?.properties[name]?.type === 'object'
+        ? model[name]?.actionDefinitions
+        : displaySchema?.properties[name]?.lx?.actionDefinitions
+    "
+    :groupDefinitions="
+      displaySchema?.properties[name]?.type === 'object'
+        ? model[name]?.groupDefinitions
+        : displaySchema?.properties[name]?.lx?.groupDefinitions
+    "
+    @actionClick="(a, b) => componentEmit('actionClick', name, a, b)"
   >
     <LxButton
       :id="`${id}-${name}`"
@@ -3028,6 +3184,7 @@ const builderOptions = computed(() => ({
     :id="`${id}-${name}`"
     :selectionKind="displaySchema?.properties[name]?.lx?.selectionKind"
     :mode="displaySchema?.properties[name]?.lx?.mode"
+    :maxlength="displaySchema?.properties[name]?.maxLength"
     :draggable="displaySchema?.properties[name]?.lx?.draggable"
     :dataType="displaySchema?.properties[name]?.lx?.dataType"
     :hasSearch="displaySchema?.properties[name]?.lx?.hasSearch"
@@ -3043,6 +3200,7 @@ const builderOptions = computed(() => ({
     :hasCamera="displaySchema?.properties[name]?.lx?.hasCamera"
     :cameraSwitcherMode="displaySchema?.properties[name]?.lx?.cameraSwitcherMode"
     :hasFlashlightToggle="displaySchema?.properties[name]?.lx?.hasFlashlightToggle"
+    :itemsStates="displaySchema?.properties[name]?.lx?.itemsStates"
     :imageSize="displaySchema?.properties[name]?.lx?.imageSize"
     :preferencesId="displaySchema?.properties[name]?.lx?.preferencesId"
     :labelId="displaySchema?.properties[name]?.lx?.labelId"
@@ -3051,6 +3209,7 @@ const builderOptions = computed(() => ({
     :builderOptions="builderOptions"
     @onError="(a, b) => componentEmit('onError', name, a, b)"
     @downloadFile="(a) => componentEmit('downloadFile', name, a)"
+    @update:itemsStates="(a) => componentEmit('update:itemsStates', name, a)"
   />
   <LxFileViewer
     v-else-if="selectedComponent === 'fileViewer'"
@@ -3081,6 +3240,16 @@ const builderOptions = computed(() => ({
       displaySchema?.properties[name]?.type === 'object'
         ? model[name]?.title
         : displaySchema?.properties[name]?.lx?.title
+    "
+    :locale="
+      displaySchema?.properties[name]?.type === 'object'
+        ? model[name]?.locale
+        : displaySchema?.properties[name]?.lx?.locale
+    "
+    :meaningful="
+      displaySchema?.properties[name]?.type === 'object'
+        ? model[name]?.meaningful
+        : displaySchema?.properties[name]?.lx?.meaningful
     "
   />
   <LxIcon
@@ -3160,8 +3329,11 @@ const builderOptions = computed(() => ({
     :showToolbar="model[name].showToolbar"
     :ignoreThemeChange="model[name].ignoreThemeChange"
     :hasUserLocation="model[name].hasUserLocation"
+    :actionDefinitions="model[name].actionDefinitions"
+    :stickyToolbar="model[name].stickyToolbar"
     :texts="model[name].texts"
     @search="(a) => componentEmit('search', name, a)"
+    @actionClick="(a, b) => componentEmit('actionClick', name, a, b)"
   />
   <LxMarkdownTextArea
     v-else-if="selectedComponent === 'markdownTextArea'"
@@ -3183,6 +3355,8 @@ const builderOptions = computed(() => ({
     :imageMaxSize="displaySchema?.properties[name]?.lx?.imageMaxSize"
     :dictionary="displaySchema?.properties[name]?.lx?.dictionary"
     :labelId="displaySchema?.properties[name]?.lx?.labelId"
+    :stickyToolbar="displaySchema?.properties[name]?.lx?.stickyToolbar"
+    :actionDefinitions="displaySchema?.properties[name]?.lx?.actionDefinitions"
     :texts="displaySchema?.properties[name]?.lx?.texts"
     v-model="model[name]"
     :builderOptions="builderOptions"
@@ -3190,6 +3364,7 @@ const builderOptions = computed(() => ({
     @preparedImage="
       (a, b, c, d) => componentEmit('preparedImage', name, { base64: a, id: b, alt: c, title: d })
     "
+    @actionClick="(a, b) => componentEmit('actionClick', name, a, b)"
   />
   <LxNumberSlider
     v-else-if="selectedComponent === 'numberSlider'"
@@ -3202,6 +3377,8 @@ const builderOptions = computed(() => ({
     :readOnly="isReadOnly(displaySchema?.properties[name])"
     :labelId="displaySchema?.properties[name]?.lx?.labelId"
     :disabled="displaySchema?.properties[name]?.lx?.disabled"
+    :kind="displaySchema?.properties[name]?.lx?.kind"
+    :disableArrowKeys="displaySchema?.properties[name]?.lx?.disableArrowKeys"
     v-model="model[name]"
     :builderOptions="builderOptions"
   />
@@ -3227,6 +3404,9 @@ const builderOptions = computed(() => ({
     :iconAttribute="displaySchema?.properties[name]?.lx?.iconAttribute"
     :iconSetAttribute="displaySchema?.properties[name]?.lx?.iconSetAttribute"
     :maxLength="displaySchema?.properties[name]?.lx?.maxLength"
+    :customAttributes="displaySchema?.properties[name]?.lx?.customAttributes"
+    :customRole="displaySchema?.properties[name]?.lx?.customRole"
+    :focusable="displaySchema?.properties[name]?.lx?.focusable"
     :texts="displaySchema?.properties[name]?.lx?.texts"
   />
   <LxQr
@@ -3262,10 +3442,17 @@ const builderOptions = computed(() => ({
     "
     :showAlerts="model?.[name]?.showAlerts || displaySchema?.properties[name]?.lx?.showAlerts"
     :labelId="model?.[name]?.labelId || displaySchema?.properties[name]?.lx?.labelId"
+    :stickyToolbar="
+      model?.[name]?.stickyToolbar || displaySchema?.properties[name]?.lx?.stickyToolbar
+    "
+    :actionDefinitions="
+      model?.[name]?.actionDefinitions || displaySchema?.properties[name]?.lx?.actionDefinitions
+    "
     :texts="model?.[name]?.texts || displaySchema?.properties[name]?.lx?.texts"
     :builderOptions="builderOptions"
     @value="(a) => componentEmit('value', name, a)"
     @error="(a) => componentEmit('error', name, a)"
+    @actionClick="(a, b) => componentEmit('actionClick', name, a, b)"
   />
   <LxRating
     v-else-if="selectedComponent === 'rating'"
@@ -3273,6 +3460,9 @@ const builderOptions = computed(() => ({
     :kind="displaySchema?.properties[name]?.lx?.kind"
     :variant="displaySchema?.properties[name]?.lx?.variant"
     :disabled="displaySchema?.properties[name]?.lx?.disabled"
+    :focusable="displaySchema?.properties[name]?.lx?.focusable"
+    :invalid="isInvalid"
+    :invalidationMessage="invalidMessage"
     :texts="displaySchema?.properties[name]?.lx?.texts"
     v-model="model[name]"
   />
@@ -3347,9 +3537,14 @@ const builderOptions = computed(() => ({
     :showColorPicker="displaySchema?.properties[name]?.lx?.showColorPicker"
     :showClearAll="displaySchema?.properties[name]?.lx?.showClearAll"
     :labelId="displaySchema?.properties[name]?.lx?.labelId"
+    :stickyToolbar="displaySchema?.properties[name]?.lx?.stickyToolbar"
+    :actionDefinitions="displaySchema?.properties[name]?.lx?.actionDefinitions"
     :texts="displaySchema?.properties[name]?.lx?.texts"
     v-model="model[name]"
     :builderOptions="builderOptions"
+    @actionClick="(a, b) => componentEmit('actionClick', name, a, b)"
+    @update:instrument="(a) => componentEmit('update:instrument', name, a)"
+    @update:color="(a) => componentEmit('update:color', name, a)"
   />
   <LxLogoDisplay
     v-else-if="selectedComponent === 'logoDisplay'"
@@ -3363,6 +3558,11 @@ const builderOptions = computed(() => ({
       displaySchema?.properties[name]?.type === 'object'
         ? model[name]?.size
         : displaySchema?.properties[name]?.lx?.size
+    "
+    :theme="
+      displaySchema?.properties[name]?.type === 'object'
+        ? model[name]?.theme
+        : displaySchema?.properties[name]?.lx?.theme
     "
   />
   <p class="lx-data" v-else-if="selectedComponent === 'text'">

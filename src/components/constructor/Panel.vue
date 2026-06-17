@@ -396,6 +396,7 @@ function propsToSchema(component, propValues) {
     res.lx.hasInput = propValues.hasInput || false;
     res.lx.labelId = propValues.labelId;
     res.lx.disabled = propValues.disabled || false;
+    res.lx.kind = propValues.kind || 'slider';
     res.readOnly = propValues.readOnly || false;
   } else if (component === 'LxQrScanner') {
     res.type = 'object';

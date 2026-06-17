@@ -78,6 +78,7 @@ For more LX features, use custom schema attribute `lx` with these parameters:
 - `texts` - LxValuePicker `texts` prop
 - `hasSelectAll` - LxValuePicker `hasSelectAll` prop
 - `readOnlyRenderType` - LxValuePicker `readOnlyRenderType` prop
+- `stickyToolbar` - LxValuePicker `stickyToolbar` prop
 ### `type="string"` and (`format="date"` or `format="time"` or `format="date-time"`)
 - `minDate` - LxDateTimePicker `minDate` prop
 - `maxDate` - LxDateTimePicker `maxDate` prop
@@ -101,6 +102,7 @@ For more LX features, use custom schema attribute `lx` with these parameters:
 - `texts` - LxValuePicker `texts` prop
 - `hasSelectAll` - LxValuePicker `hasSelectAll` prop
 - `readOnlyRenderType` - LxValuePicker `readOnlyRenderType` prop
+- `stickyToolbar` - LxValuePicker `stickyToolbar` prop
 - `idAttribute` - LxValuePicker `idAttribute` prop
 - `nameAttribute` - LxValuePicker `nameAttribute` prop
 - `iconAttribute` - LxValuePicker `iconAttribute` prop
@@ -136,6 +138,19 @@ For more LX features, use custom schema attribute `lx` with these parameters:
     - `texts` - LxList `texts` prop
     - `emptyStateIcon` - LxList `emptyStateIcon` prop
     - `includeUnspecifiedGroup` - LxList `includeUnspecifiedGroup` prop
+    - `toolbarActionDefinitions` - LxList `toolbarActionDefinitions` prop
+    - `actionsLayout` - LxList `actionsLayout` prop
+    - `emptyStateActionDefinitions` - LxList `emptyStateActionDefinitions` prop
+    - `showLoadMore` - LxList `showLoadMore` prop
+    - `hasSelecting` - LxList `hasSelecting` prop
+    - `selectionKind` - LxList `selectionKind` prop
+    - `selectionActionDefinitions` - LxList `selectionActionDefinitions` prop
+    - `itemStates` - LxList `itemStates` prop
+    - `mode` - LxList `mode` prop
+    - `searchMode` - LxList `searchMode` prop
+    - `hasSkipLink` - LxList `hasSkipLink` prop
+    - `hasVirtualization` - LxList `hasVirtualization` prop
+    - `stickyToolbar` - LxList `stickyToolbar` prop
   - if `displayType = 'table'` || `displayType = 'tableModal'`
     - `loading` - LxDataGrid `loading` prop
     - `busy` - LxDataGrid `busy` prop
@@ -151,6 +166,24 @@ For more LX features, use custom schema attribute `lx` with these parameters:
     - `texts` - LxDataGrid `texts` prop
     - `label` - LxDataGrid `label` prop
     - `description` - LxDataGrid `description` prop
+    - `actionDefinitions` - LxDataGrid `actionDefinitions` prop
+    - `defaultActionName` - LxDataGrid `defaultActionName` prop
+    - `toolbarActionDefinitions` - LxDataGrid `toolbarActionDefinitions` prop
+    - `hasVirtualization` - LxDataGrid `hasVirtualization` prop
+    - `stickyHeader` - LxDataGrid `stickyHeader` prop
+    - `hasPaging` - LxDataGrid `hasPaging` prop
+    - `hasSelecting` - LxDataGrid `hasSelecting` prop
+    - `selectionKind` - LxDataGrid `selectionKind` prop
+    - `sortingSide` - LxDataGrid `sortingSide` prop
+    - `emptyStateActionDefinitions` - LxDataGrid `emptyStateActionDefinitions` prop
+    - `emptyStateIcon` - LxDataGrid `emptyStateIcon` prop
+    - `hasSearch` - LxDataGrid `hasSearch` prop
+    - `searchMode` - LxDataGrid `searchMode` prop
+    - `searchString` - LxDataGrid `searchString` prop
+    - `locale` - LxDataGrid `locale` prop
+    - `fullBleed` - LxDataGrid `fullBleed` prop
+    - `badgeDefinitions` - LxDataGrid `badgeDefinitions` prop
+    - `stickyToolbar` - LxDataGrid `stickyToolbar` prop
 ### `type="boolean"`
 - `size` - LxToggle `size` prop
 - `labelOn` - LxToggle on slot text
@@ -167,6 +200,7 @@ For more LX features, use custom schema attribute `lx` with these parameters:
  - `disabled` - LxDataBlock `disabled`
  - `loading` - LxDataBlock  `loading` prop
  - `busy` - LxDataBlock `busy` prop
+ - `actionDefinitions` - LxDataBlock `actionDefinitions` prop
  - `displayType` -  determines the way how object is displayed ('default' || 'modal')
     - if `displayType = 'modal'`:
       - `nameAttribute` - LxListItem `label` prop
@@ -187,12 +221,24 @@ The only exception is that LxAppendableList cannot be used inside another LxAppe
   - `readOnly` - LxAppendableList readOnly prop
   - `expandable` - LxAppendableList expandable prop
   - `nameAttribute` - LxAppendableList nameAttribute prop
+  - `descriptionAttribute` - LxAppendableList descriptionAttribute prop
+  - `iconAttribute` - LxAppendableList iconAttribute prop
+  - `hideRemoveAttribute` - LxAppendableList hideRemoveAttribute prop
+  - `removeEnableByAttribute` - LxAppendableList removeEnableByAttribute prop
+  - `removeVisibleByAttribute` - LxAppendableList removeVisibleByAttribute prop
   - `columnCount` - LxAppendableList columnCount prop
   - `kind` - LxAppendableList kind prop
   - `requiredMode` - LxAppendableList required prop
   - `uppercase` - LxAppendableList uppercase prop
   - `defaultExpanded` - LxAppendableList defaultExpanded prop
   - `expandedAttribute` - LxAppendableList expandedAttribute prop
+  - `actionDefinitions` - LxAppendableList actionDefinitions prop
+  - `toolbarActionDefinitions` - LxAppendableList toolbarActionDefinitions prop
+  - `hasSelecting` - LxAppendableList hasSelecting prop
+  - `selectionKind` - LxAppendableList selectionKind prop
+  - `invalidAttribute` - LxAppendableList invalidAttribute prop
+  - `selectedValues` - LxAppendableList selectedValues prop
+  - `stickyToolbar` - LxAppendableList stickyToolbar prop
   - `texts` - LxAppendableList texts prop
 
 ## LxAppendableListSimple
@@ -1061,7 +1107,9 @@ schema:
       loading: false,
       busy: false,
       badge: '',
+      badgeIcon: 'info',
       badgeType: 'default', 
+      badgeTitle: 'button badge title', 
       active: false,
       tabindex:  0,
       customClass: '',
@@ -1136,6 +1184,8 @@ schema:
       imageSize: 'default',
       preferencesId: 'lx-camera-settings',
       labelId: null,
+      actionDefinitions: [],
+      stickyToolbar: false,
       texts: undefined,
     }
   }
@@ -1318,6 +1368,11 @@ modelValue:
     variant: 'icon-only',
     icon: 'overflow-menu',
     kind: 'ghost',
+    placement: 'bottom',
+    triggerClick: 'left',
+    offsetSkid: null,
+    actionDefinitions: [],
+    groupDefinitions: [],
   }
 }
 ```
@@ -1332,6 +1387,7 @@ modelValue:
       displayType: 'file',
       selectionKind: 'multiple',
       mode: 'default',
+      maxLength: 6,
       draggable: false,
       dataType: 'meta',
       hasSearch: false,
@@ -1347,6 +1403,7 @@ modelValue:
       hasCamera: false,
       cameraSwitcherMode: 'toggle',
       hasFlashlightToggle: false,
+      itemsStates: {},
       imageSize: 'default',
       preferencesId: 'lx-camera-settings',
       labelId: null,
@@ -1391,6 +1448,8 @@ schema:
       displayType: 'flag'
       size: 'm',
       title: 'Latvian flag'
+      locale: 'lv',
+      meaningful: false
     }
   }
 }
@@ -1422,7 +1481,7 @@ modelValue:
 
 ```js
 {
-  flag: { value: 'lv',  size: 'm', title: 'Latvian flag' },
+  flag: { value: 'lv',  size: 'm', title: 'Latvian flag', locale: 'lv', meaningful: false },
 }
 ```
 
@@ -1593,6 +1652,8 @@ modelValue:
     showToolbar: false,
     ignoreThemeChange: false,
     hasUserLocation: false,
+    actionDefinitions: [],
+    stickyToolbar: false,
    },
 }
 ```
@@ -1619,6 +1680,8 @@ modelValue:
       imageMaxSize: 3000000,
       dictionary: null,
       labelId: null,
+      actionDefinitions: [],
+      stickyToolbar: false,
     }
   }
 }
@@ -1639,6 +1702,8 @@ modelValue:
       hasInput: false,
       labelId: null,
       disabled: false,
+      kind: 'slider',
+      disableArrowKeys: false,
     }
   }
 }
@@ -1672,6 +1737,9 @@ modelValue:
       iconAttribute: 'icon',
       iconSetAttribute: 'iconSet',
       maxLength: 3,
+      customAttributes: [],
+      customRole: null,
+      focusable: true,
     }
   }
 }
@@ -1739,6 +1807,8 @@ modelValue:
       hasFlashlightToggle: false,
       showAlerts: true,
       labelId: null,
+      stickyToolbar: false,
+      actionDefinitions: [],
     }
   }
 }
@@ -1755,6 +1825,7 @@ modelValue:
       readOnly: false,
       variant: 'default',
       disabled: false,
+      focusable: true,
     }
   }
 }
@@ -1968,6 +2039,8 @@ modelValue:
       showColorPicker: false,
       showClearAll: false,
       labelId: null,
+      stickyToolbar: false,
+      actionDefinitions: [],
     }
   }
 }
@@ -1986,6 +2059,7 @@ schema:
       displayType: 'logoDisplay'
       kind: 'default',
       size: 'auto',
+      theme: 'auto',
     }
   }
 }
@@ -2019,6 +2093,7 @@ modelValue:
     value: 'zzdats',
     kind: 'default',
     size: 'auto',
+    theme: 'auto',
   }
 }
 ```
