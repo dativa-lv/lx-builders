@@ -21,8 +21,8 @@ importers:
   .:
     dependencies:
       '@dativa-lv/lx-ui':
-        specifier: 2.2.3
-        version: 2.2.3(leaflet@1.9.4)(sortablejs@1.14.0)(typescript@5.9.3)(vue@3.5.17(typescript@5.9.3))
+        specifier: 2.2.4
+        version: 2.2.4(leaflet@1.9.4)(sortablejs@1.14.0)(typescript@5.9.3)(vue@3.5.17(typescript@5.9.3))
       '@vue/test-utils':
         specifier: ^2.4.3
         version: 2.4.6
@@ -348,8 +348,8 @@ packages:
     resolution: {integrity: sha512-Vd/9EVDiu6PPJt9yAh6roZP6El1xHrdvIVGjyBsHR0RYwNHgL7FJPyIIW4fANJNG6FtyZfvlRPpFI4ZM/lubvw==}
     engines: {node: '>=18'}
 
-  '@dativa-lv/lx-ui@2.2.3':
-    resolution: {integrity: sha512-J0EC1qHQBJ+4zVh4MwrkF1kWbuFLn33762OlUgGMrygg+L8Itc9klrbYlanuBvmU58OC1APwtmE1pSieiVdZow==}
+  '@dativa-lv/lx-ui@2.2.4':
+    resolution: {integrity: sha512-3UaVr2BQsNPzNI8Wshmr2DqJR5Evq8ZTNLnNe6g9hPybjmVx8Rr6dGqZKAt1IxLX5kXQn8h4l3RLlZNJ3Hihfw==}
     peerDependencies:
       vue: ^3.5.17
 
@@ -4252,7 +4252,7 @@ snapshots:
   '@csstools/css-tokenizer@3.0.4':
     optional: true
 
-  '@dativa-lv/lx-ui@2.2.3(leaflet@1.9.4)(sortablejs@1.14.0)(typescript@5.9.3)(vue@3.5.17(typescript@5.9.3))':
+  '@dativa-lv/lx-ui@2.2.4(leaflet@1.9.4)(sortablejs@1.14.0)(typescript@5.9.3)(vue@3.5.17(typescript@5.9.3))':
     dependencies:
       '@braintree/sanitize-url': 7.1.1
       '@floating-ui/vue': 1.1.6(vue@3.5.17(typescript@5.9.3))
