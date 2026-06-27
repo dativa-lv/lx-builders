@@ -110,6 +110,310 @@ const emits = defineEmits([
   'update:selectedTab',
 ]);
 
+const COMPONENT_SCHEMA_BUILDERS = {
+  LxTextInput: (res, p) => {
+    res.type = 'string';
+    res.maxLength = p.maxlength;
+    res.lx.mask = p.mask || 'default';
+    res.lx.kind = p.kind || 'default';
+    res.lx.scale = p.scale;
+    res.lx.tooltip = p.tooltip;
+    res.lx.disabled = p.disabled || false;
+    res.lx.uppercase = p.uppercase || false;
+    res.lx.convertToString = p.convertToString || false;
+    res.lx.placeholder = p.placeholder;
+    res.lx.signed = p.signed || false;
+    res.readOnly = p.readOnly || false;
+  },
+  LxToggle: (res, p) => {
+    res.type = 'boolean';
+    res.lx.size = p.size || 'm';
+    res.lx.disabled = p.disabled || false;
+    res.lx.tooltip = p.tooltip;
+    res.readOnly = p.readOnly || false;
+  },
+  LxValuePicker: (res, p) => {
+    res.type = p.selectionKind === 'multiple' ? 'array' : 'string';
+    res.lx.items = p.items || [];
+    res.lx.idAttribute = p.idAttribute;
+    res.lx.nameAttribute = p.nameAttribute;
+    res.lx.iconAttribute = p.iconAttribute;
+    res.lx.iconSetAttribute = p.iconSetAttribute;
+    res.lx.categoryAttribute = p.categoryAttribute;
+    res.lx.descriptionAttribute = p.descriptionAttribute;
+    res.lx.variant = p.variant;
+    res.lx.hasSearch = p.hasSearch || false;
+    res.lx.alwaysAsArray = p.alwaysAsArray || false;
+    res.lx.nullable = p.nullable || false;
+    res.lx.tooltip = p.tooltip;
+    res.lx.texts = p.texts;
+    res.lx.placeholder = p.placeholder;
+    res.lx.disabled = p.disabled || false;
+    res.readOnly = p.readOnly || false;
+    res.lx.searchAttributes = p.searchAttributes;
+    res.lx.hasSelectAll = p.hasSelectAll || false;
+    res.lx.readOnlyRenderType = p.readOnlyRenderType || 'row';
+  },
+  LxRow: (res, p) => {
+    res.title = p.label;
+    res.lx.columnSpan = p.columnSpan || '1';
+    res.lx.rowSpan = p.rowSpan || '1';
+    res.lx.rowActionDefinitions = p.rowActionDefinitions;
+  },
+  LxTextArea: (res, p) => {
+    res.type = 'string';
+    res.maxLength = p.maxlength;
+    res.lx.kind = 'multiline';
+    res.lx.placeholder = p.placeholder;
+    res.lx.rows = p.rows || 3;
+    res.lx.disabled = p.disabled || false;
+    res.lx.dynamicHeight = p.dynamicHeight || false;
+    res.lx.tooltip = p.tooltip;
+    res.readOnly = p.readOnly || false;
+  },
+  LxDateTimePicker: (res, p) => {
+    res.type = 'string';
+    res.format = p.kind || 'date';
+    res.lx.placeholder = p.placeholder;
+    res.lx.tooltip = p.tooltip;
+    res.lx.minDate = p.minDate;
+    res.lx.maxDate = p.maxDate;
+    res.lx.required = p.required || false;
+    res.lx.disabled = p.disabled || false;
+    res.lx.timeAdjust = p.timeAdjust;
+    res.lx.clearIfNotExact = p.clearIfNotExact || false;
+    res.lx.texts = p.texts;
+    res.lx.locale = p.locale;
+    res.lx.specialDates = p.specialDates;
+    res.lx.dictionary = p.dictionary;
+    res.lx.variant = p.variant || 'default';
+    res.lx.cadenceOfMinutes = p.cadenceOfMinutes ? Number(p.cadenceOfMinutes) : 1;
+    res.lx.cadenceOfSeconds = p.cadenceOfSeconds ? Number(p.cadenceOfSeconds) : 1;
+    res.readOnly = p.readOnly || false;
+  },
+  LxAutoComplete: (res, p) => {
+    res.type = p.selectionKind === 'multiple' ? 'array' : 'string';
+    res.lx.items = p.items || [];
+    res.lx.idAttribute = p.idAttribute || 'id';
+    res.lx.nameAttribute = p.nameAttribute || 'name';
+    res.lx.dictionary = p.dictionary;
+    res.lx.groupId = p.groupId;
+    res.lx.queryMinLength = p.queryMinLength || 0;
+    res.lx.queryMaxLength = p.queryMaxLength;
+    res.lx.queryDebounce = p.queryDebounce || 200;
+    res.lx.placeholder = p.placeholder;
+    res.lx.tooltip = p.tooltip;
+    res.lx.disabled = p.disabled || false;
+    res.lx.loading = p.loading || false;
+    res.lx.hasDetails = p.hasDetails || false;
+    res.lx.selectionKind = p.selectionKind || 'single';
+    res.lx.preloadedItems = p.preloadedItems;
+    res.lx.labelId = p.labelId;
+    res.lx.hasSelectAll = p.hasSelectAll || false;
+    res.lx.enableAdditionalText = p.enableAdditionalText || false;
+    res.lx.texts = p.texts;
+    res.lx.searchAttributes = p.searchAttributes;
+    res.readOnly = p.readOnly || false;
+  },
+  LxCamera: (res, p) => {
+    res.type = 'string';
+    res.lx.cameraSwitcherMode = p.cameraSwitcherMode || 'toggle';
+    res.lx.hasFlashlightToggle = p.hasFlashlightToggle || false;
+    res.lx.imageSize = p.imageSize || 'default';
+    res.lx.preferencesId = p.preferencesId || 'lx-camera-settings';
+    res.lx.labelId = p.labelId;
+    res.lx.texts = p.texts;
+  },
+  LxCheckbox: (res, p) => {
+    res.type = 'boolean';
+    res.lx.groupId = p.groupId;
+    res.lx.label = p.label;
+    res.lx.disabled = p.disabled || false;
+    res.lx.value = p.value || 'none';
+    res.lx.tabindex = p.tabindex || '0';
+    res.lx.labelId = p.labelId;
+  },
+  LxContentSwitcher: (res, p) => {
+    res.type = 'string';
+    res.lx.items = p.items;
+    res.lx.idAttribute = p.idAttribute || 'id';
+    res.lx.nameAttribute = p.nameAttribute || 'name';
+    res.lx.disabled = p.disabled || false;
+    res.lx.kind = p.kind || 'default';
+    res.lx.icon = p.icon;
+    res.lx.iconSet = p.iconSet;
+    res.lx.tooltip = p.tooltip;
+    res.lx.labelId = p.labelId;
+    res.readOnly = p.readOnly || false;
+  },
+  LxDateTimeRange: (res, p) => {
+    res.type = 'object';
+    res.format = p.kind || 'date';
+    res.lx.placeholder = p.placeholder;
+    res.lx.tooltip = p.tooltip;
+    res.lx.minDate = p.minDate;
+    res.lx.maxDate = p.maxDate;
+    res.lx.required = p.required || false;
+    res.lx.disabled = p.disabled || false;
+    res.lx.timeAdjust = p.timeAdjust;
+    res.lx.locale = p.locale;
+    res.lx.rangeMonths = p.rangeMonths || 'next';
+    res.lx.clearIfNotExact = p.clearIfNotExact || false;
+    res.lx.labelId = p.labelId;
+    res.lx.texts = p.texts;
+    res.readOnly = p.readOnly || false;
+  },
+  LxFileUploader: (res, p) => {
+    res.type = 'array';
+    res.lx.selectionKind = p.selectionKind || 'single';
+    res.lx.mode = p.mode || 'default';
+    res.lx.draggable = p.draggable || false;
+    res.lx.dataType = p.dataType || 'meta';
+    res.lx.hasSearch = p.hasSearch || false;
+    res.lx.disabled = p.disabled || false;
+    res.lx.loading = p.loading || false;
+    res.lx.busy = p.busy || false;
+    res.lx.allowedFileExtensions = p.allowedFileExtensions || [];
+    res.lx.maxFileSize = p.maxFileSize || 30000000;
+    res.lx.hasDownloadButton = p.hasDownloadButton || false;
+    res.lx.showMeta = p.showMeta ?? true;
+    res.lx.maxSizeForMeta = p.maxSizeForMeta || 30000000;
+    res.lx.hasCamera = p.hasCamera || false;
+    res.lx.cameraSwitcherMode = p.cameraSwitcherMode || 'toggle';
+    res.lx.hasFlashlightToggle = p.hasFlashlightToggle || false;
+    res.lx.imageSize = p.imageSize || 'default';
+    res.lx.preferencesId = p.preferencesId || 'lx-camera-settings';
+    res.lx.labelId = p.labelId;
+    res.lx.texts = p.texts;
+    res.readOnly = p.readOnly || false;
+  },
+  LxNumberSlider: (res, p) => {
+    res.type = 'integer';
+    res.lx.min = p.min || 0;
+    res.lx.max = p.max || 9999;
+    res.lx.step = p.step || 1;
+    res.lx.stepMultiplier = p.stepMultiplier || 5;
+    res.lx.hasInput = p.hasInput || false;
+    res.lx.labelId = p.labelId;
+    res.lx.disabled = p.disabled || false;
+    res.lx.kind = p.kind || 'slider';
+    res.readOnly = p.readOnly || false;
+  },
+  LxQrScanner: (res, p) => {
+    res.type = 'object';
+    res.lx.formats = p.formats || ['qr_code'];
+    res.lx.hasFileUploader = p.hasFileUploader ?? true;
+    res.lx.selectionKind = p.selectionKind || 'single';
+    res.lx.cameraSwitcherMode = p.cameraSwitcherMode || 'list';
+    res.lx.hasFlashlightToggle = p.hasFlashlightToggle || false;
+    res.lx.showAlerts = p.showAlerts ?? true;
+    res.lx.labelId = p.labelId;
+    res.lx.texts = p.texts;
+  },
+  LxVisualPicker: (res, p) => {
+    res.type = p.selectionKind === 'multiple' ? 'array' : 'string';
+    res.lx.kind = p.kind || 'europe';
+    res.lx.mode = p.mode || 'default';
+    res.lx.selectionKind = p.selectionKind || 'multiple';
+    res.lx.labelId = p.labelId;
+    res.lx.texts = p.texts;
+    res.readOnly = p.readOnly || false;
+  },
+  LxDayInput: (res, p) => {
+    res.type = 'integer';
+    res.lx.disabled = p.disabled || false;
+    res.lx.kind = p.kind || 'label';
+    res.lx.labelId = p.labelId;
+    res.lx.texts = p.texts;
+    res.readOnly = p.readOnly || false;
+  },
+  LxDrawPad: (res, p) => {
+    res.type = 'string';
+    res.lx.disabled = p.disabled ?? false;
+    res.lx.width = p.width || '500';
+    res.lx.height = p.height || '400';
+    res.lx.instrument = p.instrument || 'brush';
+    res.lx.color = p.color || 'black';
+    res.lx.showInstruments = p.showInstruments ?? false;
+    res.lx.showColorPicker = p.showColorPicker ?? false;
+    res.lx.showClearAll = p.showClearAll ?? false;
+    res.lx.labelId = p.labelId;
+    res.lx.texts = p.texts;
+    res.readOnly = p.readOnly ?? false;
+  },
+  LxMarkdownTextArea: (res, p) => {
+    res.type = 'string';
+    res.lx.placeholder = p.placeholder;
+    res.lx.rows = p.rows;
+    res.maxLength = p.maxlength;
+    res.lx.disabled = p.disabled ?? false;
+    res.lx.showColorPicker = p.showColorPicker ?? false;
+    res.lx.showLinkEditor = p.showLinkEditor ?? true;
+    res.lx.tooltip = p.tooltip;
+    res.lx.showPlaceholderPicker = p.showPlaceholderPicker ?? false;
+    res.lx.showImagePicker = p.showImagePicker ?? false;
+    res.lx.showUnderlineToggle = p.showUnderlineToggle ?? false;
+    res.lx.showHeadingPicker = p.showHeadingPicker ?? false;
+    res.lx.imageMaxSize = p.imageMaxSize ?? 3000000;
+    res.lx.dictionary = p.dictionary;
+    res.lx.labelId = p.labelId;
+    res.lx.texts = p.texts;
+    res.readOnly = p.readOnly ?? false;
+  },
+  LxSection: (res, p) => {
+    res.type = 'object';
+    res.properties = res.properties || {};
+    res.title = p.label;
+    res.description = p.description;
+    res.lx.columnCount = Number(p.columnCount) || 1;
+    res.lx.requiredMode = p.requiredMode || 'none';
+    res.lx.icon = p.icon;
+    res.lx.iconSet = p.iconSet || 'cds';
+    res.lx.customClass = p.customClass;
+    res.lx.badge = p.badge;
+    res.lx.actionDefinitions = p.actionDefinitions;
+    res.lx.orientation = p.orientation;
+  },
+  LxForm: (res, p) => {
+    res.type = 'object';
+    res.properties = res.properties || {};
+    res.lx.columnCount = Number(p.columnCount) || 1;
+    res.lx.showHeader = p.showHeader ?? true;
+    res.lx.stickyHeader = p.stickyHeader ?? true;
+    res.lx.showFooter = p.showFooter ?? true;
+    res.lx.stickyFooter = p.stickyFooter ?? true;
+    res.lx.showPreHeaderInfo = p.showPreHeaderInfo ?? true;
+    res.lx.showPostHeaderInfo = p.showPostHeaderInfo ?? true;
+    res.lx.index = p.index;
+    res.lx.indexType = p.indexType || 'none';
+    res.lx.requiredMode = p.requiredMode || 'none';
+    res.lx.kind = p.kind || 'default';
+    res.lx.orientation = p.orientation || 'vertical';
+    res.lx.hasSkipLink = p.hasSkipLink || false;
+    res.lx.actionDefinitions = p.actionDefinitions;
+    res.lx.texts = p.texts;
+  },
+  LxFilters: (res, p) => {
+    res.type = 'object';
+    res.properties = res.properties || {};
+    res.title = p.label;
+    res.description = p.description;
+    res.lx.defaultValues = p.defaultValues || {};
+    res.lx.useDefaults = p.useDefaults || false;
+    res.lx.usesFilters = p.usesFilters || false;
+    res.lx.filterButtonKind = p.filterButtonKind || 'tertiary';
+    res.lx.columnCount = p.columnCount || 3;
+    res.lx.expanded = p.expanded || false;
+    res.lx.disabled = p.disabled || false;
+    res.lx.fastFilters = p.fastFilters || [];
+    res.lx.fastIdAttribute = p.fastIdAttribute || 'id';
+    res.lx.fastNameAttribute = p.fastNameAttribute || 'name';
+    res.lx.badge = p.badge;
+    res.lx.badgeType = p.badgeType || 'default';
+    res.lx.texts = p.texts;
+  },
+};
+
 const compModel = computed({
   get() {
     return props.componentModel;
@@ -210,307 +514,11 @@ function changeNavigationItem(id) {
 // Convert component props to according schema
 function propsToSchema(component, propValues) {
   const res = lxFormatUtils.objectClone(props.componentModel) || {};
-  if (component === 'LxTextInput') {
-    res.type = 'string';
-    res.maxLength = propValues.maxlength;
+
+  const builder = COMPONENT_SCHEMA_BUILDERS[component];
+  if (builder) {
     res.lx = res.lx || {};
-    res.lx.mask = propValues.mask || 'default';
-    res.lx.kind = propValues.kind || 'default';
-    res.lx.scale = propValues.scale;
-    res.lx.tooltip = propValues.tooltip;
-    res.lx.disabled = propValues.disabled || false;
-    res.lx.uppercase = propValues.uppercase || false;
-    res.lx.convertToString = propValues.convertToString || false;
-    res.lx.placeholder = propValues.placeholder;
-    res.lx.signed = propValues.signed || false;
-    res.readOnly = propValues.readOnly || false;
-  } else if (component === 'LxToggle') {
-    res.type = 'boolean';
-    res.lx = res.lx || {};
-    res.lx.size = propValues.size || 'm';
-    res.lx.disabled = propValues.disabled || false;
-    res.lx.tooltip = propValues.tooltip;
-    res.readOnly = propValues.readOnly || false;
-  } else if (component === 'LxValuePicker') {
-    res.type = propValues.selectionKind === 'multiple' ? 'array' : 'string';
-    res.lx = res.lx || {};
-    res.lx.items = propValues.items || [];
-    res.lx.idAttribute = propValues.idAttribute;
-    res.lx.nameAttribute = propValues.nameAttribute;
-    res.lx.iconAttribute = propValues.iconAttribute;
-    res.lx.iconSetAttribute = propValues.iconSetAttribute;
-    res.lx.categoryAttribute = propValues.categoryAttribute;
-    res.lx.descriptionAttribute = propValues.descriptionAttribute;
-    res.lx.variant = propValues.variant;
-    res.lx.hasSearch = propValues.hasSearch || false;
-    res.lx.alwaysAsArray = propValues.alwaysAsArray || false;
-    res.lx.nullable = propValues.nullable || false;
-    res.lx.tooltip = propValues.tooltip;
-    res.lx.texts = propValues.texts;
-    res.lx.placeholder = propValues.placeholder;
-    res.lx.disabled = propValues.disabled || false;
-    res.readOnly = propValues.readOnly || false;
-    res.lx.searchAttributes = propValues.searchAttributes;
-    res.lx.hasSelectAll = propValues.hasSelectAll || false;
-    res.lx.readOnlyRenderType = propValues.readOnlyRenderType || 'row';
-  } else if (component === 'LxRow') {
-    res.title = propValues.label;
-    res.lx = res.lx || {};
-    res.lx.columnSpan = propValues.columnSpan || '1';
-    res.lx.rowSpan = propValues.rowSpan || '1';
-    res.lx.rowActionDefinitions = propValues.rowActionDefinitions;
-  } else if (component === 'LxTextArea') {
-    res.type = 'string';
-    res.maxLength = propValues.maxlength;
-    res.lx = res.lx || {};
-    res.lx.kind = 'multiline';
-    res.lx.placeholder = propValues.placeholder;
-    res.lx.rows = propValues.rows || 3;
-    res.lx.disabled = propValues.disabled || false;
-    res.lx.dynamicHeight = propValues.dynamicHeight || false;
-    res.lx.tooltip = propValues.tooltip;
-    res.readOnly = propValues.readOnly || false;
-  } else if (component === 'LxDateTimePicker') {
-    res.type = 'string';
-    res.lx = res.lx || {};
-    res.format = propValues.kind || 'date';
-    res.lx.placeholder = propValues.placeholder;
-    res.lx.tooltip = propValues.tooltip;
-    res.lx.minDate = propValues.minDate;
-    res.lx.maxDate = propValues.maxDate;
-    res.lx.required = propValues.required || false;
-    res.lx.disabled = propValues.disabled || false;
-    res.lx.timeAdjust = propValues.timeAdjust;
-    res.lx.clearIfNotExact = propValues.clearIfNotExact || false;
-    res.lx.texts = propValues.texts;
-    res.lx.locale = propValues.locale;
-    res.lx.specialDates = propValues.specialDates;
-    res.lx.dictionary = propValues.dictionary;
-    res.lx.variant = propValues.variant || 'default';
-    res.lx.cadenceOfMinutes = propValues.cadenceOfMinutes ? Number(propValues.cadenceOfMinutes) : 1;
-    res.lx.cadenceOfSeconds = propValues.cadenceOfSeconds ? Number(propValues.cadenceOfSeconds) : 1;
-    res.readOnly = propValues.readOnly || false;
-  } else if (component === 'LxAutoComplete') {
-    res.type = propValues.selectionKind === 'multiple' ? 'array' : 'string';
-    res.lx = res.lx || {};
-    res.lx.items = propValues.items || [];
-    res.lx.idAttribute = propValues.idAttribute || 'id';
-    res.lx.nameAttribute = propValues.nameAttribute || 'name';
-    res.lx.dictionary = propValues.dictionary;
-    res.lx.groupId = propValues.groupId;
-    res.lx.queryMinLength = propValues.queryMinLength || 0;
-    res.lx.queryMaxLength = propValues.queryMaxLength;
-    res.lx.queryDebounce = propValues.queryDebounce || 200;
-    res.lx.placeholder = propValues.placeholder;
-    res.lx.tooltip = propValues.tooltip;
-    res.lx.disabled = propValues.disabled || false;
-    res.lx.loading = propValues.loading || false;
-    res.lx.hasDetails = propValues.hasDetails || false;
-    res.lx.selectionKind = propValues.selectionKind || 'single';
-    res.lx.preloadedItems = propValues.preloadedItems;
-    res.lx.labelId = propValues.labelId;
-    res.lx.hasSelectAll = propValues.hasSelectAll || false;
-    res.lx.enableAdditionalText = propValues.enableAdditionalText || false;
-    res.lx.texts = propValues.texts;
-    res.lx.searchAttributes = propValues.searchAttributes;
-    res.readOnly = propValues.readOnly || false;
-  } else if (component === 'LxCamera') {
-    res.type = 'string';
-    res.lx = res.lx || {};
-    res.lx.cameraSwitcherMode = propValues.cameraSwitcherMode || 'toggle';
-    res.lx.hasFlashlightToggle = propValues.hasFlashlightToggle || false;
-    res.lx.imageSize = propValues.imageSize || 'default';
-    res.lx.preferencesId = propValues.preferencesId || 'lx-camera-settings';
-    res.lx.labelId = propValues.labelId;
-    res.lx.texts = propValues.texts;
-  } else if (component === 'LxCheckbox') {
-    res.type = 'boolean';
-    res.lx = res.lx || {};
-    res.lx.groupId = propValues.groupId;
-    res.lx.label = propValues.label;
-    res.lx.disabled = propValues.disabled || false;
-    res.lx.value = propValues.value || 'none';
-    res.lx.tabindex = propValues.tabindex || '0';
-    res.lx.labelId = propValues.labelId;
-  } else if (component === 'LxContentSwitcher') {
-    res.type = 'string';
-    res.lx = res.lx || {};
-    res.lx.items = propValues.items;
-    res.lx.idAttribute = propValues.idAttribute || 'id';
-    res.lx.nameAttribute = propValues.nameAttribute || 'name';
-    res.lx.disabled = propValues.disabled || false;
-    res.lx.kind = propValues.kind || 'default';
-    res.lx.icon = propValues.icon;
-    res.lx.iconSet = propValues.iconSet;
-    res.lx.tooltip = propValues.tooltip;
-    res.lx.labelId = propValues.labelId;
-    res.readOnly = propValues.readOnly || false;
-  } else if (component === 'LxDateTimeRange') {
-    res.type = 'object';
-    res.format = propValues.kind || 'date';
-    res.lx = res.lx || {};
-    res.lx.placeholder = propValues.placeholder;
-    res.lx.tooltip = propValues.tooltip;
-    res.lx.minDate = propValues.minDate;
-    res.lx.maxDate = propValues.maxDate;
-    res.lx.required = propValues.required || false;
-    res.lx.disabled = propValues.disabled || false;
-    res.lx.timeAdjust = propValues.timeAdjust;
-    res.lx.locale = propValues.locale;
-    res.lx.rangeMonths = propValues.rangeMonths || 'next';
-    res.lx.clearIfNotExact = propValues.clearIfNotExact || false;
-    res.lx.labelId = propValues.labelId;
-    res.lx.texts = propValues.texts;
-    res.readOnly = propValues.readOnly || false;
-  } else if (component === 'LxFileUploader') {
-    res.type = 'array';
-    res.lx = res.lx || {};
-    res.lx.selectionKind = propValues.selectionKind || 'single';
-    res.lx.mode = propValues.mode || 'default';
-    res.lx.draggable = propValues.draggable || false;
-    res.lx.dataType = propValues.dataType || 'meta';
-    res.lx.hasSearch = propValues.hasSearch || false;
-    res.lx.disabled = propValues.disabled || false;
-    res.lx.loading = propValues.loading || false;
-    res.lx.busy = propValues.busy || false;
-    res.lx.allowedFileExtensions = propValues.allowedFileExtensions || [];
-    res.lx.maxFileSize = propValues.maxFileSize || 30000000;
-    res.lx.hasDownloadButton = propValues.hasDownloadButton || false;
-    res.lx.showMeta = propValues.showMeta ?? true;
-    res.lx.maxSizeForMeta = propValues.maxSizeForMeta || 30000000;
-    res.lx.hasCamera = propValues.hasCamera || false;
-    res.lx.cameraSwitcherMode = propValues.cameraSwitcherMode || 'toggle';
-    res.lx.hasFlashlightToggle = propValues.hasFlashlightToggle || false;
-    res.lx.imageSize = propValues.imageSize || 'default';
-    res.lx.preferencesId = propValues.preferencesId || 'lx-camera-settings';
-    res.lx.labelId = propValues.labelId;
-    res.lx.texts = propValues.texts;
-    res.readOnly = propValues.readOnly || false;
-  } else if (component === 'LxNumberSlider') {
-    res.type = 'integer';
-    res.lx = res.lx || {};
-    res.lx.min = propValues.min || 0;
-    res.lx.max = propValues.max || 9999;
-    res.lx.step = propValues.step || 1;
-    res.lx.stepMultiplier = propValues.stepMultiplier || 5;
-    res.lx.hasInput = propValues.hasInput || false;
-    res.lx.labelId = propValues.labelId;
-    res.lx.disabled = propValues.disabled || false;
-    res.lx.kind = propValues.kind || 'slider';
-    res.readOnly = propValues.readOnly || false;
-  } else if (component === 'LxQrScanner') {
-    res.type = 'object';
-    res.lx = res.lx || {};
-    res.lx.formats = propValues.formats || ['qr_code'];
-    res.lx.hasFileUploader = propValues.hasFileUploader ?? true;
-    res.lx.selectionKind = propValues.selectionKind || 'single';
-    res.lx.cameraSwitcherMode = propValues.cameraSwitcherMode || 'list';
-    res.lx.hasFlashlightToggle = propValues.hasFlashlightToggle || false;
-    res.lx.showAlerts = propValues.showAlerts ?? true;
-    res.lx.labelId = propValues.labelId;
-    res.lx.texts = propValues.texts;
-  } else if (component === 'LxVisualPicker') {
-    res.type = propValues.selectionKind === 'multiple' ? 'array' : 'string';
-    res.lx = res.lx || {};
-    res.lx.kind = propValues.kind || 'europe';
-    res.lx.mode = propValues.mode || 'default';
-    res.lx.selectionKind = propValues.selectionKind || 'multiple';
-    res.lx.labelId = propValues.labelId;
-    res.lx.texts = propValues.texts;
-    res.readOnly = propValues.readOnly || false;
-  } else if (component === 'LxDayInput') {
-    res.type = 'integer';
-    res.lx = res.lx || {};
-    res.lx.disabled = propValues.disabled || false;
-    res.lx.kind = propValues.kind || 'label';
-    res.lx.labelId = propValues.labelId;
-    res.lx.texts = propValues.texts;
-    res.readOnly = propValues.readOnly || false;
-  } else if (component === 'LxDrawPad') {
-    res.type = 'string';
-    res.lx = res.lx || {};
-    res.lx.disabled = propValues.disabled ?? false;
-    res.lx.width = propValues.width || '500';
-    res.lx.height = propValues.height || '400';
-    res.lx.instrument = propValues.instrument || 'brush';
-    res.lx.color = propValues.color || 'black';
-    res.lx.showInstruments = propValues.showInstruments ?? false;
-    res.lx.showColorPicker = propValues.showColorPicker ?? false;
-    res.lx.showClearAll = propValues.showClearAll ?? false;
-    res.lx.labelId = propValues.labelId;
-    res.lx.texts = propValues.texts;
-    res.readOnly = propValues.readOnly ?? false;
-  } else if (component === 'LxMarkdownTextArea') {
-    res.type = 'string';
-    res.lx = res.lx || {};
-    res.lx.placeholder = propValues.placeholder;
-    res.lx.rows = propValues.rows;
-    res.maxLength = propValues.maxlength;
-    res.lx.disabled = propValues.disabled ?? false;
-    res.lx.showColorPicker = propValues.showColorPicker ?? false;
-    res.lx.showLinkEditor = propValues.showLinkEditor ?? true;
-    res.lx.tooltip = propValues.tooltip;
-    res.lx.showPlaceholderPicker = propValues.showPlaceholderPicker ?? false;
-    res.lx.showImagePicker = propValues.showImagePicker ?? false;
-    res.lx.showUnderlineToggle = propValues.showUnderlineToggle ?? false;
-    res.lx.showHeadingPicker = propValues.showHeadingPicker ?? false;
-    res.lx.imageMaxSize = propValues.imageMaxSize ?? 3000000;
-    res.lx.dictionary = propValues.dictionary;
-    res.lx.labelId = propValues.labelId;
-    res.lx.texts = propValues.texts;
-    res.readOnly = propValues.readOnly ?? false;
-  } else if (component === 'LxSection') {
-    res.type = 'object';
-    res.lx = res.lx || {};
-    res.properties = res.properties || {};
-    res.title = propValues.label;
-    res.description = propValues.description;
-    res.lx.columnCount = Number(propValues.columnCount) || 1;
-    res.lx.requiredMode = propValues.requiredMode || 'none';
-    res.lx.icon = propValues.icon;
-    res.lx.iconSet = propValues.iconSet || 'cds';
-    res.lx.customClass = propValues.customClass;
-    res.lx.badge = propValues.badge;
-    res.lx.actionDefinitions = propValues.actionDefinitions;
-    res.lx.orientation = propValues.orientation;
-  } else if (component === 'LxForm') {
-    res.type = 'object';
-    res.lx = res.lx || {};
-    res.properties = res.properties || {};
-    res.lx.columnCount = Number(propValues.columnCount) || 1;
-    res.lx.showHeader = propValues.showHeader ?? true;
-    res.lx.stickyHeader = propValues.stickyHeader ?? true;
-    res.lx.showFooter = propValues.showFooter ?? true;
-    res.lx.stickyFooter = propValues.stickyFooter ?? true;
-    res.lx.showPreHeaderInfo = propValues.showPreHeaderInfo ?? true;
-    res.lx.showPostHeaderInfo = propValues.showPostHeaderInfo ?? true;
-    res.lx.index = propValues.index;
-    res.lx.indexType = propValues.indexType || 'none';
-    res.lx.requiredMode = propValues.requiredMode || 'none';
-    res.lx.kind = propValues.kind || 'default';
-    res.lx.orientation = propValues.orientation || 'vertical';
-    res.lx.hasSkipLink = propValues.hasSkipLink || false;
-    res.lx.actionDefinitions = propValues.actionDefinitions;
-    res.lx.texts = propValues.texts;
-  } else if (component === 'LxFilters') {
-    res.type = 'object';
-    res.lx = res.lx || {};
-    res.properties = res.properties || {};
-    res.title = propValues.label;
-    res.description = propValues.description;
-    res.lx.defaultValues = propValues.defaultValues || {};
-    res.lx.useDefaults = propValues.useDefaults || false;
-    res.lx.usesFilters = propValues.usesFilters || false;
-    res.lx.filterButtonKind = propValues.filterButtonKind || 'tertiary';
-    res.lx.columnCount = propValues.columnCount || 3;
-    res.lx.expanded = propValues.expanded || false;
-    res.lx.disabled = propValues.disabled || false;
-    res.lx.fastFilters = propValues.fastFilters || [];
-    res.lx.fastIdAttribute = propValues.fastIdAttribute || 'id';
-    res.lx.fastNameAttribute = propValues.fastNameAttribute || 'name';
-    res.lx.badge = propValues.badge;
-    res.lx.badgeType = propValues.badgeType || 'default';
-    res.lx.texts = propValues.texts;
+    builder(res, propValues);
   }
 
   return res;

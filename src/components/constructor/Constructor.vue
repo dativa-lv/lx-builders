@@ -608,22 +608,39 @@ function moveElementInside() {
   selectComponentBySchemaPath(movedSchemaPath);
 }
 
+function splitDotPath(path) {
+  if (!path?.includes('.')) return { parent: null, key: path ?? null };
+  const parts = path.split('.');
+  return { parent: parts.slice(0, -1).join('.'), key: parts.slice(-1)[0] };
+}
+
+function getGreatGrandParent(grandParentPath, schemaClone) {
+  const { parent: greatGrandParentPath, key: greatGrandParentKey } = splitDotPath(grandParentPath);
+
+  const greatGrandParentSchemaPath = greatGrandParentPath
+    ? findPositionInSchema(greatGrandParentPath)
+    : null;
+  const greatGrandParentSchema = greatGrandParentSchemaPath
+    ? getValueByPath(schemaClone, greatGrandParentSchemaPath)
+    : schemaClone;
+
+  return {
+    schema: greatGrandParentSchema,
+    schemaPath: greatGrandParentSchemaPath,
+    properties: greatGrandParentSchema?.properties,
+    anchorKey: greatGrandParentKey,
+  };
+}
+
 // Moves element outside of current container
 function moveElementOutside(position) {
   if (!schemaPath.value || (position !== 'next' && position !== 'previous')) return;
 
   const currentSchemaPath = schemaPath.value;
-  const currentKey = schemaPath.value?.split('.')?.slice(-1)[0];
-  const parentPath = schemaPath.value?.includes('.')
-    ? schemaPath.value?.split('.')?.slice(0, -1)?.join('.')
-    : null;
-
+  const { parent: parentPath, key: currentKey } = splitDotPath(schemaPath.value);
   if (!parentPath) return;
 
-  const grandParentPath = parentPath?.includes('.')
-    ? parentPath?.split('.')?.slice(0, -1)?.join('.')
-    : null;
-  const parentKey = parentPath?.split('.')?.slice(-1)[0] || null;
+  const { parent: grandParentPath, key: parentKey } = splitDotPath(parentPath);
   if (!grandParentPath) return;
   const schemaClone = lxFormatUtils.objectClone(schemaModel.value);
   const parentSchemaPath = parentPath ? findPositionInSchema(parentPath) : null;
@@ -648,21 +665,13 @@ function moveElementOutside(position) {
     getItemDisplayType(parentSchema) === 'section' &&
     getItemDisplayType(grandParentSchema) === 'form'
   ) {
-    const greatGrandParentPath = grandParentPath?.includes('.')
-      ? grandParentPath?.split('.')?.slice(0, -1)?.join('.')
-      : null;
-    const greatGrandParentKey = grandParentPath?.split('.')?.slice(-1)[0] || null;
-    const greatGrandParentSchemaPath = greatGrandParentPath
-      ? findPositionInSchema(greatGrandParentPath)
-      : null;
-    const greatGrandParentSchema = greatGrandParentSchemaPath
-      ? getValueByPath(schemaClone, greatGrandParentSchemaPath)
-      : schemaClone;
-
-    outsideContainerSchema = greatGrandParentSchema;
-    outsideContainerSchemaPath = greatGrandParentSchemaPath;
-    outsideContainerProperties = greatGrandParentSchema?.properties;
-    outsideAnchorKey = greatGrandParentKey;
+    const greatGrandParent = getGreatGrandParent(grandParentPath, schemaClone);
+    if (greatGrandParent) {
+      outsideContainerSchema = greatGrandParent.schema;
+      outsideContainerSchemaPath = greatGrandParent.schemaPath;
+      outsideContainerProperties = greatGrandParent.properties;
+      outsideAnchorKey = greatGrandParent.anchorKey;
+    }
   }
 
   if (!outsideContainerProperties || !outsideAnchorKey) return;
