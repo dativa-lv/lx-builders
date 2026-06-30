@@ -569,11 +569,11 @@ function moveElementInside() {
   let targetContainerPath = [parentPath, targetKey].filter(Boolean)?.join('.');
 
   if (getItemDisplayType(targetSchema) === 'form') {
-    const targetSectionEntries = Object.entries(targetSchema.properties || {}).filter(
+    const targetSectionEntry = Object.entries(targetSchema.properties || {}).find(
       ([, child]) => getItemDisplayType(child) === 'section'
     );
 
-    const targetSectionEntry = targetSectionEntries[0];
+    if (!targetSectionEntry) return;
 
     const [sectionKey, sectionSchema] = targetSectionEntry;
 
@@ -632,6 +632,32 @@ function getGreatGrandParent(grandParentPath, schemaClone) {
   };
 }
 
+function resolveOutsideContainer({
+  parentSchema,
+  grandParentSchema,
+  grandParentSchemaPath,
+  grandParentProperties,
+  parentKey,
+  grandParentPath,
+  schemaClone,
+}) {
+  const isSectionInForm =
+    getItemDisplayType(parentSchema) === 'section' &&
+    getItemDisplayType(grandParentSchema) === 'form';
+
+  if (isSectionInForm) {
+    const greatGrandParent = getGreatGrandParent(grandParentPath, schemaClone);
+    if (greatGrandParent) return greatGrandParent;
+  }
+
+  return {
+    schema: grandParentSchema,
+    schemaPath: grandParentSchemaPath,
+    properties: grandParentProperties,
+    anchorKey: parentKey,
+  };
+}
+
 // Moves element outside of current container
 function moveElementOutside(position) {
   if (!schemaPath.value || (position !== 'next' && position !== 'previous')) return;
@@ -656,23 +682,20 @@ function moveElementOutside(position) {
 
   if (!parentProperties || !currentKey || !parentKey) return;
 
-  let outsideContainerSchema = grandParentSchema;
-  let outsideContainerSchemaPath = grandParentSchemaPath;
-  let outsideContainerProperties = grandParentProperties;
-  let outsideAnchorKey = parentKey;
-
-  if (
-    getItemDisplayType(parentSchema) === 'section' &&
-    getItemDisplayType(grandParentSchema) === 'form'
-  ) {
-    const greatGrandParent = getGreatGrandParent(grandParentPath, schemaClone);
-    if (greatGrandParent) {
-      outsideContainerSchema = greatGrandParent.schema;
-      outsideContainerSchemaPath = greatGrandParent.schemaPath;
-      outsideContainerProperties = greatGrandParent.properties;
-      outsideAnchorKey = greatGrandParent.anchorKey;
-    }
-  }
+  const {
+    schema: outsideContainerSchema,
+    schemaPath: outsideContainerSchemaPath,
+    properties: outsideContainerProperties,
+    anchorKey: outsideAnchorKey,
+  } = resolveOutsideContainer({
+    parentSchema,
+    grandParentSchema,
+    grandParentSchemaPath,
+    grandParentProperties,
+    parentKey,
+    grandParentPath,
+    schemaClone,
+  });
 
   if (!outsideContainerProperties || !outsideAnchorKey) return;
 
@@ -1178,7 +1201,7 @@ function importActionClicked(actionId) {
 
       // Clear selection after import
       clearSelectedElement();
-    } catch (e) {
+    } catch {
       importInvalidMessage.value = displayTexts.value?.errorParsingJsonContent;
       emits('error', 'Error parsing JSON content');
     }
@@ -1232,7 +1255,7 @@ function editSchemaActionClicked(actionId) {
       const parsed = JSON.parse(editSchemaContent.value);
       schemaModel.value = parsed;
       editSchemaModal.value.close();
-    } catch (e) {
+    } catch {
       emits('error', 'Error parsing JSON content');
     }
   }
@@ -1261,7 +1284,7 @@ function editModelActionClicked(actionId) {
       const parsed = JSON.parse(editModelContent.value);
       model.value = parsed;
       editModelModal.value.close();
-    } catch (e) {
+    } catch {
       emits('error', 'Error parsing JSON content');
     }
   }
