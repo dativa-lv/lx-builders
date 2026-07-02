@@ -34,7 +34,7 @@ Check out our [🌐&nbsp;Form Builder Demo](https://lx-ui.dev/resources/forms/bu
 ## Render with
 - <a href="/docs/ViewBuilder.md">ℹ️&nbsp;LxViewBuilder</a>
 - <a href="/docs/FormBuilder.md">ℹ️&nbsp;LxFormBuilder</a>
-- ℹ️&nbsp;LxFilterBuilder
+- <a href="/docs/FilterBuilder.md">ℹ️&nbsp;LxFilterBuilder</a>
 
 ## Get
 

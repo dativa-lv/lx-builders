@@ -41,14 +41,14 @@ const props = defineProps({
    */
   mode: { type: String, default: 'default' }, // 'default' || 'no-schema' || 'mixed'
   /**
-   * The default values for the filter component.
+   * The default values for the filter component description and usage indicator.
    * @type {Object}
    * @default null
    * @since 1.9.0-beta.3
    */
   defaultValues: { type: Object, default: null },
   /**
-   * Indicates whether to use initial modelValue props values as default values.
+   * Indicates whether to use initial modelValue props values as default values for the description and usage indicator.
    * @type {Boolean}
    * @default true
    * @since 1.9.0-beta.3
@@ -229,6 +229,7 @@ const emits = defineEmits([
   'fastFilterClick',
   'update:expanded',
   'rowActionClick',
+  'emit',
 ]);
 
 const defaultTexts = {
@@ -566,6 +567,10 @@ defineExpose({
           emits('rowActionClick', action, value, schemaName, index)
       "
       @filterBuilderFilter="filter"
+      @emit="
+        (emitName, key, value, additionalParams) =>
+          emits('emit', emitName, key, value, additionalParams)
+      "
     />
   </LxFilters>
 </template>
