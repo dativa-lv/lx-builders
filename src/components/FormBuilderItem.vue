@@ -425,6 +425,7 @@ const builderOptions = computed(() => ({
     :custom-mask-value="displaySchema?.properties[name]?.lx?.customMaskValue"
     :autocomplete="displaySchema?.properties[name]?.lx?.autocomplete"
     :options="displaySchema?.properties[name]?.lx?.options"
+    :texts="displaySchema?.properties[name]?.lx?.texts"
     v-model="model[name]"
     :builderOptions="builderOptions"
     @keyup.enter="emits('filterBuilderFilter')"
@@ -441,6 +442,7 @@ const builderOptions = computed(() => ({
     :readOnly="isReadOnly(displaySchema?.properties[name])"
     :invalid="isInvalid"
     :invalidation-message="invalidMessage"
+    :texts="displaySchema?.properties[name]?.lx?.texts"
     v-model="model[name]"
     :builderOptions="builderOptions"
     @keyup.enter="emits('filterBuilderFilter')"
@@ -485,6 +487,7 @@ const builderOptions = computed(() => ({
     :readOnly="isReadOnly(displaySchema?.properties[name])"
     :invalid="isInvalid"
     :invalidation-message="invalidMessage"
+    :texts="displaySchema?.properties[name]?.lx?.texts"
     v-model="model[name]"
     :builderOptions="builderOptions"
     @keyup.enter="emits('filterBuilderFilter')"
@@ -498,6 +501,7 @@ const builderOptions = computed(() => ({
     :readOnly="isReadOnly(displaySchema?.properties[name])"
     :invalid="isInvalid"
     :invalidation-message="invalidMessage"
+    :texts="displaySchema?.properties[name]?.lx?.texts"
     :builderOptions="builderOptions"
     v-model="model[name]"
   >
@@ -649,6 +653,7 @@ const builderOptions = computed(() => ({
     :loading="displaySchema?.properties[name]?.lx?.loading"
     :busy="displaySchema?.properties[name]?.lx?.busy"
     :actionDefinitions="displaySchema?.properties[name]?.lx?.actionDefinitions"
+    :texts="displaySchema?.properties[name]?.lx?.texts"
     class="form-builder-data-block"
     @actionClick="(a, b) => componentEmit('actionClick', name, a, b)"
   >
@@ -687,6 +692,7 @@ const builderOptions = computed(() => ({
             :custom-mask-value="item?.lx?.customMaskValue"
             :autocomplete="item?.lx?.autocomplete"
             :options="item?.lx?.options"
+            :texts="item?.lx?.texts"
             v-model="model[name][itemName]"
           />
           <LxTextArea
@@ -698,6 +704,8 @@ const builderOptions = computed(() => ({
             :disabled="item?.lx?.disabled"
             :tooltip="item?.lx?.tooltip"
             :readOnly="isReadOnly(item)"
+            :texts="item?.lx?.texts"
+            v-model="model[name][itemName]"
           />
           <LxTextInput
             v-else-if="componentSelect(item, itemName) === 'textInputInteger'"
@@ -712,6 +720,7 @@ const builderOptions = computed(() => ({
             :placeholder="examplesValue(item)"
             :signed="item?.lx?.signed"
             :readOnly="isReadOnly(item)"
+            :texts="item?.lx?.texts"
             v-model="model[name][itemName]"
           />
           <LxToggle
@@ -720,6 +729,7 @@ const builderOptions = computed(() => ({
             :disabled="item?.lx?.disabled"
             :tooltip="item?.lx?.tooltip"
             :readOnly="isReadOnly(item)"
+            :texts="item?.lx?.texts"
             v-model="model[name][itemName]"
           />
           <LxDateTimePicker
@@ -1416,6 +1426,7 @@ const builderOptions = computed(() => ({
               :custom-mask-value="itemValue?.lx?.customMaskValue"
               :autocomplete="itemValue?.lx?.autocomplete"
               :options="itemValue?.lx?.options"
+              :texts="itemValue?.lx?.texts"
               v-model="arrayModelValue[`${id}-${name}`][itemName]"
             />
             <LxTextArea
@@ -1427,6 +1438,7 @@ const builderOptions = computed(() => ({
               :disabled="itemValue?.lx?.disabled"
               :tooltip="itemValue?.lx?.tooltip"
               :readOnly="isReadOnly(itemValue)"
+              :texts="itemValue?.lx?.texts"
               v-model="arrayModelValue[`${id}-${name}`][itemName]"
             />
             <LxTextInput
@@ -1442,6 +1454,7 @@ const builderOptions = computed(() => ({
               :placeholder="examplesValue(itemValue)"
               :signed="itemValue?.lx?.signed"
               :readOnly="isReadOnly(itemValue)"
+              :texts="itemValue?.lx?.texts"
               v-model="arrayModelValue[`${id}-${name}`][itemName]"
             />
             <LxToggle
@@ -1450,6 +1463,7 @@ const builderOptions = computed(() => ({
               :disabled="itemValue?.lx?.disabled"
               :tooltip="itemValue?.lx?.tooltip"
               :readOnly="isReadOnly(itemValue)"
+              :texts="itemValue?.lx?.texts"
               v-model="arrayModelValue[`${id}-${name}`][itemName]"
             />
             <LxDateTimePicker
@@ -1628,6 +1642,7 @@ const builderOptions = computed(() => ({
                       :custom-mask-value="appendableItem?.lx?.customMaskValue"
                       :autocomplete="appendableItem?.lx?.autocomplete"
                       :options="appendableItem?.lx?.options"
+                      :texts="appendableItem?.lx?.texts"
                       v-model="item[appendableItemName]"
                     />
                     <LxTextArea
@@ -1640,6 +1655,7 @@ const builderOptions = computed(() => ({
                       :disabled="appendableItem?.lx?.disabled"
                       :tooltip="appendableItem?.lx?.tooltip"
                       :readOnly="isReadOnly(appendableItem)"
+                      :texts="appendableItem?.lx?.texts"
                       v-model="item[appendableItemName]"
                     />
                     <LxDateTimePicker
@@ -1683,6 +1699,7 @@ const builderOptions = computed(() => ({
                       :convert-to-string="appendableItem?.lx?.convertToString"
                       :placeholder="examplesValue(appendableItem)"
                       :readOnly="isReadOnly(appendableItem)"
+                      :texts="appendableItem?.lx?.texts"
                       v-model="item[appendableItemName]"
                     />
                     <LxToggle
@@ -1692,6 +1709,7 @@ const builderOptions = computed(() => ({
                       :disabled="appendableItem?.lx?.disabled"
                       :tooltip="appendableItem?.lx?.tooltip"
                       :readOnly="isReadOnly(appendableItem)"
+                      :texts="appendableItem?.lx?.texts"
                       v-model="item[appendableItemName]"
                     >
                       <span v-if="appendableItem?.lx?.label">{{ appendableItem?.lx?.label }}</span>
@@ -1977,6 +1995,7 @@ const builderOptions = computed(() => ({
               :custom-mask-value="itemValue?.lx?.customMaskValue"
               :autocomplete="itemValue?.lx?.autocomplete"
               :options="itemValue?.lx?.options"
+              :texts="itemValue?.lx?.texts"
               v-model="arrayModelValue[`${id}-${name}`][itemName]"
             />
             <LxTextArea
@@ -1988,6 +2007,7 @@ const builderOptions = computed(() => ({
               :disabled="itemValue?.lx?.disabled"
               :tooltip="itemValue?.lx?.tooltip"
               :readOnly="isReadOnly(itemValue)"
+              :texts="itemValue?.lx?.texts"
               v-model="arrayModelValue[`${id}-${name}`][itemName]"
             />
             <LxTextInput
@@ -2003,6 +2023,7 @@ const builderOptions = computed(() => ({
               :placeholder="examplesValue(itemValue)"
               :signed="itemValue?.lx?.signed"
               :readOnly="isReadOnly(itemValue)"
+              :texts="itemValue?.lx?.texts"
               v-model="arrayModelValue[`${id}-${name}`][itemName]"
             />
             <LxToggle
@@ -2011,6 +2032,7 @@ const builderOptions = computed(() => ({
               :disabled="itemValue?.lx?.disabled"
               :tooltip="itemValue?.lx?.tooltip"
               :readOnly="isReadOnly(itemValue)"
+              :texts="itemValue?.lx?.texts"
               v-model="arrayModelValue[`${id}-${name}`][itemName]"
             />
             <LxDateTimePicker
@@ -2189,6 +2211,7 @@ const builderOptions = computed(() => ({
                       :custom-mask-value="appendableItem?.lx?.customMaskValue"
                       :autocomplete="appendableItem?.lx?.autocomplete"
                       :options="appendableItem?.lx?.options"
+                      :texts="appendableItem?.lx?.texts"
                       v-model="item[appendableItemName]"
                     />
                     <LxTextArea
@@ -2201,6 +2224,7 @@ const builderOptions = computed(() => ({
                       :disabled="appendableItem?.lx?.disabled"
                       :tooltip="appendableItem?.lx?.tooltip"
                       :readOnly="isReadOnly(appendableItem)"
+                      :texts="appendableItem?.lx?.texts"
                       v-model="item[appendableItemName]"
                     />
                     <LxDateTimePicker
@@ -2242,6 +2266,7 @@ const builderOptions = computed(() => ({
                       :convert-to-string="appendableItem?.lx?.convertToString"
                       :placeholder="examplesValue(appendableItem)"
                       :readOnly="isReadOnly(appendableItem)"
+                      :texts="appendableItem?.lx?.texts"
                       v-model="item[appendableItemName]"
                     />
                     <LxToggle
@@ -2251,6 +2276,7 @@ const builderOptions = computed(() => ({
                       :disabled="appendableItem?.lx?.disabled"
                       :tooltip="appendableItem?.lx?.tooltip"
                       :readOnly="isReadOnly(appendableItem)"
+                      :texts="appendableItem?.lx?.texts"
                       v-model="item[appendableItemName]"
                     >
                       <span v-if="appendableItem?.lx?.label">
@@ -2454,6 +2480,7 @@ const builderOptions = computed(() => ({
             :custom-mask-value="appendableItem?.lx?.customMaskValue"
             :autocomplete="appendableItem?.lx?.autocomplete"
             :options="appendableItem?.lx?.options"
+            :texts="appendableItem?.lx?.texts"
             v-model="item[appendableItemName]"
           />
           <LxTextArea
@@ -2466,6 +2493,7 @@ const builderOptions = computed(() => ({
             :disabled="appendableItem?.lx?.disabled"
             :tooltip="appendableItem?.lx?.tooltip"
             :readOnly="isReadOnly(appendableItem)"
+            :texts="appendableItem?.lx?.texts"
             v-model="item[appendableItemName]"
           />
           <LxDateTimePicker
@@ -2503,6 +2531,7 @@ const builderOptions = computed(() => ({
             :convert-to-string="appendableItem?.lx?.convertToString"
             :placeholder="examplesValue(appendableItem)"
             :readOnly="isReadOnly(appendableItem)"
+            :texts="appendableItem?.lx?.texts"
             v-model="item[appendableItemName]"
           />
           <LxToggle
@@ -2512,6 +2541,7 @@ const builderOptions = computed(() => ({
             :disabled="appendableItem?.lx?.disabled"
             :tooltip="appendableItem?.lx?.tooltip"
             :readOnly="isReadOnly(appendableItem)"
+            :texts="appendableItem?.lx?.texts"
             v-model="item[appendableItemName]"
           >
             <span v-if="appendableItem?.lx?.label">{{ appendableItem?.lx?.label }}</span>
@@ -2675,6 +2705,7 @@ const builderOptions = computed(() => ({
           :custom-mask-value="row?.items?.lx?.customMaskValue"
           :autocomplete="row?.items?.lx?.autocomplete"
           :options="row?.items?.lx?.options"
+          :texts="row?.items?.lx?.texts"
           v-model="model[name][index]"
         />
         <LxTextInput
@@ -2690,6 +2721,7 @@ const builderOptions = computed(() => ({
           :placeholder="examplesValue(row?.items)"
           :signed="row?.items?.lx?.signed"
           :readOnly="isReadOnly(row?.items)"
+          :texts="row?.items?.lx?.texts"
           v-model="model[name][index]"
         />
         <LxToggle
@@ -2698,6 +2730,7 @@ const builderOptions = computed(() => ({
           :disabled="row?.items?.lx?.disabled"
           :tooltip="row?.items?.lx?.tooltip"
           :readOnly="isReadOnly(row?.items)"
+          :texts="row?.items?.lx?.texts"
           v-model="model[name][index]"
         >
           <template #on>
@@ -3379,6 +3412,7 @@ const builderOptions = computed(() => ({
     :disabled="displaySchema?.properties[name]?.lx?.disabled"
     :kind="displaySchema?.properties[name]?.lx?.kind"
     :disableArrowKeys="displaySchema?.properties[name]?.lx?.disableArrowKeys"
+    :texts="displaySchema?.properties[name]?.lx?.texts"
     v-model="model[name]"
     :builderOptions="builderOptions"
   />
@@ -3518,6 +3552,7 @@ const builderOptions = computed(() => ({
     :disabled="displaySchema?.properties[name]?.lx?.disabled"
     :readOnly="isReadOnly(displaySchema?.properties[name])"
     :kind="displaySchema?.properties[name]?.lx?.kind"
+    :variant="displaySchema?.properties[name]?.lx?.variant"
     :invalid="isInvalid"
     :invalidationMessage="invalidMessage"
     :labelId="displaySchema?.properties[name]?.lx?.labelId"

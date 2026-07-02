@@ -88,6 +88,8 @@ const textsDefault = {
   containers: 'Konteineri',
   close: 'Aizvērt',
   edit: 'Labot',
+  editing: 'Labošana',
+  searchText: 'Meklēt',
 };
 
 const displayTexts = computed(() => lxGeneralUtils.getDisplayTexts(props.texts, textsDefault));
@@ -123,6 +125,7 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.convertToString = p.convertToString || false;
     res.lx.placeholder = p.placeholder;
     res.lx.signed = p.signed || false;
+    res.lx.texts = p.texts || {};
     res.readOnly = p.readOnly || false;
   },
   LxToggle: (res, p) => {
@@ -130,6 +133,7 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.size = p.size || 'm';
     res.lx.disabled = p.disabled || false;
     res.lx.tooltip = p.tooltip;
+    res.lx.texts = p.texts || {};
     res.readOnly = p.readOnly || false;
   },
   LxValuePicker: (res, p) => {
@@ -146,13 +150,15 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.alwaysAsArray = p.alwaysAsArray || false;
     res.lx.nullable = p.nullable || false;
     res.lx.tooltip = p.tooltip;
-    res.lx.texts = p.texts;
+    res.lx.texts = p.texts || {};
     res.lx.placeholder = p.placeholder;
     res.lx.disabled = p.disabled || false;
     res.readOnly = p.readOnly || false;
     res.lx.searchAttributes = p.searchAttributes;
     res.lx.hasSelectAll = p.hasSelectAll || false;
+    res.lx.stickyToolbar = p.stickyToolbar || false;
     res.lx.readOnlyRenderType = p.readOnlyRenderType || 'row';
+    res.lx.texts = p.texts || {};
   },
   LxRow: (res, p) => {
     res.title = p.label;
@@ -169,6 +175,7 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.disabled = p.disabled || false;
     res.lx.dynamicHeight = p.dynamicHeight || false;
     res.lx.tooltip = p.tooltip;
+    res.lx.texts = p.texts || {};
     res.readOnly = p.readOnly || false;
   },
   LxDateTimePicker: (res, p) => {
@@ -189,6 +196,7 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.variant = p.variant || 'default';
     res.lx.cadenceOfMinutes = p.cadenceOfMinutes ? Number(p.cadenceOfMinutes) : 1;
     res.lx.cadenceOfSeconds = p.cadenceOfSeconds ? Number(p.cadenceOfSeconds) : 1;
+    res.lx.texts = p.texts || {};
     res.readOnly = p.readOnly || false;
   },
   LxAutoComplete: (res, p) => {
@@ -211,7 +219,7 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.labelId = p.labelId;
     res.lx.hasSelectAll = p.hasSelectAll || false;
     res.lx.enableAdditionalText = p.enableAdditionalText || false;
-    res.lx.texts = p.texts;
+    res.lx.texts = p.texts || {};
     res.lx.searchAttributes = p.searchAttributes;
     res.readOnly = p.readOnly || false;
   },
@@ -221,8 +229,10 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.hasFlashlightToggle = p.hasFlashlightToggle || false;
     res.lx.imageSize = p.imageSize || 'default';
     res.lx.preferencesId = p.preferencesId || 'lx-camera-settings';
+    res.lx.stickyToolbar = p.stickyToolbar || false;
+    res.lx.actionDefinitions = p.actionDefinitions;
     res.lx.labelId = p.labelId;
-    res.lx.texts = p.texts;
+    res.lx.texts = p.texts || {};
   },
   LxCheckbox: (res, p) => {
     res.type = 'boolean';
@@ -260,7 +270,7 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.rangeMonths = p.rangeMonths || 'next';
     res.lx.clearIfNotExact = p.clearIfNotExact || false;
     res.lx.labelId = p.labelId;
-    res.lx.texts = p.texts;
+    res.lx.texts = p.texts || {};
     res.readOnly = p.readOnly || false;
   },
   LxFileUploader: (res, p) => {
@@ -284,7 +294,7 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.imageSize = p.imageSize || 'default';
     res.lx.preferencesId = p.preferencesId || 'lx-camera-settings';
     res.lx.labelId = p.labelId;
-    res.lx.texts = p.texts;
+    res.lx.texts = p.texts || {};
     res.readOnly = p.readOnly || false;
   },
   LxNumberSlider: (res, p) => {
@@ -307,8 +317,10 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.cameraSwitcherMode = p.cameraSwitcherMode || 'list';
     res.lx.hasFlashlightToggle = p.hasFlashlightToggle || false;
     res.lx.showAlerts = p.showAlerts ?? true;
+    res.lx.stickyToolbar = p.stickyToolbar ?? false;
+    res.lx.actionDefinitions = p.actionDefinitions;
     res.lx.labelId = p.labelId;
-    res.lx.texts = p.texts;
+    res.lx.texts = p.texts || {};
   },
   LxVisualPicker: (res, p) => {
     res.type = p.selectionKind === 'multiple' ? 'array' : 'string';
@@ -316,15 +328,16 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.mode = p.mode || 'default';
     res.lx.selectionKind = p.selectionKind || 'multiple';
     res.lx.labelId = p.labelId;
-    res.lx.texts = p.texts;
+    res.lx.texts = p.texts || {};
     res.readOnly = p.readOnly || false;
   },
   LxDayInput: (res, p) => {
     res.type = 'integer';
     res.lx.disabled = p.disabled || false;
     res.lx.kind = p.kind || 'label';
+    res.lx.variant = p.variant || 'default';
     res.lx.labelId = p.labelId;
-    res.lx.texts = p.texts;
+    res.lx.texts = p.texts || {};
     res.readOnly = p.readOnly || false;
   },
   LxDrawPad: (res, p) => {
@@ -338,6 +351,8 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.showColorPicker = p.showColorPicker ?? false;
     res.lx.showClearAll = p.showClearAll ?? false;
     res.lx.labelId = p.labelId;
+    res.lx.stickyToolbar = p.stickyToolbar ?? false;
+    res.lx.actionDefinitions = p.actionDefinitions;
     res.lx.texts = p.texts;
     res.readOnly = p.readOnly ?? false;
   },
@@ -357,7 +372,9 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.imageMaxSize = p.imageMaxSize ?? 3000000;
     res.lx.dictionary = p.dictionary;
     res.lx.labelId = p.labelId;
-    res.lx.texts = p.texts;
+    res.lx.stickyToolbar = p.stickyToolbar ?? false;
+    res.lx.actionDefinitions = p.actionDefinitions;
+    res.lx.texts = p.texts || {};
     res.readOnly = p.readOnly ?? false;
   },
   LxSection: (res, p) => {
@@ -373,6 +390,7 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.badge = p.badge;
     res.lx.actionDefinitions = p.actionDefinitions;
     res.lx.orientation = p.orientation;
+    res.lx.texts = p.texts || {};
   },
   LxForm: (res, p) => {
     res.type = 'object';
@@ -391,7 +409,7 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.orientation = p.orientation || 'vertical';
     res.lx.hasSkipLink = p.hasSkipLink || false;
     res.lx.actionDefinitions = p.actionDefinitions;
-    res.lx.texts = p.texts;
+    res.lx.texts = p.texts || {};
   },
   LxFilters: (res, p) => {
     res.type = 'object';
@@ -410,7 +428,7 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.fastNameAttribute = p.fastNameAttribute || 'name';
     res.lx.badge = p.badge;
     res.lx.badgeType = p.badgeType || 'default';
-    res.lx.texts = p.texts;
+    res.lx.texts = p.texts || {};
   },
 };
 

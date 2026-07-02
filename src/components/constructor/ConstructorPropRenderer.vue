@@ -46,8 +46,10 @@ const props = defineProps({
       save: 'Saglabāt',
       close: 'Aizvērt',
       edit: 'Labot',
+      editing: 'Labošana',
       notFoundSearch: 'Nav atrasts:',
       notFoundProps: 'Nav atrasts',
+      searchText: 'Meklēt',
     }),
   },
   schemaKey: {

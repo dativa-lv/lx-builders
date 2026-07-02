@@ -13,7 +13,11 @@ import {
   lxFormatUtils,
   LxRow,
   LxDateTimePicker,
+  LxForm,
+  LxEmptyState,
+  LxStack,
 } from '@dativa-lv/lx-ui';
+import LxFormBuilder from '@/components/FormBuilder.vue';
 
 const props = defineProps({
   item: {
@@ -38,6 +42,9 @@ const props = defineProps({
       save: 'Saglabāt',
       close: 'Aizvērt',
       edit: 'Labot',
+      editing: 'Labošana',
+      searchText: 'Meklēt',
+      notFoundSearch: 'Nav atrasts:',
     }),
   },
 });
@@ -146,6 +153,130 @@ function itemsActionClicked(action) {
   }
 }
 
+const textsModal = ref();
+const textsModel = ref(null);
+const textsSchema = ref(null);
+
+function isPlainObject(value) {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function flattenObjectHierarchyToSchema(source) {
+  const properties = {};
+
+  function flattenRecursive(current, parentPath = '') {
+    if (!isPlainObject(current)) {
+      return;
+    }
+
+    Object.entries(current).forEach(([key, value]) => {
+      const path = parentPath ? `${parentPath}.${key}` : key;
+      if (isPlainObject(value)) {
+        flattenRecursive(value, path);
+      } else {
+        properties[path] = { type: 'string' };
+      }
+    });
+  }
+
+  flattenRecursive(source);
+
+  return {
+    type: 'object',
+    properties,
+  };
+}
+
+function mergeOptionsRecursive(schemaTexts, defaultTexts) {
+  const result = {};
+
+  function mergeRecursive(currentSchema, currentDefault, parentPath = '') {
+    if (!isPlainObject(currentDefault)) {
+      return;
+    }
+
+    Object.entries(currentDefault).forEach(([key, defaultValue]) => {
+      const path = parentPath ? `${parentPath}.${key}` : key;
+      const schemaValue = isPlainObject(currentSchema) ? currentSchema[key] : undefined;
+
+      if (isPlainObject(defaultValue)) {
+        mergeRecursive(schemaValue, defaultValue, path);
+      } else if (schemaValue !== undefined) {
+        result[path] = lxFormatUtils.objectClone(schemaValue);
+      } else {
+        result[path] = lxFormatUtils.objectClone(defaultValue);
+      }
+    });
+  }
+
+  mergeRecursive(schemaTexts, defaultTexts);
+
+  return result;
+}
+
+function unflattenDotNotationObject(flatObject) {
+  const result = {};
+
+  if (!isPlainObject(flatObject)) {
+    return result;
+  }
+
+  Object.entries(flatObject).forEach(([flatKey, value]) => {
+    if (!flatKey.includes('.')) {
+      result[flatKey] = lxFormatUtils.objectClone(value);
+      return;
+    }
+
+    const parts = flatKey.split('.').filter(Boolean);
+    let current = result;
+
+    parts.forEach((part, index) => {
+      const isLeaf = index === parts.length - 1;
+      if (isLeaf) {
+        current[part] = lxFormatUtils.objectClone(value);
+        return;
+      }
+
+      if (!isPlainObject(current[part])) {
+        current[part] = {};
+      }
+
+      current = current[part];
+    });
+  });
+
+  return result;
+}
+
+function editTexts() {
+  textsModal.value.open();
+
+  const defaultTexts = props.item?.options || {};
+  textsSchema.value = flattenObjectHierarchyToSchema(defaultTexts);
+  textsModel.value = mergeOptionsRecursive(props.modelValue.texts, defaultTexts);
+}
+
+function textsActionClicked(action) {
+  if (action === 'save') {
+    model.value.texts = unflattenDotNotationObject(textsModel.value);
+    textsModal.value.close();
+  }
+}
+
+const textSearchModel = ref('');
+const filteredTextsSchema = computed(() => {
+  if (!textSearchModel.value) {
+    return textsSchema.value;
+  }
+  return {
+    properties: Object.fromEntries(
+      Object.entries(textsSchema.value.properties).filter(([key]) =>
+        key.toLowerCase().includes(textSearchModel.value.toLowerCase())
+      )
+    ),
+  };
+});
+
 function getValuePickerVariant(options) {
   if (
     props.name === 'columnSpan' ||
@@ -195,12 +326,13 @@ function getValuePickerVariant(options) {
 
     <LxModal
       ref="indexModal"
-      label="index"
+      :label="texts?.editing"
       size="m"
       :actionDefinitions="[
         { id: 'save', name: texts.save, kind: 'primary' },
         { id: 'close', name: texts.close, kind: 'secondary' },
       ]"
+      :texts="{ close: texts.close }"
       @actionClick="indexModelActionClicked"
     >
       <LxAppendableList ref="indexList" v-model="indexModel" :columnCount="2" requiredMode="none">
@@ -219,12 +351,13 @@ function getValuePickerVariant(options) {
     <LxButton :label="texts.edit" icon="edit" kind="secondary" @click="editActionDefinitions" />
     <LxModal
       ref="actionDefinitionsModal"
-      label="actionDefinitions"
+      :label="texts?.editing"
       size="l"
       :actionDefinitions="[
         { id: 'save', name: texts.save, kind: 'primary' },
         { id: 'close', name: texts.close, kind: 'secondary' },
       ]"
+      :texts="{ close: texts.close }"
       @actionClick="actionModalActionClicked"
     >
       <LxAppendableList
@@ -367,12 +500,13 @@ function getValuePickerVariant(options) {
     <LxButton :label="texts.edit" icon="edit" kind="secondary" @click="editItems" />
     <LxModal
       ref="itemsModal"
-      label="items"
+      :label="texts?.editing"
       size="l"
       :actionDefinitions="[
         { id: 'save', name: texts.save, kind: 'primary' },
         { id: 'close', name: texts.close, kind: 'secondary' },
       ]"
+      :texts="{ close: texts.close }"
       @actionClick="itemsActionClicked"
     >
       <LxAppendableList
@@ -440,6 +574,34 @@ function getValuePickerVariant(options) {
           </template>
         </template>
       </LxAppendableList>
+    </LxModal>
+  </template>
+  <template v-if="props.name === 'texts'">
+    <LxButton :label="texts.edit" icon="edit" kind="secondary" @click="editTexts" />
+    <LxModal
+      ref="textsModal"
+      :label="texts?.editing"
+      size="l"
+      :actionDefinitions="[
+        { id: 'save', name: texts.save, kind: 'primary' },
+        { id: 'close', name: texts.close, kind: 'secondary' },
+      ]"
+      :texts="{ close: texts.close }"
+      @actionClick="textsActionClicked"
+      @close="textSearchModel = ''"
+    >
+      <LxForm :columnCount="3" kind="stripped">
+        <LxRow columnSpan="3" :hideLabel="true">
+          <LxStack horizontalAlignment="stretch">
+            <LxTextInput v-model="textSearchModel" kind="search" :placeholder="texts.searchText" />
+            <LxEmptyState
+              :label="`${texts?.notFoundSearch} ${textSearchModel}`"
+              v-if="!Object.keys(filteredTextsSchema?.properties || {}).length"
+            />
+          </LxStack>
+        </LxRow>
+        <LxFormBuilder v-model="textsModel" :schema="filteredTextsSchema" />
+      </LxForm>
     </LxModal>
   </template>
 </template>

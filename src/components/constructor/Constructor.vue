@@ -99,6 +99,8 @@ const textsDefault = {
   inputs: 'Ievadlauki',
   containers: 'Konteineri',
   edit: 'Labot',
+  editing: 'Labošana',
+  searchText: 'Meklēt',
 
   fileUploader: {
     clear: 'Notīrīt',
