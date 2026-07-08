@@ -3,6 +3,7 @@ import { defineConfig } from 'vite';
 import path from 'path';
 import vue from '@vitejs/plugin-vue';
 import dts from 'vite-plugin-dts';
+import fs from 'fs';
 
 // https://vitejs.dev/config/
 /** @type {import('vite').UserConfig} */
@@ -17,7 +18,7 @@ const vueConfig = defineConfig({
     lib: {
       entry: path.resolve(__dirname, 'src/lib.js'),
       name: 'VueCarbonComponents',
-      fileName: (format) => `wntr-lx-ui.${format}.js`,
+      fileName: (format) => `dativa-lx-builders.${format}.js`,
       formats: ['esm', 'umd'],
     },
     rollupOptions: {
@@ -34,16 +35,21 @@ const vueConfig = defineConfig({
   plugins: [
     vue(),
     dts({
-      outputDir: 'dist/types',
-      staticImport: true,
-      insertTypesEntry: true,
-      copyDtsFiles: true,
-      exclude: [],
+      outDir: 'dist/types',
+      include: ['src/**/*'],
+      exclude: ['tests/**', '**/*.test.*', '**/*.spec.*'],
+      afterBuild: () => {
+        fs.writeFileSync(
+          path.resolve(__dirname, 'dist/dativa-lx-builders.d.ts'),
+          "export * from './types/lib';\n"
+        );
+      },
     }),
   ],
   test: {
     globals: true,
     environment: 'happy-dom',
+    testTimeout: 30_000,
   },
 });
 

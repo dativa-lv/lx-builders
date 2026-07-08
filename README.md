@@ -69,8 +69,8 @@ myApp.use(createLxBuilders());
 ## Develop
 
 ```bash
-pnpm i
-pnpm build
+bun install
+bun run build
 ```
 
 Read more about development in [ℹ️&nbsp;Development manual](https://github.com/dativa-lv/lx-builders/blob/main/DEVELOPMENT.md)

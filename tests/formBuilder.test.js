@@ -1,7 +1,7 @@
-import { test, expect, afterEach } from 'vitest';
+import { test, expect, afterEach, vi } from 'vitest';
 import { LxForm } from '@dativa-lv/lx-ui';
 import LxFormBuilder from '@/components/FormBuilder.vue';
-import { mount, flushPromises } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 import { h } from 'vue';
 
 let wrapper;
@@ -42,9 +42,9 @@ test('LxFormBuilder with one row', async () => {
       stubs: ['LxStack'],
     },
   });
-  await flushPromises();
-  // process.stdout.write(`${wrapper.html()}\n`);
-  expect(wrapper.find('.lx-row').exists()).toBe(true);
+  await vi.waitFor(() => {
+    expect(wrapper.find('.lx-row').exists()).toBe(true);
+  });
 });
 
 test('LxFormBuilder LxRow label', async () => {
@@ -128,8 +128,9 @@ test('LxFormBuilder with LxTextArea', async () => {
       stubs: ['LxStack'],
     },
   });
-  await flushPromises();
-  expect(wrapper.find('.lx-text-area').exists()).toBe(true);
+  await vi.waitFor(() => {
+    expect(wrapper.find('.lx-text-area').exists()).toBe(true);
+  });
 });
 
 test('LxFormBuilder with LxDateTimePicker', async () => {
@@ -145,8 +146,9 @@ test('LxFormBuilder with LxDateTimePicker', async () => {
       },
     },
   });
-  await flushPromises();
-  expect(wrapper.find('.lx-date-time-picker').exists()).toBe(true);
+  await vi.waitFor(() => {
+    expect(wrapper.find('.lx-date-time-picker').exists()).toBe(true);
+  });
 });
 
 test('LxFormBuilder with LxDateTimePicker time', async () => {
@@ -162,8 +164,9 @@ test('LxFormBuilder with LxDateTimePicker time', async () => {
       },
     },
   });
-  await flushPromises();
-  expect(wrapper.find('.lx-time').exists()).toBe(true);
+  await vi.waitFor(() => {
+    expect(wrapper.find('.lx-time').exists()).toBe(true);
+  });
 });
 
 test('LxFormBuilder with LxDateTimePicker dateTime', async () => {
@@ -179,8 +182,9 @@ test('LxFormBuilder with LxDateTimePicker dateTime', async () => {
       },
     },
   });
-  await flushPromises();
-  expect(wrapper.find('.lx-date-time').exists()).toBe(true);
+  await vi.waitFor(() => {
+    expect(wrapper.find('.lx-date-time').exists()).toBe(true);
+  });
 });
 
 test('LxFormBuilder with LxToggle', async () => {
@@ -194,8 +198,9 @@ test('LxFormBuilder with LxToggle', async () => {
       stubs: ['LxStack'],
     },
   });
-  await flushPromises();
-  expect(wrapper.find('.lx-toggle').exists()).toBe(true);
+  await vi.waitFor(() => {
+    expect(wrapper.find('.lx-toggle').exists()).toBe(true);
+  });
 });
 
 test('LxFormBuilder with LxValuePicker default', async () => {
@@ -220,8 +225,9 @@ test('LxFormBuilder with LxValuePicker default', async () => {
       stubs: ['LxStack'],
     },
   });
-  await flushPromises();
-  expect(wrapper.find('.lx-value-picker-default-wrapper').exists()).toBe(true);
+  await vi.waitFor(() => {
+    expect(wrapper.find('.lx-value-picker-default-wrapper').exists()).toBe(true);
+  });
 });
 
 test('LxFormBuilder with LxValuePicker tags', () => {
@@ -268,9 +274,10 @@ test('LxFormBuilder with LxValuePicker multiple', async () => {
       stubs: ['LxStack'],
     },
   });
-  await flushPromises();
-  const valuePicker = wrapper.find('.lx-value-picker-default-wrapper');
-  expect(valuePicker.find('.lx-checkbox').exists()).toBe(true);
+  await vi.waitFor(() => {
+    const valuePicker = wrapper.find('.lx-value-picker-default-wrapper');
+    expect(valuePicker.find('.lx-checkbox').exists()).toBe(true);
+  });
 });
 
 test('LxFormBuilder with LxValuePicker 4 items', async () => {
@@ -295,9 +302,10 @@ test('LxFormBuilder with LxValuePicker 4 items', async () => {
       stubs: ['LxStack'],
     },
   });
-  await flushPromises();
-  const checkboxes = wrapper.find('.lx-value-picker-default-wrapper').findAll('.lx-checkbox');
-  expect(checkboxes.length).toBe(4);
+  await vi.waitFor(() => {
+    const checkboxes = wrapper.find('.lx-value-picker-default-wrapper').findAll('.lx-checkbox');
+    expect(checkboxes.length).toBe(4);
+  });
 });
 
 test('LxFormBuilder with LxValuePicker 4 items using enum', () => {
@@ -337,8 +345,9 @@ test('LxFormBuilder with LxDataBlock', async () => {
       stubs: ['LxStack'],
     },
   });
-  await flushPromises();
-  expect(wrapper.find('.lx-data-block').exists()).toBe(true);
+  await vi.waitFor(() => {
+    expect(wrapper.find('.lx-data-block').exists()).toBe(true);
+  });
 });
 
 test('LxFormBuilder with LxPlaceholder', async () => {
@@ -353,8 +362,9 @@ test('LxFormBuilder with LxPlaceholder', async () => {
     },
   };
   wrapper = buildFormBuilderWrapper(schemaValue);
-  await flushPromises();
-  expect(wrapper.find('.lx-placeholder').exists()).toBe(true);
+  await vi.waitFor(() => {
+    expect(wrapper.find('.lx-placeholder').exists()).toBe(true);
+  });
 });
 
 test('LxFormBuilder cannot render LxRow', () => {
@@ -409,8 +419,9 @@ test('LxFormBuilder with LxAppendableList', async () => {
       stubs: ['router-link', 'LxStack'],
     },
   });
-  await flushPromises();
-  expect(wrapper.find('.lx-appendable-list').exists()).toBe(true);
+  await vi.waitFor(() => {
+    expect(wrapper.find('.lx-appendable-list').exists()).toBe(true);
+  });
 });
 test('LxFormBuilder with LxAppendableListSimple', () => {
   const schemaValue = {

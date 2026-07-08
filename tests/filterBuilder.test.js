@@ -1,5 +1,5 @@
-import { test, expect } from 'vitest';
-import { mount, RouterLinkStub, flushPromises } from '@vue/test-utils';
+import { test, expect, vi } from 'vitest';
+import { mount, RouterLinkStub } from '@vue/test-utils';
 import LxFilterBuilder from '@/components/FilterBuilder.vue';
 import { lxFormatUtils } from '@dativa-lv/lx-ui';
 
@@ -19,9 +19,10 @@ test('LxFilterBuilder with one row', async () => {
       },
     },
   });
-  // drains the promise queue and lets the DOM settle
-  await flushPromises();
-  expect(wrapper.find('.lx-row').exists()).toBe(true);
+
+  await vi.waitFor(() => {
+    expect(wrapper.find('.lx-row').exists()).toBe(true);
+  });
 });
 
 const testSchema = {
@@ -58,25 +59,25 @@ test('LxFilterBuilder schema with various inputs', async () => {
       },
     },
   });
-
-  await flushPromises();
-  expect(wrapper.find('.lx-row').exists()).toBe(true);
-  const rows = wrapper.findAll('.lx-row');
-  expect(rows.length).toBe(5);
-  // name
-  expect(rows[0].find('.lx-text-input-wrapper').exists()).toBe(true);
-  // age
-  expect(rows[1].find('.lx-text-input-wrapper').exists()).toBe(true);
-  expect(rows[1].find('input').exists()).toBe(true);
-  expect(rows[1].find('input').attributes('inputmode')).toBe('decimal');
-  // isActive
-  expect(rows[2].find('.lx-toggle').exists()).toBe(true);
-  // birthDate
-  expect(
-    rows[3].find('.lx-date-time-picker-wrapper').exists() && rows[3].find('.lx-date').exists()
-  ).toBe(true);
-  // dateRange
-  expect(rows[4].find('.lx-date-time-range-wrapper').exists()).toBe(true);
+  await vi.waitFor(() => {
+    expect(wrapper.find('.lx-row').exists()).toBe(true);
+    const rows = wrapper.findAll('.lx-row');
+    expect(rows.length).toBe(5);
+    // name
+    expect(rows[0].find('.lx-text-input-wrapper').exists()).toBe(true);
+    // age
+    expect(rows[1].find('.lx-text-input-wrapper').exists()).toBe(true);
+    expect(rows[1].find('input').exists()).toBe(true);
+    expect(rows[1].find('input').attributes('inputmode')).toBe('decimal');
+    // isActive
+    expect(rows[2].find('.lx-toggle').exists()).toBe(true);
+    // birthDate
+    expect(
+      rows[3].find('.lx-date-time-picker-wrapper').exists() && rows[3].find('.lx-date').exists()
+    ).toBe(true);
+    // dateRange
+    expect(rows[4].find('.lx-date-time-range-wrapper').exists()).toBe(true);
+  });
 });
 
 test('LxFilterBuilder input values description', async () => {
