@@ -125,6 +125,8 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.convertToString = p.convertToString || false;
     res.lx.placeholder = p.placeholder;
     res.lx.signed = p.signed || false;
+    res.lx.helperText = p.helperText;
+    res.lx.helperTextKind = p.helperTextKind || 'label';
     res.lx.texts = p.texts || {};
     res.readOnly = p.readOnly || false;
   },
@@ -176,6 +178,8 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.dynamicHeight = p.dynamicHeight || false;
     res.lx.tooltip = p.tooltip;
     res.lx.texts = p.texts || {};
+    res.lx.helperText = p.helperText;
+    res.lx.helperTextKind = p.helperTextKind || 'label';
     res.readOnly = p.readOnly || false;
   },
   LxDateTimePicker: (res, p) => {
@@ -196,6 +200,8 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.variant = p.variant || 'default';
     res.lx.cadenceOfMinutes = p.cadenceOfMinutes ? Number(p.cadenceOfMinutes) : 1;
     res.lx.cadenceOfSeconds = p.cadenceOfSeconds ? Number(p.cadenceOfSeconds) : 1;
+    res.lx.helperText = p.helperText;
+    res.lx.helperTextKind = p.helperTextKind || 'label';
     res.lx.texts = p.texts || {};
     res.readOnly = p.readOnly || false;
   },
@@ -374,6 +380,8 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.labelId = p.labelId;
     res.lx.stickyToolbar = p.stickyToolbar ?? false;
     res.lx.actionDefinitions = p.actionDefinitions;
+    res.lx.helperText = p.helperText;
+    res.lx.helperTextKind = p.helperTextKind || 'label';
     res.lx.texts = p.texts || {};
     res.readOnly = p.readOnly ?? false;
   },
