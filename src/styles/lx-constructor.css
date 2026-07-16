@@ -238,3 +238,45 @@
 .lx-panel > .panel-side .config-header.has-selected-element .header-wrapper svg {
   fill: var(--color-focus-foreground);
 }
+
+/* Panel contrast theme styles */
+
+.lx-theme-contrast .highlight {
+  border: var(--border-width-2) solid var(--contrast-hover);
+}
+
+.lx-theme-contrast .highlight .highlight-toolbar > span {
+  color: var(--contrast-background);
+}
+
+.lx-theme-contrast .highlight .highlight-toolbar .lx-button {
+  --color-button-ghost-icon: var(--contrast-background);
+  --color-button-ghost-icon-focus: var(--contrast-background);
+}
+
+.lx-theme-contrast .lx-panel .button-side {
+  height: fit-content;
+  border-top: var(--border-width-2) solid var(--contrast-foreground);
+  border-bottom: var(--border-width-2) solid var(--contrast-foreground);
+}
+
+.lx-theme-contrast .lx-panel:not(:has(> .panel-side)){
+  border-left: var(--border-width-2) solid var(--contrast-foreground);
+}
+
+.lx-theme-contrast .lx-panel>.panel-side {
+  border: var(--border-width-2) solid var(--contrast-foreground);
+}
+
+.lx-theme-contrast .lx-panel .panel-side{
+  box-shadow: none;
+}
+
+.lx-theme-contrast  .lx-panel>.panel-side .prop-search{
+  border-left: none;
+}
+
+.lx-theme-contrast .lx-panel>.panel-side .panel-main>.button-group,
+.lx-theme-contrast .lx-panel .panel-main .lx-form-grid {
+  border: none;
+}
