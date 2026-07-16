@@ -5,7 +5,7 @@
     "": {
       "name": "@dativa-lv/lx-builders",
       "dependencies": {
-        "@dativa-lv/lx-ui": "2.2.8",
+        "@dativa-lv/lx-ui": "2.2.9",
         "@vue/test-utils": "^2.4.3",
         "@vuelidate/core": "^2.0.3",
         "@vuelidate/validators": "^2.0.4",
@@ -40,7 +40,7 @@
         "vue": "^3.5.17",
       },
       "peerDependencies": {
-        "@dativa-lv/lx-ui": "2.2.8",
+        "@dativa-lv/lx-ui": "2.2.9",
         "vue": "^3.5.17",
       },
     },
@@ -137,7 +137,7 @@
 
     "@contentauth/toolkit": ["@contentauth/toolkit@0.11.6", "", {}, "sha512-Mip9oWgm1/4jE5o+uwUfqfAPjqfPvo39VhIljY4weQzjRGwDThc2D9wnwl5IGfWI0F6q1ollvir3LblnSuieQA=="],
 
-    "@dativa-lv/lx-ui": ["@dativa-lv/lx-ui@2.2.8", "", { "dependencies": { "@braintree/sanitize-url": "^7.0.0", "@floating-ui/vue": "^1.1.6", "@tanstack/vue-virtual": "3.13.21", "@tiptap/core": "2.27.2", "@tiptap/extension-character-count": "2.27.2", "@tiptap/extension-color": "2.27.2", "@tiptap/extension-heading": "2.27.2", "@tiptap/extension-image": "2.27.2", "@tiptap/extension-link": "2.27.2", "@tiptap/extension-placeholder": "2.27.2", "@tiptap/extension-text-style": "2.27.2", "@tiptap/extension-underline": "2.27.2", "@tiptap/pm": "2.27.2", "@tiptap/starter-kit": "2.27.2", "@tiptap/vue-3": "2.27.2", "@vue-leaflet/vue-leaflet": "^0.10.1", "@vue/test-utils": "^2.4.3", "@vuelidate/core": "^2.0.3", "@vuelidate/validators": "^2.0.4", "@vueuse/components": "14.0.0", "@vueuse/core": "14.0.0", "@vueuse/integrations": "14.0.0", "avvvatars-vue": "^1.0.2", "axios": "1.16.0", "c2pa": "^0.22.3", "cyrillic-to-translit-js": "^3.2.1", "date-fns": "4.0.0", "exifreader": "4.39.0", "focus-trap": "^7", "glob": "^10.5.0", "i18n-iso-countries": "^7.14.0", "jsrsasign": "11.1.1", "jszip": "^3.10.1", "linkifyjs": "^4.1.3", "marked": "^15.0.7", "mime": "^4.0.1", "pdfjs-dist": "^4.5.136", "pinia": "^2.1.7", "prosemirror-model": "^1.24.1", "prosemirror-state": "^1.4.3", "qrcode.vue": "^3.6.0", "tiptap-markdown": "^0.8.9", "v-money3": "3.24.0", "vue-country-flag-next": "^2.3.2", "vue-dompurify-html": "5.3.0", "vue-imask": "7.3.0", "vue-qrcode-reader": "^5.5.1", "vue-router": "^4.2.5", "vuedraggable": "^4.1.0" }, "peerDependencies": { "vue": "^3.5.17" } }, "sha512-iaUYMaLEO82ayPZEKwGotwgx/WLKg7F/Q+q9Qn8NGdn5cVfsIGqxZ5GV1OSuGxm1z02Vcbl4VJfEg/VTIsCTXQ=="],
+    "@dativa-lv/lx-ui": ["@dativa-lv/lx-ui@2.2.9", "", { "dependencies": { "@braintree/sanitize-url": "^7.0.0", "@floating-ui/vue": "^1.1.6", "@tanstack/vue-virtual": "3.13.21", "@tiptap/core": "2.27.2", "@tiptap/extension-character-count": "2.27.2", "@tiptap/extension-color": "2.27.2", "@tiptap/extension-heading": "2.27.2", "@tiptap/extension-image": "2.27.2", "@tiptap/extension-link": "2.27.2", "@tiptap/extension-placeholder": "2.27.2", "@tiptap/extension-text-style": "2.27.2", "@tiptap/extension-underline": "2.27.2", "@tiptap/pm": "2.27.2", "@tiptap/starter-kit": "2.27.2", "@tiptap/vue-3": "2.27.2", "@vue-leaflet/vue-leaflet": "^0.10.1", "@vue/test-utils": "^2.4.3", "@vuelidate/core": "^2.0.3", "@vuelidate/validators": "^2.0.4", "@vueuse/components": "14.0.0", "@vueuse/core": "14.0.0", "@vueuse/integrations": "14.0.0", "avvvatars-vue": "^1.0.2", "axios": "1.16.0", "c2pa": "^0.22.3", "cyrillic-to-translit-js": "^3.2.1", "date-fns": "4.0.0", "exifreader": "4.39.0", "focus-trap": "^7", "glob": "^10.5.0", "i18n-iso-countries": "^7.14.0", "jsrsasign": "11.1.1", "jszip": "^3.10.1", "linkifyjs": "^4.1.3", "marked": "^15.0.7", "mime": "^4.0.1", "pdfjs-dist": "^4.5.136", "pinia": "^2.1.7", "prosemirror-model": "^1.24.1", "prosemirror-state": "^1.4.3", "qrcode.vue": "^3.6.0", "tiptap-markdown": "^0.8.9", "v-money3": "3.24.0", "vue-country-flag-next": "^2.3.2", "vue-dompurify-html": "5.3.0", "vue-imask": "7.3.0", "vue-qrcode-reader": "^5.5.1", "vue-router": "^4.2.5", "vuedraggable": "^4.1.0" }, "peerDependencies": { "vue": "^3.5.17" } }, "sha512-4Peno76OtH3IO1s2uE27q2PzkggRtuSZYWMPIwug9lhA+yCdN6Jw2jLudu4TuGUuvIi3VkHjZISAYIxxzEsekA=="],
 
     "@emnapi/core": ["@emnapi/core@1.10.0", "", { "dependencies": { "@emnapi/wasi-threads": "1.2.1", "tslib": "^2.4.0" } }, "sha512-yq6OkJ4p82CAfPl0u9mQebQHKPJkY7WrIuk205cTYnYe+k2Z8YBh11FrbRG/H6ihirqcacOgl2BIO8oyMQLeXw=="],
 
