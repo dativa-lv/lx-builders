@@ -15,6 +15,7 @@ import {
 } from '@dativa-lv/lx-ui';
 import { getOtherSelectComponent } from '@/components/formBuilderOtherSelect';
 import LxFormBuilderItem from '@/components/FormBuilderItem.vue';
+import { isDate } from '@/utils/builderUtils';
 
 /**
  * Component for building forms.
@@ -148,30 +149,18 @@ const isSchemaValid = computed(() => {
   return true;
 });
 
-function isNotDate(row) {
-  return (
-    row?.format !== 'date' &&
-    row?.format !== 'time' &&
-    row?.format !== 'date-time' &&
-    row?.format !== 'year' &&
-    row?.format !== 'month' &&
-    row?.format !== 'month-year' &&
-    row?.format !== 'quarters'
-  );
-}
-
 function stringSelect(row) {
   if (
     (row?.type === 'string' &&
       row?.lx?.kind !== 'multiline' &&
       !row?.lx?.variant &&
-      isNotDate(row) &&
+      !isDate(row?.format) &&
       !row?.enum) ||
-    (row?.type === 'number' && !row?.lx?.variant && isNotDate(row) && !row?.enum)
+    (row?.type === 'number' && !row?.lx?.variant && !isDate(row?.format) && !row?.enum)
   )
     return 'textInputDefault';
   if (row?.type === 'string' && row?.lx?.kind === 'multiline') return 'textArea';
-  if (row?.type === 'string' && !isNotDate(row)) return 'dateTimePicker';
+  if (row?.type === 'string' && isDate(row?.format)) return 'dateTimePicker';
   return '';
 }
 
