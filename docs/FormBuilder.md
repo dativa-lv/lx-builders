@@ -83,7 +83,6 @@ For more LX features, use custom schema attribute `lx` with these parameters:
 ### `type="string"` and (`format="date"` or `format="time"` or `format="date-time"`)
 - `minDate` - LxDateTimePicker `minDate` prop
 - `maxDate` - LxDateTimePicker `maxDate` prop
-- `required` - LxDateTimePicker `required` prop
 - `timeAdjust` - LxDateTimePicker `timeAdjust` prop
 - `clearIfNotExact` - LxDateTimePicker `clearIfNotExact` prop
 - `texts` - LxDateTimePicker `texts` prop
@@ -1315,7 +1314,6 @@ schema:
       displayType: 'dateTimeRange',
       minDate: '2025-01-01',
       maxDate: '2025-12-31',
-      required: false,
       disabled: false,
       timeAdjust: false,
       rangeMonth: 'next',
