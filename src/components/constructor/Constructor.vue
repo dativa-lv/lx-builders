@@ -1388,7 +1388,7 @@ function updateSchemaKey(newKey) {
       : null;
 
     setValueByPath(schemaModel.value, findPositionInSchema(parentSchemaPath)?.slice(0, -1), res);
-  } catch (error) {
+  } catch {
     schemaKeyError.value = displayTexts.value?.schemaKeyUpdateError;
   }
 }

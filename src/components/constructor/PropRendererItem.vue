@@ -201,10 +201,10 @@ function mergeOptionsRecursive(schemaTexts, defaultTexts) {
 
       if (isPlainObject(defaultValue)) {
         mergeRecursive(schemaValue, defaultValue, path);
-      } else if (schemaValue !== undefined) {
-        result[path] = lxFormatUtils.objectClone(schemaValue);
-      } else {
+      } else if (schemaValue === undefined) {
         result[path] = lxFormatUtils.objectClone(defaultValue);
+      } else {
+        result[path] = lxFormatUtils.objectClone(schemaValue);
       }
     });
   }

@@ -50,7 +50,7 @@
     "@vueuse/components": "14.0.0",
     "@vueuse/core": "14.0.0",
     "@vueuse/integrations": "14.0.0",
-    "@dativa-lv/lx-ui": "2.2.9"
+    "@dativa-lv/lx-ui": "2.2.10"
   },
   "devDependencies": {
     "@testing-library/vue": "^8.0.1",
@@ -79,7 +79,7 @@
     "ajv": "^8.5.0"
   },
   "overrides": {
-    "brace-expansion": "2.0.2",
+    "brace-expansion": "5.0.6",
     "minimatch": "10.2.3",
     "js-cookie": "3.0.7",
     "flatted": "3.4.2",
@@ -91,6 +91,6 @@
   },
   "peerDependencies": {
     "vue": "^3.5.17",
-    "@dativa-lv/lx-ui": "2.2.9"
+    "@dativa-lv/lx-ui": "2.2.10"
   }
 }

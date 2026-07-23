@@ -117,7 +117,7 @@ const model = computed({
 const isSchemaValid = computed(() => {
   try {
     lxFormatUtils.objectClone(props.schema);
-  } catch (e) {
+  } catch {
     return false;
   }
   return true;
