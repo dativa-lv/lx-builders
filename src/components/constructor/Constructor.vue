@@ -35,6 +35,10 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  panelTeleportTarget: {
+    type: String,
+    default: null,
+  },
 });
 
 const textsDefault = {
@@ -1501,30 +1505,32 @@ const schemaInfo = computed(() => {
         </div>
       </div>
     </div>
-    <Panel
-      :componentName="componentName"
-      :componentProps="componentProps"
-      :componentPropsDefinitions="componentPropsDefinitions"
-      :navigation="navigation"
-      :componentModel="currentItem"
-      :schemaKey="schemaKey"
-      :schemaKeyError="schemaKeyError"
-      :schemaInfo="schemaInfo"
-      v-model:selectedTab="panelTabl"
-      :texts="displayTexts"
-      @update:componentModel="updateSchemaFromPanel"
-      @componentAdd="openAddComponentOptions"
-      @componentChange="componentChangeFromPanel"
-      @removeComponent="removeCurrentComponent"
-      @duplicateComponent="duplicateCurrentComponent"
-      @export="exportClicked"
-      @import="importClicked"
-      @editSchema="editSchemaClicked"
-      @editModel="editModelClicked"
-      @reportIssue="goToIssues"
-      @update:viewLayout="updateViewLayout"
-      @update:schemaKey="updateSchemaKey"
-    />
+    <Teleport :to="panelTeleportTarget" :disabled="!panelTeleportTarget" defer>
+      <Panel
+        :componentName="componentName"
+        :componentProps="componentProps"
+        :componentPropsDefinitions="componentPropsDefinitions"
+        :navigation="navigation"
+        :componentModel="currentItem"
+        :schemaKey="schemaKey"
+        :schemaKeyError="schemaKeyError"
+        :schemaInfo="schemaInfo"
+        v-model:selectedTab="panelTabl"
+        :texts="displayTexts"
+        @update:componentModel="updateSchemaFromPanel"
+        @componentAdd="openAddComponentOptions"
+        @componentChange="componentChangeFromPanel"
+        @removeComponent="removeCurrentComponent"
+        @duplicateComponent="duplicateCurrentComponent"
+        @export="exportClicked"
+        @import="importClicked"
+        @editSchema="editSchemaClicked"
+        @editModel="editModelClicked"
+        @reportIssue="goToIssues"
+        @update:viewLayout="updateViewLayout"
+        @update:schemaKey="updateSchemaKey"
+      />
+    </Teleport>
 
     <div id="constructor">
       <LxViewBuilder :schema="schema" v-model="model" :builderOptions="{ useRegistry: true }" />
