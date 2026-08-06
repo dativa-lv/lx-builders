@@ -137,6 +137,8 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.tooltip = p.tooltip;
     res.lx.texts = p.texts || {};
     res.readOnly = p.readOnly || false;
+    res.lx.helperText = p.helperText;
+    res.lx.helperTextKind = p.helperTextKind || 'label';
   },
   LxValuePicker: (res, p) => {
     res.type = p.selectionKind === 'multiple' ? 'array' : 'string';
@@ -160,6 +162,8 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.hasSelectAll = p.hasSelectAll || false;
     res.lx.stickyToolbar = p.stickyToolbar || false;
     res.lx.readOnlyRenderType = p.readOnlyRenderType || 'row';
+    res.lx.helperText = p.helperText;
+    res.lx.helperTextKind = p.helperTextKind || 'label';
     res.lx.texts = p.texts || {};
   },
   LxRow: (res, p) => {
@@ -226,6 +230,8 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.enableAdditionalText = p.enableAdditionalText || false;
     res.lx.texts = p.texts || {};
     res.lx.searchAttributes = p.searchAttributes;
+    res.lx.helperText = p.helperText;
+    res.lx.helperTextKind = p.helperTextKind || 'label';
     res.readOnly = p.readOnly || false;
   },
   LxCamera: (res, p) => {
@@ -237,6 +243,8 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.stickyToolbar = p.stickyToolbar || false;
     res.lx.actionDefinitions = p.actionDefinitions;
     res.lx.labelId = p.labelId;
+    res.lx.helperText = p.helperText;
+    res.lx.helperTextKind = p.helperTextKind || 'label';
     res.lx.texts = p.texts || {};
   },
   LxCheckbox: (res, p) => {
@@ -274,6 +282,8 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.rangeMonths = p.rangeMonths || 'next';
     res.lx.clearIfNotExact = p.clearIfNotExact || false;
     res.lx.labelId = p.labelId;
+    res.lx.helperText = p.helperText;
+    res.lx.helperTextKind = p.helperTextKind || 'label';
     res.lx.texts = p.texts || {};
     res.readOnly = p.readOnly || false;
   },
@@ -298,6 +308,8 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.imageSize = p.imageSize || 'default';
     res.lx.preferencesId = p.preferencesId || 'lx-camera-settings';
     res.lx.labelId = p.labelId;
+    res.lx.helperText = p.helperText;
+    res.lx.helperTextKind = p.helperTextKind || 'label';
     res.lx.texts = p.texts || {};
     res.readOnly = p.readOnly || false;
   },
@@ -311,6 +323,8 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.labelId = p.labelId;
     res.lx.disabled = p.disabled || false;
     res.lx.kind = p.kind || 'slider';
+    res.lx.helperText = p.helperText;
+    res.lx.helperTextKind = p.helperTextKind || 'label';
     res.readOnly = p.readOnly || false;
   },
   LxQrScanner: (res, p) => {
@@ -324,6 +338,8 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.stickyToolbar = p.stickyToolbar ?? false;
     res.lx.actionDefinitions = p.actionDefinitions;
     res.lx.labelId = p.labelId;
+    res.lx.helperText = p.helperText;
+    res.lx.helperTextKind = p.helperTextKind || 'label';
     res.lx.texts = p.texts || {};
   },
   LxVisualPicker: (res, p) => {
@@ -333,6 +349,8 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.selectionKind = p.selectionKind || 'multiple';
     res.lx.labelId = p.labelId;
     res.lx.texts = p.texts || {};
+    res.lx.helperText = p.helperText;
+    res.lx.helperTextKind = p.helperTextKind || 'label';
     res.readOnly = p.readOnly || false;
   },
   LxDayInput: (res, p) => {
@@ -357,6 +375,8 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.labelId = p.labelId;
     res.lx.stickyToolbar = p.stickyToolbar ?? false;
     res.lx.actionDefinitions = p.actionDefinitions;
+    res.lx.helperText = p.helperText;
+    res.lx.helperTextKind = p.helperTextKind || 'label';
     res.lx.texts = p.texts;
     res.readOnly = p.readOnly ?? false;
   },

@@ -66,10 +66,15 @@ For more LX features, use custom schema attribute `lx` with these parameters:
 - `convertToString` - LxInput `convertToString` prop
 - `signed` - LxTextInput `signed` prop form `mask="decimal"`
 - `customMaskValue` - LxTextInput `customMaskValue` prop. Used only when `mask` prop is `custom`
+- `helperText` - LxTextInput `helperText` prop
+- `helperTextKind` - LxTextInput `helperTextKind` prop
 
 ### for `type="string"` and `lx.kind="multiple"`
 - `rows` - LxTextArea `rows` prop
 - `dynamicHeight` - LxTextArea `dynamicHeight` prop
+- `helperText` - LxTextArea `helperText` prop
+- `helperTextKind` - LxTextArea `helperTextKind` prop
+
 ### for `type="string"` and (`lx.variant="default"` or `lx.variant="dropdown"` or `lx.variant="tiles"` or `lx.variant="tags"`)
 - `items` - LxValuePicker `items` prop
 - `variant` - LxValuePicker `variant` prop
@@ -80,6 +85,9 @@ For more LX features, use custom schema attribute `lx` with these parameters:
 - `hasSelectAll` - LxValuePicker `hasSelectAll` prop
 - `readOnlyRenderType` - LxValuePicker `readOnlyRenderType` prop
 - `stickyToolbar` - LxValuePicker `stickyToolbar` prop
+- `helperText` - LxValuePicker `helperText` prop
+- `helperTextKind` - LxValuePicker `helperTextKind` prop
+
 ### `type="string"` and (`format="date"` or `format="time"` or `format="date-time"`)
 - `minDate` - LxDateTimePicker `minDate` prop
 - `maxDate` - LxDateTimePicker `maxDate` prop
@@ -93,6 +101,8 @@ For more LX features, use custom schema attribute `lx` with these parameters:
 - `variant` - LxDateTimePicker `variant` prop
 - `cadenceOfMinutes` - LxDateTimePicker `cadenceOfMinutes` prop
 - `cadenceOfSeconds` - LxDateTimePicker `cadenceOfSeconds` prop
+- `helperText` - LxDateTimePicker `helperText` prop
+- `helperTextKind` - LxDateTimePicker `helperTextKind` prop
 ### `type="array"`
 - `items` - LxValuePicker `items` prop
 - `variant` - LxValuePicker `variant` prop
@@ -110,6 +120,8 @@ For more LX features, use custom schema attribute `lx` with these parameters:
 - `categoryAttribute` - LxValuePicker `categoryAttribute` prop
 - `descriptionAttribute` - LxValuePicker `descriptionAttribute` prop
 - `searchAttributes` - LxValuePicker `searchAttributes` prop
+- `helperText` - LxValuePicker `helperText` prop
+- `helperTextKind` - LxValuePicker `helperTextKind` prop
 - `displayType` -  determines the way how array is displayed ('default' || 'list' || 'listModal' || 'table' || 'tableModal')
   - if `displayType = 'list'` || `displayType = 'listModal'`
     - `idAttribute` - LxList `idAttribute` prop
@@ -189,6 +201,9 @@ For more LX features, use custom schema attribute `lx` with these parameters:
 - `labelOn` - LxToggle on slot text
 - `labelOff` - LxToggle off slot text
 - `labelIndeterminate` - LxToggle indeterminate slot text
+- `helperText` - LxToggle `helperText` prop
+- `helperTextKind` - LxToggle `helperTextKind` prop
+
 ### `type="object"`
  - `icon` - LxDataBlock `icon` prop
  - `nameAttribute` - LxDataBlock `name` prop
@@ -1077,6 +1092,8 @@ In this example in form there is going to be 3 input fields:
       hasSelectAll: false,
       searchAttributes: null,
       enableAdditionalText: false,
+      helperText: null,
+      helperTextKind: 'label',
     }
   }
 }
@@ -1186,6 +1203,8 @@ schema:
       labelId: null,
       actionDefinitions: [],
       stickyToolbar: false,
+      helperText: null,
+      helperTextKind: 'label',
       texts: undefined,
     }
   }
@@ -1318,6 +1337,8 @@ schema:
       timeAdjust: false,
       rangeMonth: 'next',
       clearIfNotExact: false,
+      helperText: null,
+      helperTextKind: 'label',
     }
   }
 }
@@ -1406,6 +1427,8 @@ modelValue:
       imageSize: 'default',
       preferencesId: 'lx-camera-settings',
       labelId: null,
+      helperText: null,
+      helperTextKind: 'label',
     }
   }
 }
@@ -1681,6 +1704,8 @@ modelValue:
       labelId: null,
       actionDefinitions: [],
       stickyToolbar: false,
+      helperText: null,
+      helperTextKind: 'label',
     }
   }
 }
@@ -1703,6 +1728,8 @@ modelValue:
       disabled: false,
       kind: 'slider',
       disableArrowKeys: false,
+      helperText: null,
+      helperTextKind: 'label',
     }
   }
 }
@@ -1808,6 +1835,8 @@ modelValue:
       labelId: null,
       stickyToolbar: false,
       actionDefinitions: [],
+      helperText: null,
+      helperTextKind: 'label',
     }
   }
 }
@@ -1998,6 +2027,8 @@ modelValue:
       readOnly: false,
       mode: 'default'
       labelId: null,
+      helperText: null,
+      helperTextKind: 'label',
     }
   }
 }
@@ -2040,6 +2071,8 @@ modelValue:
       labelId: null,
       stickyToolbar: false,
       actionDefinitions: [],
+      helperText: null,
+      helperTextKind: 'label',
     }
   }
 }
