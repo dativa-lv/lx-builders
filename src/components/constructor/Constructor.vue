@@ -73,6 +73,7 @@ const textsDefault = {
   componentAddChoice: 'Izvēlieties, kur pievienot komponenti',
   invalidJsonError: 'Nederīgs JSON objekts',
   parseJsonError: 'Kļūda, apstrādājot JSON saturu',
+  invalidArrayOfObjects: 'Nederīgs JSON objekts. Ievadiet masīvu ar objektiem',
   schemaKeyEmptyError: 'Atslēga nedrīkst būt tukša',
   schemaKeyParentError: 'Vecākelements nav atrasts',
   schemaKeyDuplicateError: 'Atslēga "{0}" jau eksistē. Tai jābūt unikālai',
@@ -102,9 +103,15 @@ const textsDefault = {
   noComponentSelected: 'Nav izvēlēts elements',
   inputs: 'Ievadlauki',
   containers: 'Konteineri',
+  lists: 'Saraksti',
   edit: 'Labot',
   editing: 'Labošana',
   searchText: 'Meklēt',
+  removeItem: 'Dzēst ierakstu',
+  removeItemHint: 'Nospiediet Delete, lai noņemtu ierakstu',
+  addItemButtonTooltip: 'Pievienot ierakstu',
+  addButtonLabel: 'Pievienot ierakstu',
+  showAllFields: 'Rādīt visus laukus',
 
   fileUploader: {
     clear: 'Notīrīt',
@@ -120,13 +127,18 @@ const textsDefault = {
     metaMainLastModified: 'Pēdējās izmaiņas',
     metaMainDataSize: 'Datnes izmērs',
   },
+  validations: {
+    required: 'Lauks ir obligāts',
+    unique: 'Vērtībai jābūt unikālai',
+  },
 };
 
 const displayTexts = computed(() => lxGeneralUtils.getDisplayTexts(props.texts, textsDefault));
 
-const model = ref({});
-
 const emits = defineEmits(['update:schema', 'update:modelValue', 'error', 'schemaCopy']);
+
+// Error message map
+// invalidJson, invalidFileContent, actionDefinitionsValidation, itemsValidation
 
 const schemaModel = computed({
   get() {
@@ -134,6 +146,15 @@ const schemaModel = computed({
   },
   set(value) {
     emits('update:schema', value);
+  },
+});
+
+const model = computed({
+  get() {
+    return props.modelValue;
+  },
+  set(value) {
+    emits('update:modelValue', value);
   },
 });
 
@@ -274,12 +295,17 @@ function getItemDisplayType(item) {
 function hasContainerProperties(item) {
   const hasProperties =
     !!item && Object.prototype.hasOwnProperty.call(item, 'properties') && !!item.properties;
+  const displayType = getItemDisplayType(item);
 
   if (!hasProperties) {
     return false;
   }
 
-  if (getItemDisplayType(item) !== 'form') {
+  if (displayType === 'list' || displayType === 'table') {
+    return false;
+  }
+
+  if (displayType !== 'form') {
     return true;
   }
 
@@ -297,7 +323,38 @@ function checkIfInsideFilterSection(navigationStack) {
   const formIndex = navigationNames.indexOf('LxForm', filtersIndex + 1);
   if (formIndex < 0) return false;
 
-  navigationNames.includes('LxSection', formIndex + 1);
+  return navigationNames.includes('LxSection', formIndex + 1);
+}
+
+function getDisplayTypesForSchemaPath(schema, path) {
+  if (!schema || !path) return [];
+
+  const pathParts = path.split('.').filter(Boolean);
+
+  return pathParts
+    .map((_, index) => {
+      const currentPath = pathParts.slice(0, index + 1).join('.');
+      const schemaItem = getValueByPath(schema, findPositionInSchema(currentPath));
+
+      return getItemDisplayType(schemaItem);
+    })
+    .filter(Boolean);
+}
+
+function canNestComponentInsideSchemaPath(componentId, targetPath, schema = schemaModel.value) {
+  const displayTypes = getDisplayTypesForSchemaPath(schema, targetPath);
+  const isInsideFilters = displayTypes.includes('filters');
+  const isInsideForm = displayTypes.includes('form');
+
+  if (componentId === 'LxList') {
+    return !isInsideFilters;
+  }
+
+  if (componentId === 'LxDataGrid') {
+    return !isInsideFilters && !isInsideForm;
+  }
+
+  return true;
 }
 
 // Updated infomration about the currenly selected element:
@@ -329,6 +386,30 @@ function getPositionInfo(schema, currentSchema) {
   // Move inside is allowed only forward
   elementInfo.value.canMoveForwardIn =
     hasContainerProperties(nextSchema) && componentName.value !== 'LxSection';
+
+  if (elementInfo.value.canMoveForwardIn && nextSchema) {
+    let moveInsideTargetPath = [parentPath, nextKey].filter(Boolean).join('.');
+
+    if (getItemDisplayType(nextSchema) === 'form') {
+      const targetSectionEntry = Object.entries(nextSchema.properties || {}).find(
+        ([, child]) => getItemDisplayType(child) === 'section'
+      );
+
+      if (!targetSectionEntry) {
+        elementInfo.value.canMoveForwardIn = false;
+      } else {
+        const [sectionKey] = targetSectionEntry;
+        moveInsideTargetPath = [moveInsideTargetPath, sectionKey].filter(Boolean).join('.');
+      }
+    }
+
+    if (
+      elementInfo.value.canMoveForwardIn &&
+      !canNestComponentInsideSchemaPath(componentName.value, moveInsideTargetPath, schema)
+    ) {
+      elementInfo.value.canMoveForwardIn = false;
+    }
+  }
 
   const grandParentPath = parentPath?.includes('.')
     ? parentPath?.split('.')?.slice(0, -1).join('.')
@@ -587,6 +668,10 @@ function moveElementInside() {
     targetContainerPath = [targetContainerPath, sectionKey].filter(Boolean).join('.');
   }
 
+  if (!canNestComponentInsideSchemaPath(componentName.value, targetContainerPath, schemaClone)) {
+    return;
+  }
+
   const movedSchema = lxFormatUtils.objectClone(currentSchema);
   const targetPropertiesClone = lxFormatUtils.objectClone(targetContainerSchema.properties || {});
   const movedKey = getUniqueKeyForLevel(currentKey, targetPropertiesClone);
@@ -746,10 +831,23 @@ function moveElementOutside(position) {
 function initializeModelValueForAddedComponent(componentId, key, schemaContainerPath) {
   if (!key) return;
 
+  const defaultListItems = [
+    { id: 1, name: 'Item 1', description: 'Description 1' },
+    { id: 2, name: 'Item 2', description: 'Description 2' },
+    { id: 3, name: 'Item 3', description: 'Description 3' },
+  ];
+
   if (componentId === 'LxDateTimeRange') {
     const modelClone = lxFormatUtils.objectClone(model.value || {});
     const modelContainerPath = getModelPathFromSchemaPath(schemaContainerPath);
     setValueByPath(modelClone, [...modelContainerPath, key], {});
+    model.value = modelClone;
+    emits('update:modelValue', modelClone);
+  }
+  if (componentId === 'LxList' || componentId === 'LxDataGrid') {
+    const modelClone = lxFormatUtils.objectClone(model.value || {});
+    const modelContainerPath = getModelPathFromSchemaPath(schemaContainerPath);
+    setValueByPath(modelClone, [...modelContainerPath, key], defaultListItems);
     model.value = modelClone;
     emits('update:modelValue', modelClone);
   }
@@ -927,6 +1025,7 @@ function componentChangeFromPanel(item) {
 // Handles component addition logic - wheter confirmation modal should be opened or no
 function openAddComponentOptions(id) {
   componentToAdd.value = id;
+
   if (componentName.value === 'LxViewLayout') {
     addComponentInside(id);
   } else if (
@@ -1041,6 +1140,23 @@ function duplicateCurrentComponent() {
   setValueByPath(schemaClone, positionPath, positionValue);
   schemaModel.value = schemaClone;
 
+  // Duplicate modelValue for LxList and LxDataGrid components
+  if (componentName.value === 'LxList' || componentName.value === 'LxDataGrid') {
+    const modelClone = lxFormatUtils.objectClone(model.value || {});
+    const modelContainerPath = getModelPathFromSchemaPath(positionPath);
+    const duplicatedModelValue = getValueByPath(modelClone, [...modelContainerPath, duplicateKey]);
+
+    if (!lxGeneralUtils.isNil(duplicatedModelValue)) {
+      setValueByPath(
+        modelClone,
+        [...modelContainerPath, newKey],
+        lxFormatUtils.objectClone(duplicatedModelValue)
+      );
+      model.value = modelClone;
+      emits('update:modelValue', modelClone);
+    }
+  }
+
   const parentSchemaPath = getSchemaPathFromPositionPath(positionPath);
   const duplicatedSchemaPath = [parentSchemaPath, newKey].filter(Boolean).join('.');
   selectComponentBySchemaPath(duplicatedSchemaPath);
@@ -1154,6 +1270,8 @@ function isValidJSONObject(value) {
   }
 }
 
+// TODO: Change error emit to codes
+
 // Decodes the base64 value into utf-8 string
 function decodeBase64Utf8(base64Value) {
   const binary = atob(base64Value);
@@ -1173,7 +1291,7 @@ function fileUpload(file) {
   const base64 = file[0].content?.split(',')[1];
   if (!base64) {
     fileContent.value = null;
-    emits('error', 'Invalid file content');
+    emits('error', 'invalidFileContent');
     return;
   }
 
@@ -1197,7 +1315,7 @@ function importActionClicked(actionId) {
     if (!isValidJSONObject(fileContent.value)) {
       importInvalidMessage.value = displayTexts.value?.invalidJsonObject;
 
-      emits('error', 'Invalid JSON file content');
+      emits('error', 'invalidJson');
       return;
     }
     try {
@@ -1208,8 +1326,8 @@ function importActionClicked(actionId) {
       // Clear selection after import
       clearSelectedElement();
     } catch {
-      importInvalidMessage.value = displayTexts.value?.errorParsingJsonContent;
-      emits('error', 'Error parsing JSON content');
+      importInvalidMessage.value = displayTexts.value?.parseJsonError;
+      emits('error', 'parseJsonError');
     }
   }
 }
@@ -1254,7 +1372,7 @@ function editSchemaActionClicked(actionId) {
     if (!isValidJSONObject(editSchemaContent.value)) {
       editSchemaInvalidMessage.value = displayTexts.value?.invalidJsonObject;
 
-      emits('error', 'Invalid JSON file content');
+      emits('error', 'invalidJson');
       return;
     }
     try {
@@ -1262,7 +1380,7 @@ function editSchemaActionClicked(actionId) {
       schemaModel.value = parsed;
       editSchemaModal.value.close();
     } catch {
-      emits('error', 'Error parsing JSON content');
+      emits('error', 'parseJsonError');
     }
   }
 }
@@ -1283,7 +1401,7 @@ function editModelActionClicked(actionId) {
   if (actionId === 'save' && editModelContent.value) {
     if (!isValidJSONObject(editModelContent.value)) {
       editModelInvalidMessage.value = displayTexts.value?.invalidJsonObject;
-      emits('error', 'Invalid JSON content');
+      emits('error', 'invalidJson');
       return;
     }
     try {
@@ -1291,7 +1409,7 @@ function editModelActionClicked(actionId) {
       model.value = parsed;
       editModelModal.value.close();
     } catch {
-      emits('error', 'Error parsing JSON content');
+      emits('error', 'parseJsonError');
     }
   }
 }
@@ -1449,6 +1567,30 @@ const schemaInfo = computed(() => {
     );
   return { hasForm, hasFilters, isSectionInFilterForm };
 });
+
+const selectedModelForCurrentPath = computed(() => {
+  if (!schemaPath.value) return null;
+
+  const modelPath = schemaPath.value.split('.').filter(Boolean);
+  if (!modelPath.length) return model.value;
+
+  return getValueByPath(model.value, modelPath);
+});
+
+function updateSelectedModelForCurrentPath(value) {
+  if (!schemaPath.value) return;
+
+  const modelPath = schemaPath.value.split('.').filter(Boolean);
+  const modelClone = lxFormatUtils.objectClone(model.value || {});
+
+  if (!modelPath.length) {
+    model.value = value;
+    return;
+  }
+
+  setValueByPath(modelClone, modelPath, value);
+  model.value = modelClone;
+}
 </script>
 <template>
   <div>
@@ -1512,6 +1654,7 @@ const schemaInfo = computed(() => {
         :componentPropsDefinitions="componentPropsDefinitions"
         :navigation="navigation"
         :componentModel="currentItem"
+        :selectedModel="selectedModelForCurrentPath"
         :schemaKey="schemaKey"
         :schemaKeyError="schemaKeyError"
         :schemaInfo="schemaInfo"
@@ -1529,6 +1672,8 @@ const schemaInfo = computed(() => {
         @reportIssue="goToIssues"
         @update:viewLayout="updateViewLayout"
         @update:schemaKey="updateSchemaKey"
+        @update:selectedModel="updateSelectedModelForCurrentPath"
+        @error="(x) => emits('error', x)"
       />
     </Teleport>
 

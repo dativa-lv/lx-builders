@@ -45,6 +45,7 @@ import {
   LxDateTimeRange,
   lxDevUtils,
   LxStack,
+  lxGeneralUtils,
 } from '@dativa-lv/lx-ui';
 import useLx from '@/hooks/useLx';
 import { getOtherSelectComponent } from '@/components/formBuilderOtherSelect';
@@ -284,8 +285,11 @@ function listModalAction(action, value, name, actionDefinitions = undefined) {
   }
 }
 
-function getColumnDefinitions(def) {
+function getColumnDefinitions(def, columnDef) {
   const res = [];
+  if (columnDef && Array.isArray(columnDef) && columnDef.length > 0) {
+    return columnDef;
+  }
   if (def) {
     Object.entries(def)?.forEach(([key, value]) => {
       const obj = {};
@@ -376,6 +380,14 @@ function handleModalActionClick(action, name) {
   if (action === 'saveElement') {
     saveNewElement(name);
   }
+}
+
+function getDataGridScrollable(displaySchema, name) {
+  if (lxGeneralUtils.isBoolean(displaySchema?.properties?.[name]?.lx?.scrollable))
+    return displaySchema?.properties?.[name]?.lx?.scrollable;
+  return displaySchema?.properties?.[name]?.items?.properties
+    ? Object?.keys(displaySchema?.properties?.[name]?.items?.properties)?.length > 4
+    : null;
 }
 
 const builderNameComputed = computed(() => {
@@ -1164,6 +1176,7 @@ const builderOptions = computed(() => ({
     :hasVirtualization="displaySchema?.properties[name]?.lx?.hasVirtualization"
     :stickyToolbar="displaySchema?.properties[name]?.lx?.stickyToolbar"
     :texts="displaySchema?.properties[name]?.lx?.texts"
+    :builderOptions="builderOptions"
     @actionClick="
       (val, item) =>
         deleteArrayObject(val, item, name, displaySchema?.properties[name]?.lx?.actionDefinitions)
@@ -1892,29 +1905,56 @@ const builderOptions = computed(() => ({
     :items="model[name]"
     :label="displaySchema?.properties[name]?.lx?.label"
     :description="displaySchema?.properties[name]?.lx?.description"
-    :columnDefinitions="getColumnDefinitions(displaySchema?.properties[name]?.items?.properties)"
-    :scrollable="
-      displaySchema?.properties[name]?.items?.properties
-        ? Object?.keys(displaySchema?.properties[name]?.items?.properties)?.length > 4
-        : null
+    :idAttribute="displaySchema?.properties[name]?.lx?.idAttribute"
+    :columnDefinitions="
+      getColumnDefinitions(
+        displaySchema?.properties[name]?.items?.properties,
+        displaySchema?.properties[name]?.lx?.columnDefinitions
+      )
     "
+    :scrollable="getDataGridScrollable(displaySchema, name)"
     :loading="displaySchema?.properties[name]?.lx?.loading"
     :busy="displaySchema?.properties[name]?.lx?.busy"
     :skeletonRowCount="displaySchema?.properties[name]?.lx?.skeletonRowCount"
     :showHeader="displaySchema?.properties[name]?.lx?.showHeader"
-    :showStatusBar="displaySchema?.properties[name]?.lx?.showStatusBar"
+    :showToolbar="displaySchema?.properties[name]?.lx?.showToolbar || true"
+    :showStatusbar="displaySchema?.properties[name]?.lx?.showStatusbar"
     :showAllColumns="displaySchema?.properties[name]?.lx?.showAllColumns"
     :hasSorting="displaySchema?.properties[name]?.lx?.hasSorting"
     :sortingIgnoreEmpty="displaySchema?.properties[name]?.lx?.sortingIgnoreEmpty"
     :itemsPerPage="displaySchema?.properties[name]?.lx?.itemsPerPage"
-    :totalItems="displaySchema?.properties[name]?.lx?.totalItems"
+    :itemsTotal="displaySchema?.properties[name]?.lx?.itemsTotal"
     :sortingMode="displaySchema?.properties[name]?.lx?.sortingMode"
     :actionDefinitions="displaySchema?.properties[name]?.lx?.actionDefinitions"
     :defaultActionName="displaySchema?.properties[name]?.lx?.defaultActionName"
     :toolbarActionDefinitions="displaySchema?.properties[name]?.lx?.toolbarActionDefinitions"
+    :hasVirtualization="displaySchema?.properties[name]?.lx?.hasVirtualization"
+    :stickyHeader="displaySchema?.properties[name]?.lx?.stickyHeader"
+    :hasPaging="displaySchema?.properties[name]?.lx?.hasPaging"
+    :hasSelecting="displaySchema?.properties[name]?.lx?.hasSelecting"
+    :selectionKind="displaySchema?.properties[name]?.lx?.selectionKind"
+    :sortingSide="displaySchema?.properties[name]?.lx?.sortingSide"
+    :emptyStateActionDefinitions="displaySchema?.properties[name]?.lx?.emptyStateActionDefinitions"
+    :emptyStateIcon="displaySchema?.properties[name]?.lx?.emptyStateIcon"
+    :hasSearch="displaySchema?.properties[name]?.lx?.hasSearch"
+    :searchMode="displaySchema?.properties[name]?.lx?.searchMode"
+    :searchString="displaySchema?.properties[name]?.lx?.searchString"
+    :locale="displaySchema?.properties[name]?.lx?.locale"
+    :fullBleed="displaySchema?.properties[name]?.lx?.fullBleed"
+    :badgeDefinitions="displaySchema?.properties[name]?.lx?.badgeDefinitions"
+    :stickyToolbar="displaySchema?.properties[name]?.lx?.stickyToolbar"
     :texts="displaySchema?.properties[name]?.lx?.texts"
+    :builderOptions="builderOptions"
     @actionClick="(val, item, _) => componentEmit('actionClick', name, val, item)"
     @toolbarActionClick="(val) => componentEmit('toolbarActionClick', name, val)"
+    @selectionActionClick="(val, items) => componentEmit('selectionActionClick', name, val, items)"
+    @update:searchString="(val) => componentEmit('update:searchString', name, val)"
+    @search="(val) => componentEmit('search', name, val)"
+    @selectPage="(val) => componentEmit('selectPage', name, val)"
+    @sortingChange="(val) => componentEmit('sortingChange', name, val)"
+    @selectionChange="(val) => componentEmit('selectionChange', name, val)"
+    @itemsPerPageChange="(val) => componentEmit('itemsPerPageChange', name, val)"
+    @emptyStateActionClick="(val) => componentEmit('emptyStateActionClick', name, val)"
   />
   <div v-else-if="selectedComponent === 'arrayTableModal'">
     <LxDataGrid
@@ -1922,23 +1962,24 @@ const builderOptions = computed(() => ({
       :label="displaySchema?.properties[name]?.lx?.label"
       :description="displaySchema?.properties[name]?.lx?.description"
       :idAttribute="displaySchema?.properties[name]?.lx?.idAttribute"
-      :columnDefinitions="getColumnDefinitions(displaySchema?.properties[name]?.items?.properties)"
-      :scrollable="
-        displaySchema?.properties[name]?.items?.properties
-          ? Object?.keys(displaySchema?.properties[name]?.items?.properties)?.length > 4
-          : null
+      :columnDefinitions="
+        getColumnDefinitions(
+          displaySchema?.properties[name]?.items?.properties,
+          displaySchema?.properties[name]?.lx?.columnDefinitions
+        )
       "
+      :scrollable="getDataGridScrollable(displaySchema, name)"
       :loading="displaySchema?.properties[name]?.lx?.loading"
       :busy="displaySchema?.properties[name]?.lx?.busy"
       :skeletonRowCount="displaySchema?.properties[name]?.lx?.skeletonRowCount"
       :showHeader="displaySchema?.properties[name]?.lx?.showHeader"
       :showToolbar="displaySchema?.properties[name]?.lx?.showToolbar || true"
-      :showStatusBar="displaySchema?.properties[name]?.lx?.showStatusBar"
+      :showStatusbar="displaySchema?.properties[name]?.lx?.showStatusbar"
       :showAllColumns="displaySchema?.properties[name]?.lx?.showAllColumns"
       :hasSorting="displaySchema?.properties[name]?.lx?.hasSorting"
       :sortingIgnoreEmpty="displaySchema?.properties[name]?.lx?.sortingIgnoreEmpty"
       :itemsPerPage="displaySchema?.properties[name]?.lx?.itemsPerPage"
-      :totalItems="displaySchema?.properties[name]?.lx?.totalItems"
+      :itemsTotal="displaySchema?.properties[name]?.lx?.itemsTotal"
       :sortingMode="displaySchema?.properties[name]?.lx?.sortingMode"
       :actionDefinitions="
         displaySchema?.properties[name]?.lx?.actionDefinitions || [

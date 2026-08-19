@@ -36,6 +36,10 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  selectedModel: {
+    type: [Object, Array, String, Number, Boolean],
+    default: null,
+  },
   schemaKey: {
     type: String,
     default: '',
@@ -86,10 +90,21 @@ const textsDefault = {
   noComponentSelected: 'Nav izvēlēts elements',
   inputs: 'Ievadlauki',
   containers: 'Konteineri',
+  lists: 'Saraksti',
   close: 'Aizvērt',
   edit: 'Labot',
   editing: 'Labošana',
   searchText: 'Meklēt',
+  invalidArrayOfObjects: 'Nederīgs JSON objekts. Ievadiet masīvu ar objektiem',
+  removeItem: 'Dzēst ierakstu',
+  removeItemHint: 'Nospiediet Delete, lai noņemtu ierakstu',
+  addItemButtonTooltip: 'Pievienot ierakstu',
+  addButtonLabel: 'Pievienot ierakstu',
+  showAllFields: 'Rādīt visus laukus',
+  validations: {
+    required: 'Lauks ir obligāts',
+    unique: 'Vērtībai jābūt unikālai',
+  },
 };
 
 const displayTexts = computed(() => lxGeneralUtils.getDisplayTexts(props.texts, textsDefault));
@@ -110,6 +125,8 @@ const emits = defineEmits([
   'update:viewLayout',
   'update:schemaKey',
   'update:selectedTab',
+  'update:selectedModel',
+  'error',
 ]);
 
 const COMPONENT_SCHEMA_BUILDERS = {
@@ -456,6 +473,99 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.badgeType = p.badgeType || 'default';
     res.lx.texts = p.texts || {};
   },
+  LxList: (res, p) => {
+    res.type = 'array';
+    res.properties = res.properties || {};
+    res.description = p.description;
+
+    res.lx.items = p.items || [];
+    res.lx.actionDefinitions = p.actionDefinitions;
+    res.lx.groupDefinitions =
+      p.groupDefinitions && p.groupDefinitions?.length !== 0 ? p.groupDefinitions : null;
+    res.lx.toolbarActionDefinitions = p.toolbarActionDefinitions;
+    res.lx.selectionActionDefinitions = p.selectionActionDefinitions;
+    res.lx.kind = p.kind || 'default';
+    res.lx.listType = p.listType || '3';
+    res.lx.hasSelecting = p.hasSelecting || false;
+    res.lx.selectionKind = p.selectionKind || 'single';
+    res.lx.hasSearch = p.hasSearch || false;
+    res.lx.searchSide = p.searchSide || 'client';
+    res.lx.searchMode = p.searchMode || 'default';
+    res.lx.hideFilteredItems = p.hideFilteredItems || false;
+    res.lx.showLoadMore = p.showLoadMore || false;
+    res.lx.stickyToolbar = p.stickyToolbar || false;
+    res.lx.icon = p.icon || 'open';
+    res.lx.iconSet = p.iconSet || 'cds';
+    res.lx.hasVirtualization = p.hasVirtualization;
+    res.lx.includeUnspecifiedGroups = p.includeUnspecifiedGroups || false;
+    res.lx.hasSkipLink = p.hasSkipLink || false;
+
+    res.lx.loading = p.loading || false;
+    res.lx.busy = p.busy || false;
+
+    res.lx.actionLayout = p.actionLayout || 'default';
+    res.lx.emptyStateActionDefinitions = p.emptyStateActionDefinitions;
+    res.lx.emptyStateIcon = p.emptyStateIcon;
+
+    res.lx.idAttribute = p.idAttribute || 'id';
+    res.lx.nameAttribute = p.nameAttribute || 'name';
+    res.lx.descriptionAttribute = p.descriptionAttribute || 'description';
+    res.lx.hrefAttribute = p.hrefAttribute || 'href';
+    res.lx.groupAttribute = p.groupAttribute || 'group';
+    res.lx.clickableAttribute = p.clickableAttribute || 'clickable';
+    res.lx.iconAttribute = p.iconAttribute || 'icon';
+    res.lx.iconSetAttribute = p.iconSetAttribute || 'iconSet';
+    res.lx.tooltipAttribute = p.tooltipAttribute || 'tooltip';
+    res.lx.categoryAttribute = p.categoryAttribute || 'category';
+    res.lx.childrenAttribute = p.childrenAttribute || 'children';
+    res.lx.hasChildrenAttribute = p.hasChildrenAttribute || 'hasChildren';
+    res.lx.selectableAttribute = p.selectableAttribute || 'selectable';
+    res.lx.orderAttribute = p.orderAttribute || 'order';
+
+    res.lx.texts = p.texts || {};
+  },
+  LxDataGrid: (res, p) => {
+    res.type = 'array';
+    res.properties = res.properties || {};
+    res.description = p.description;
+
+    res.lx.label = p.label;
+    res.lx.description = p.description;
+    res.lx.columnDefinitions = p.columnDefinitions;
+    res.lx.idAttribute = p.idAttribute || 'id';
+    res.lx.scrollable = p.scrollable || false;
+    res.lx.loading = p.loading || false;
+    res.lx.busy = p.busy || false;
+    res.lx.skeletonRowCount = p.skeletonRowCount || 10;
+    res.lx.showHeader = p.showHeader || false;
+    res.lx.showToolbar = p.showToolbar;
+    res.lx.showStatusbar = p.showStatusbar;
+    res.lx.showAllColumns = p.showAllColumns || false;
+    res.lx.hasSorting = p.hasSorting || false;
+    res.lx.sortingIgnoreEmpty = p.sortingIgnoreEmpty;
+    res.lx.itemsPerPage = p.itemsPerPage || 20;
+    res.lx.itemsTotal = p.itemsTotal || 0;
+    res.lx.sortingMode = p.sortingMode || 'strip';
+    res.lx.actionDefinitions = p.actionDefinitions;
+    res.lx.defaultActionName = p.defaultActionName || 'open';
+    res.lx.toolbarActionDefinitions = p.toolbarActionDefinitions;
+    res.lx.hasVirtualization = p.hasVirtualization;
+    res.lx.stickyHeader = p.stickyHeader || false;
+    res.lx.hasPaging = p.hasPaging || false;
+    res.lx.hasSelecting = p.hasSelecting || false;
+    res.lx.selectionKind = p.selectionKind || 'multiple';
+    res.lx.sortingSide = p.sortingSide || 'client';
+    res.lx.emptyStateActionDefinitions = p.emptyStateActionDefinitions;
+    res.lx.emptyStateIcon = p.emptyStateIcon;
+    res.lx.hasSearch = p.hasSearch || false;
+    res.lx.searchMode = p.searchMode || 'default';
+    res.lx.searchString = p.searchString;
+
+    res.lx.fullBleed = p.fullBleed;
+    res.lx.badgeDefinitions = p.badgeDefinitions;
+    res.lx.stickyToolbar = p.stickyToolbar || false;
+    res.lx.texts = p.texts || {};
+  },
 };
 
 const compModel = computed({
@@ -497,6 +607,12 @@ const usageGroupDefinitions = computed(() => [
     badgeTitle: displayTexts.value?.containers,
     expanded: true,
   },
+  {
+    id: 'lists',
+    name: displayTexts.value?.lists,
+    badgeTitle: displayTexts.value?.lists,
+    expanded: true,
+  },
 ]);
 
 const lxComponents = ref(getLXComponents());
@@ -505,6 +621,44 @@ const lxComponents = ref(getLXComponents());
 // It's plain LxForm, or it's LxForm inside LxFilters, but has no LxSection yet
 function canAddLxSection() {
   return props.componentName === 'LxForm' && !props.schemaInfo?.isSectionInFilterForm;
+}
+
+function isInsideComponent(component) {
+  return props.navigation?.some(
+    (nav) => typeof nav === 'object' && nav !== null && 'name' in nav && nav.name === component
+  );
+}
+
+function isSelectedComponent(component) {
+  return props.componentName === component;
+}
+
+function canAddLxList() {
+  if (isInsideComponent('LxFilters') && !isSelectedComponent('LxFilters')) {
+    return false;
+  }
+
+  return props.componentName !== 'LxForm';
+}
+
+function canAddLxDataGrid() {
+  if (isInsideComponent('LxFilters') && !isSelectedComponent('LxFilters')) {
+    return false;
+  }
+
+  if (
+    isInsideComponent('LxForm') &&
+    !isSelectedComponent('LxForm') &&
+    !isSelectedComponent('LxSection')
+  ) {
+    return false;
+  }
+
+  if (isInsideComponent('LxForm')) {
+    return false;
+  }
+
+  return true;
 }
 
 const componentItems = computed(() => {
@@ -539,6 +693,18 @@ const componentItems = computed(() => {
         props.componentName === 'LxViewLayout' &&
         !props.schemaInfo?.hasForm &&
         !props.schemaInfo?.hasFilters,
+    },
+    {
+      id: 'LxList',
+      name: 'LxList',
+      usageGroup: 'lists',
+      clickable: canAddLxList(),
+    },
+    {
+      id: 'LxDataGrid',
+      name: 'LxDataGrid',
+      usageGroup: 'lists',
+      clickable: canAddLxDataGrid(),
     }
   );
 
@@ -731,7 +897,10 @@ function isDuplicatable() {
             v-model:schemaKey="schemaKeyModel"
             :schemaKeyError="schemaKeyError"
             :navigation="navigation"
+            :selectedModel="selectedModel"
             :texts="displayTexts"
+            @error="(x) => emits('error', x)"
+            @update:selectedModel="(x) => emits('update:selectedModel', x)"
           />
           <div v-else class="no-component-wrapper">
             <LxEmptyState :label="displayTexts?.noComponentSelected" />

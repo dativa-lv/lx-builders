@@ -168,12 +168,12 @@ For more LX features, use custom schema attribute `lx` with these parameters:
     - `busy` - LxDataGrid `busy` prop
     - `skeletonRowCount` - LxDataGrid `skeletonRowCount` prop
     - `showHeader` - LxDataGrid `showHeader` prop
-    - `showStatusBar` - LxDataGrid `showStatusBar` prop
+    - `showStatusbar` - LxDataGrid `showStatusbar` prop
     - `showAllColumns` - LxDataGrid `showAllColumns` prop
     - `hasSorting` - LxDataGrid `hasSorting` prop
     - `sortingIgnoreEmpty` - LxDataGrid `sortingIgnoreEmpty` prop
     - `itemsPerPage` - LxDataGrid `itemsPerPage` prop
-    - `totalItems` - LxDataGrid `totalItems` prop
+    - `itemsTotal` - LxDataGrid `itemsTotal` prop
     - `sortingMode` - LxDataGrid `sortingMode` prop
     - `texts` - LxDataGrid `texts` prop
     - `label` - LxDataGrid `label` prop

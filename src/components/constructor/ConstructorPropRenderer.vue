@@ -37,6 +37,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  selectedModel: {
+    type: [Object, Array, String, Number, Boolean],
+    default: null,
+  },
   texts: {
     type: Object,
     default: () => ({
@@ -50,6 +54,16 @@ const props = defineProps({
       notFoundSearch: 'Nav atrasts:',
       notFoundProps: 'Nav atrasts',
       searchText: 'Meklēt',
+      invalidArrayOfObjects: 'Nederīgs JSON objekts. Ievadiet masīvu ar objektiem',
+      removeItem: 'Dzēst ierakstu',
+      removeItemHint: 'Nospiediet Delete, lai noņemtu ierakstu',
+      addItemButtonTooltip: 'Pievienot ierakstu',
+      addButtonLabel: 'Pievienot ierakstu',
+      showAllFields: 'Rādīt visus laukus',
+      validations: {
+        required: 'Lauks ir obligāts',
+        unique: 'Vērtībai jābūt unikālai',
+      },
     }),
   },
   schemaKey: {
@@ -62,7 +76,13 @@ const props = defineProps({
   },
 });
 
-const emits = defineEmits(['update:modelValue', 'update:componentModel', 'update:schemaKey']);
+const emits = defineEmits([
+  'update:modelValue',
+  'update:componentModel',
+  'update:schemaKey',
+  'update:selectedModel',
+  'error',
+]);
 
 const model = computed({
   get() {
@@ -275,6 +295,14 @@ function resetSchemaKeyInput() {
   schemaKeyModel.value = props.schemaKey;
   schemaKeyRender.value += 1;
 }
+
+function handleErrorEmit(params) {
+  emits('error', params);
+}
+
+function handleUpdateSelectedModel(params) {
+  emits('update:selectedModel', params);
+}
 </script>
 
 <template>
@@ -303,7 +331,10 @@ function resetSchemaKeyInput() {
         :item="item"
         :name="key"
         :componentName="componentName"
+        :selectedModel="selectedModel"
         :texts="texts"
+        @error="handleErrorEmit"
+        @update:selectedModel="handleUpdateSelectedModel"
       />
     </LxRow>
     <LxRow v-for="(item, key) in mainProps" :key="item.name" :label="`${key}`" v-show="item.extra">
@@ -343,7 +374,10 @@ function resetSchemaKeyInput() {
           :item="item"
           :name="key"
           :componentName="componentName"
+          :selectedModel="selectedModel"
           :texts="texts"
+          @error="handleErrorEmit"
+          @update:selectedModel="handleUpdateSelectedModel"
         />
       </LxRow>
     </LxForm>
@@ -356,7 +390,10 @@ function resetSchemaKeyInput() {
           :item="item"
           :name="key"
           :componentName="componentName"
+          :selectedModel="selectedModel"
           :texts="texts"
+          @error="handleErrorEmit"
+          @update:selectedModel="handleUpdateSelectedModel"
         />
       </LxRow>
     </LxForm>

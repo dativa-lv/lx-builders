@@ -186,6 +186,37 @@ export function getNewItemSchema(id) {
         properties: {},
       };
 
+    case 'LxList':
+      return {
+        type: 'array',
+        title: 'New LxList',
+        lx: {
+          displayType: 'list',
+          actionDefinitions: [],
+        },
+      };
+
+    case 'LxDataGrid':
+      return {
+        type: 'array',
+        title: 'New LxDataGrid',
+        lx: {
+          displayType: 'table',
+          columnDefinitions: [
+            {
+              id: 'id',
+              attributeName: 'id',
+              name: 'Id',
+            },
+            {
+              id: 'name',
+              attributeName: 'name',
+              name: 'Name',
+            },
+          ],
+        },
+      };
+
     default:
       break;
   }
@@ -281,3 +312,109 @@ export function getLXComponents() {
     },
   ];
 }
+
+export const columnDefinitionsSizes = [
+  { id: '*', name: '*' },
+  { id: 'xs', name: 'xs' },
+  { id: 's', name: 's' },
+  { id: 'm', name: 'm' },
+  { id: 'l', name: 'l' },
+  { id: 'xl', name: 'xl' },
+];
+
+export const columnDefinitionsTypes = [
+  { id: 'default', name: 'default' },
+  { id: 'number', name: 'number' },
+  { id: 'decimal', name: 'decimal' },
+  // TODO: Add support for dictionary definition
+  // { id: 'state', name: 'state' },
+  { id: 'rating', name: 'rating' },
+  { id: 'array', name: 'array' },
+  { id: 'flag', name: 'flag' },
+  { id: 'person', name: 'person' },
+  { id: 'icon', name: 'icon' },
+  { id: 'date', name: 'date' },
+  { id: 'dateTime', name: 'dateTime' },
+  { id: 'dateTimeFull', name: 'dateTimeFull' },
+  { id: 'tooltip-text', name: 'tooltip-text' },
+];
+
+export const columnDefinitionsKinds = [
+  {
+    id: 'default',
+    name: 'default',
+  },
+  {
+    id: 'clickable',
+    name: 'clickable',
+  },
+  {
+    id: 'primary',
+    name: 'primary',
+  },
+  {
+    id: 'secondary',
+    name: 'secondary',
+  },
+  {
+    id: 'extra',
+    name: 'extra',
+  },
+];
+
+export const badgeDefinitionTypeItems = [
+  {
+    id: 'auto',
+    name: 'auto',
+  },
+  {
+    id: 'number',
+    name: 'number',
+  },
+  {
+    id: 'text',
+    name: 'text',
+  },
+];
+
+export const badgeTypeItems = [
+  {
+    id: 'default',
+    name: 'default',
+  },
+  {
+    id: 'info',
+    name: 'info',
+  },
+  {
+    id: 'success',
+    name: 'success',
+  },
+  {
+    id: 'warning',
+    name: 'warning',
+  },
+  {
+    id: 'error',
+    name: 'error',
+  },
+];
+
+export const iconSetItems = [
+  {
+    id: 'cds',
+    name: 'cds',
+  },
+  {
+    id: 'material',
+    name: 'material',
+  },
+  {
+    id: 'brand',
+    name: 'brand',
+  },
+  {
+    id: 'phosphor',
+    name: 'phosphor',
+  },
+];
