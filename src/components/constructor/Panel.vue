@@ -330,7 +330,7 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.texts = p.texts || {};
     res.readOnly = p.readOnly || false;
   },
-  LxNumberSlider: (res, p) => {
+  LxNumberInput: (res, p) => {
     res.type = 'integer';
     res.lx.min = p.min || 0;
     res.lx.max = p.max || 9999;
@@ -370,7 +370,7 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.helperTextKind = p.helperTextKind || 'label';
     res.readOnly = p.readOnly || false;
   },
-  LxDayInput: (res, p) => {
+  LxDurationInput: (res, p) => {
     res.type = 'integer';
     res.lx.disabled = p.disabled || false;
     res.lx.kind = p.kind || 'label';

@@ -29,7 +29,7 @@ import {
   LxLink,
   LxMap,
   LxMarkdownTextArea,
-  LxNumberSlider,
+  LxNumberInput,
   LxPersonDisplay,
   LxQr,
   LxQrScanner,
@@ -38,7 +38,7 @@ import {
   LxStateDisplay,
   LxSteps,
   LxVisualPicker,
-  LxDayInput,
+  LxDurationInput,
   LxDrawPad,
   LxLogoDisplay,
   LxAutoComplete,
@@ -3533,8 +3533,8 @@ const builderOptions = computed(() => ({
     "
     @actionClick="(a, b) => componentEmit('actionClick', name, a, b)"
   />
-  <LxNumberSlider
-    v-else-if="selectedComponent === 'numberSlider'"
+  <LxNumberInput
+    v-else-if="selectedComponent === 'numberInput'"
     :id="`${id}-${name}`"
     :min="displaySchema?.properties[name]?.lx?.min"
     :max="displaySchema?.properties[name]?.lx?.max"
@@ -3688,8 +3688,8 @@ const builderOptions = computed(() => ({
     :builderOptions="builderOptions"
   />
 
-  <LxDayInput
-    v-else-if="selectedComponent === 'dayInput'"
+  <LxDurationInput
+    v-else-if="selectedComponent === 'durationInput'"
     :id="`${id}-${name}`"
     :disabled="displaySchema?.properties[name]?.lx?.disabled"
     :readOnly="isReadOnly(displaySchema?.properties[name])"

@@ -741,7 +741,7 @@ List of added components their types and main props:
 | LxLink | 'link' | 'string', 'object' | `href` |
 | LxMap | 'map' | 'object' | - |
 | LxMarkdownTextArea | 'markdown' | 'string' | - |
-| LxNumberSlider | 'numberSlider' | 'integer' | - |
+| LxNumberInput | 'numberInput' | 'integer' | - |
 | LxPersonDisplay | 'personDisplay' | 'string', 'array', 'object' | `value` |
 | LxQr | 'qr' | 'string', 'object' | `value` |
 | LxQrScanner | 'qrScanner' | 'object' | - |
@@ -750,7 +750,7 @@ List of added components their types and main props:
 | LxStateDisplay | 'stateDisplay' | 'string', 'object' | `value` |
 | LxSteps | 'steps' | 'string' | - |
 | LxVisualPicker | 'visualPicker' | 'string', 'array' | - |
-| LxDayInput | 'dayInput' | 'integer', 'object' | - |
+| LxDurationInput | 'durationInput' | 'integer', 'object' | - |
 | LxDrawPad | 'drawPad' | 'string' | - |
 | LxLogoDisplay | 'logoDisplay' | 'string', 'object' | `value` |
 | LxStack | 'stack' | 'object' | - |
@@ -1711,14 +1711,14 @@ modelValue:
 }
 ```
 
-### LxNumberSlider
+### LxNumberInput
 
 ```js
 {
-  numberSlider: {
+  numberInput: {
     type: 'integer',
     lx: {
-      displayType: 'numberSlider'
+      displayType: 'numberInput'
       min: 0,
       max: 9999,
       step: 1,
@@ -2034,15 +2034,15 @@ modelValue:
 }
 ```
 
-### LxDayInput 
+### LxDurationInput 
 
 `type` can be `integer` or `object`
 ```js
 {
-  dayInput: { 
+  durationInput: { 
     type: 'integer',
     lx: {
-      displayType: 'dayInput'
+      displayType: 'durationInput'
       disabled: false,
       readOnly: false,
       kind: 'label',

@@ -21,11 +21,11 @@ export const otherSelectRules = [
   { displayType: 'stateDisplay', types: ['string', 'object'], component: 'stateDisplay' },
   { displayType: 'steps', types: ['string'], component: 'steps' },
   { displayType: 'visualPicker', types: ['string', 'array'], component: 'visualPicker' },
-  { displayType: 'dayInput', types: ['integer', 'object'], component: 'dayInput' },
+  { displayType: 'durationInput', types: ['integer', 'object'], component: 'durationInput' },
   { displayType: 'drawPad', types: ['string'], component: 'drawPad' },
   { displayType: 'logoDisplay', types: ['string', 'object'], component: 'logoDisplay' },
   { displayType: 'dropDownMenu', types: ['string', 'object'], component: 'dropDownMenu' },
-  { displayType: 'numberSlider', types: ['integer'], component: 'numberSlider' },
+  { displayType: 'numberInput', types: ['integer'], component: 'numberInput' },
   { displayType: 'rating', types: ['integer', 'number'], component: 'rating' },
   { displayType: 'checkbox', types: ['boolean'], component: 'checkbox' },
   {

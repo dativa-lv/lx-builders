@@ -1,5 +1,20 @@
 # LX/UI Builder Migration Guide
 
+## 2.2.15 → 2.3.0
+
+### Breaking changes
+
+Requires `@dativa-lv/lx-ui` 2.3.0, which renamed `LxNumberSlider` → `LxNumberInput` and `LxDayInput` → `LxDurationInput`.
+
+#### displayType values renamed
+
+To match the component renames above, the `lx.displayType` schema value has also been renamed:
+
+- `'numberSlider'` → `'numberInput'`
+- `'dayInput'` → `'durationInput'`
+
+This is a breaking change for **already-saved form schemas** — any stored schema with `lx.displayType: 'numberSlider'` or `'dayInput'` will no longer resolve to a component and must be migrated to the new values before upgrading.
+
 ## 2.2.7 → 2.2.8
 
 ### Package manager switch: pnpm → Bun

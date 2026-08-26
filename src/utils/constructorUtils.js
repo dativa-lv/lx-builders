@@ -76,12 +76,12 @@ export function getNewItemSchema(id) {
           ],
         },
       };
-    case 'LxNumberSlider':
+    case 'LxNumberInput':
       return {
         type: 'integer',
-        title: 'New LxNumberSlider',
+        title: 'New LxNumberInput',
         lx: {
-          displayType: 'numberSlider',
+          displayType: 'numberInput',
         },
       };
 
@@ -110,12 +110,12 @@ export function getNewItemSchema(id) {
         },
       };
 
-    case 'LxDayInput':
+    case 'LxDurationInput':
       return {
         type: 'integer',
-        title: 'New LxDayInput',
+        title: 'New LxDurationInput',
         lx: {
-          displayType: 'dayInput',
+          displayType: 'durationInput',
         },
       };
 
@@ -266,8 +266,8 @@ export function getLXComponents() {
       usageGroup: 'inputs',
     },
     {
-      id: 'LxNumberSlider',
-      name: 'LxNumberSlider',
+      id: 'LxNumberInput',
+      name: 'LxNumberInput',
       usageGroup: 'inputs',
     },
     {
@@ -286,8 +286,8 @@ export function getLXComponents() {
       usageGroup: 'inputs',
     },
     {
-      id: 'LxDayInput',
-      name: 'LxDayInput',
+      id: 'LxDurationInput',
+      name: 'LxDurationInput',
       usageGroup: 'inputs',
     },
     {
