@@ -50,7 +50,7 @@
     "@vueuse/components": "14.0.0",
     "@vueuse/core": "14.0.0",
     "@vueuse/integrations": "14.0.0",
-    "@dativa-lv/lx-ui": "2.2.15"
+    "@dativa-lv/lx-ui": "2.3.0"
   },
   "devDependencies": {
     "@testing-library/vue": "^8.0.1",
