@@ -1,6 +1,6 @@
 # LX/UI Builder Migration Guide
 
-## 2.2.15 → 2.3.0
+## 2.2.15 → 2.3
 
 ### Breaking changes
 
