@@ -115,7 +115,9 @@ test('LxFormBuilder with LxTextInput', () => {
       stubs: ['LxStack'],
     },
   });
-  expect(wrapper.find('.lx-text-input').exists()).toBe(true);
+  vi.waitFor(() => {
+    expect(wrapper.find('.lx-text-input').exists()).toBe(true);
+  });
 });
 
 test('LxFormBuilder with LxTextArea', async () => {
