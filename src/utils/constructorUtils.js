@@ -326,6 +326,7 @@ export const columnDefinitionsTypes = [
   { id: 'default', name: 'default' },
   { id: 'number', name: 'number' },
   { id: 'decimal', name: 'decimal' },
+  { id: 'boolean', name: 'boolean' },
   // TODO: Add support for dictionary definition
   // { id: 'state', name: 'state' },
   { id: 'rating', name: 'rating' },

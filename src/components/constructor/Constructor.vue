@@ -427,6 +427,7 @@ function clickEventListener() {
     let elem = e.target;
     let registryElem = null;
     // Walk up the DOM tree until we find an element with an id in the registry
+
     while (elem) {
       if ((elem.dataset.id && builderRegistry.get(elem.dataset.id)) || isLxRowClicked(elem.id)) {
         if (isLxRowClicked(elem.id)) {

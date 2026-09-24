@@ -557,21 +557,38 @@ function updateFilterModelValue(name, row, value) {
 function getDefaultFormIndex(item) {
   const res = [];
   let defaultFlag = false;
-  Object.entries(item || {}).forEach(([key, value]) => {
+  Object.entries(item?.properties || {}).forEach(([key, value]) => {
     if (value?.lx?.displayType === 'section' && value?.type === 'object') {
       const obj = {};
       obj.id = defaultFlag ? key : 'default';
       obj.name = key;
 
-      if (!defaultFlag) {
-        obj.isCurrentStep = true;
-        obj.state = 'current';
-      }
       res.push(obj);
       defaultFlag = true;
     }
   });
-  return res;
+  return res?.map((x) => {
+    if (!item?.lx?.index?.length) {
+      return x;
+    }
+    const cloned = { ...x };
+    const foundItem = item?.lx?.index?.find((i) => i?.id === cloned?.id);
+    cloned.name = foundItem?.name || 'section';
+    if (foundItem?.state) {
+      cloned.state = foundItem?.state;
+    }
+    if (foundItem?.isCurrentStep) {
+      cloned.isCurrentStep = true;
+    }
+    if (foundItem?.invalid) {
+      cloned.invalid = true;
+    }
+    if (foundItem?.invalidationMessage) {
+      cloned.invalidationMessage = foundItem?.invalidationMessage;
+    }
+
+    return cloned;
+  });
 }
 
 defineExpose({ validateModel, clearValidations });
@@ -641,7 +658,7 @@ defineExpose({ validateModel, clearValidations });
           :stickyFooter="row?.lx?.stickyFooter"
           :showPreHeaderInfo="row?.lx?.showPreHeaderInfo"
           :showPostHeaderInfo="row?.lx?.showPostHeaderInfo"
-          :index="row?.lx?.index || getDefaultFormIndex(row?.properties)"
+          :index="getDefaultFormIndex(row)"
           :indexType="row?.lx?.indexType"
           :actionDefinitions="row?.lx?.actionDefinitions"
           :kind="row?.lx?.kind"

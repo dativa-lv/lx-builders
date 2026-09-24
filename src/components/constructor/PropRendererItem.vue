@@ -14,6 +14,7 @@ import {
   LxEmptyState,
   LxStack,
   LxTextArea,
+  lxGeneralUtils,
 } from '@dativa-lv/lx-ui';
 import LxFormBuilder from '@/components/FormBuilder.vue';
 import IconSelection from '@/components/constructor/helperComponents/IconSelection.vue';
@@ -194,7 +195,14 @@ const indexModal = ref();
 const indexModel = ref(null);
 const indexList = ref();
 function editFormIndex() {
-  indexModel.value = lxFormatUtils.objectClone(props.modelValue.index);
+  let res = lxFormatUtils.objectClone(props.modelValue.index);
+  res = res.map((x) => {
+    if (lxGeneralUtils.isNil(x?.invalid)) {
+      return { ...x, invalid: false };
+    }
+    return x;
+  });
+  indexModel.value = res;
   indexModal.value.open();
 }
 
@@ -536,7 +544,7 @@ function getAppendableListTexts() {
     <LxModal
       ref="indexModal"
       :label="texts?.editing"
-      size="m"
+      size="l"
       :actionDefinitions="[
         { id: 'save', name: texts.save, kind: 'primary' },
         { id: 'close', name: texts.close, kind: 'secondary' },
@@ -547,16 +555,23 @@ function getAppendableListTexts() {
       <LxAppendableList
         ref="indexList"
         v-model="indexModel"
-        :columnCount="2"
+        :columnCount="4"
         requiredMode="none"
+        :readOnly="true"
         :texts="getAppendableListTexts()"
       >
         <template #customItem="{ item }">
           <LxRow label="id">
-            <LxTextInput v-model="item.id" />
+            <p class="lx-data">{{ item.id }}</p>
           </LxRow>
           <LxRow label="name">
             <LxTextInput v-model="item.name" />
+          </LxRow>
+          <LxRow label="invalid">
+            <LxToggle v-model="item.invalid" />
+          </LxRow>
+          <LxRow label="invalidationMessage">
+            <LxTextInput v-model="item.invalidationMessage" />
           </LxRow>
         </template>
       </LxAppendableList>
