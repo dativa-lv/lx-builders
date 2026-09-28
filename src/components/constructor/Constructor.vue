@@ -395,11 +395,11 @@ function getPositionInfo(schema, currentSchema) {
         ([, child]) => getItemDisplayType(child) === 'section'
       );
 
-      if (!targetSectionEntry) {
-        elementInfo.value.canMoveForwardIn = false;
-      } else {
+      if (targetSectionEntry) {
         const [sectionKey] = targetSectionEntry;
         moveInsideTargetPath = [moveInsideTargetPath, sectionKey].filter(Boolean).join('.');
+      } else {
+        elementInfo.value.canMoveForwardIn = false;
       }
     }
 
@@ -1270,8 +1270,6 @@ function isValidJSONObject(value) {
     return false;
   }
 }
-
-// TODO: Change error emit to codes
 
 // Decodes the base64 value into utf-8 string
 function decodeBase64Utf8(base64Value) {

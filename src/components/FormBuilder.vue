@@ -143,7 +143,7 @@ function isRequiredRow(rowIndex) {
 const isSchemaValid = computed(() => {
   try {
     lxFormatUtils.objectClone(props.schema);
-  } catch (e) {
+  } catch {
     return false;
   }
   return true;

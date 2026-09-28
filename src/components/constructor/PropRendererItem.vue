@@ -248,42 +248,50 @@ function validateArrayOfObjects(value) {
   return Array.isArray(parsedValue) && parsedValue.every((item) => isPlainObject(item));
 }
 
+function parseItemsModel(value) {
+  if (typeof value !== 'string') {
+    return value;
+  }
+
+  if (!value.trim()) {
+    return [];
+  }
+
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+}
+
+function saveListItems() {
+  const parsedItems = parseItemsModel(itemsModel.value);
+
+  if (parsedItems === null || !validateArrayOfObjects(parsedItems)) {
+    itemsInvalidMessage.value = props.texts?.invalidArrayOfObjects;
+    emits('error', 'itemsValidation');
+    return false;
+  }
+
+  emits('update:selectedModel', parsedItems);
+  return true;
+}
+
 function itemsActionClicked(action) {
-  if (action === 'save') {
-    itemsInvalidMessage.value = null;
+  if (action !== 'save') return;
 
-    if (props.componentName === 'LxList' || props.componentName === 'LxDataGrid') {
-      let parsedItems = itemsModel.value;
+  itemsInvalidMessage.value = null;
 
-      if (typeof parsedItems === 'string') {
-        if (!parsedItems.trim()) {
-          parsedItems = [];
-        } else {
-          try {
-            parsedItems = JSON.parse(parsedItems);
-          } catch {
-            itemsInvalidMessage.value = props.texts?.invalidArrayOfObjects;
-            emits('error', 'itemsValidation');
-            return;
-          }
-        }
-      }
-
-      if (validateArrayOfObjects(parsedItems)) {
-        emits('update:selectedModel', parsedItems);
-      } else {
-        itemsInvalidMessage.value = props.texts?.invalidArrayOfObjects;
-        emits('error', 'itemsValidation');
-        return;
-      }
-
-      itemsModal.value.close();
-    } else {
-      const res = itemsList.value.clearModel(itemsModel.value);
-      model.value[props.name] = res;
+  if (props.componentName === 'LxList' || props.componentName === 'LxDataGrid') {
+    if (saveListItems()) {
       itemsModal.value.close();
     }
+    return;
   }
+
+  const res = itemsList.value.clearModel(itemsModel.value);
+  model.value[props.name] = res;
+  itemsModal.value.close();
 }
 
 const textsModal = ref();
