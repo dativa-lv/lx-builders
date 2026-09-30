@@ -238,6 +238,9 @@ function resetElementInfo() {
   elementInfo.value.canMoveForwardIn = false;
 }
 
+const highlightToolbar = ref();
+const isToolbarSmaller = ref(false);
+
 // Positions the selection highlight over the provided DOM element
 function colorBorder(e) {
   highlight.value.el = e.target;
@@ -255,6 +258,17 @@ function colorBorder(e) {
     height: `${r.height + p * 2}px`,
   };
   highlight.value.visible = true;
+
+  const toolbarWidth = highlightToolbar.value?.getBoundingClientRect()?.width;
+  const highlightWidth = highlight.value.el?.getBoundingClientRect()?.width;
+
+  // if highlight toolbar is smaller then highlighted element, then display delete button
+  // in the toolbar, otherwise display it at the right side of selected element
+  if (highlightWidth && toolbarWidth && highlightWidth < toolbarWidth) {
+    isToolbarSmaller.value = true;
+  } else {
+    isToolbarSmaller.value = false;
+  }
 }
 
 function updateSelectedElement() {
@@ -1514,9 +1528,27 @@ function updateSchemaKey(newKey) {
   }
 }
 
+function outsideClickListener() {
+  document.addEventListener('click', (e) => {
+    const path = e.composedPath();
+    const isInside = (selector) =>
+      path.some((el) => el instanceof Element && el.matches?.(selector));
+
+    if (
+      !isInside('#constructor') &&
+      !isInside('.lx-panel') &&
+      !isInside('.lx-modal') &&
+      !isInside('.highlight')
+    ) {
+      clearSelectedElement();
+    }
+  });
+}
+
 // When component is mounted adds event listeners for click and keyboard keys for moving elements
 onMounted(() => {
   clickEventListener();
+  outsideClickListener();
   // Does not allow to scroll the page when arrow keys are pressed
   document?.addEventListener('keydown', (e) => {
     if (!canHandleGlobalArrowKeys(e.target)) {
@@ -1595,7 +1627,7 @@ function updateSelectedModelForCurrentPath(value) {
   <div>
     <div id="constructor-overlay">
       <div v-show="highlight.visible" class="highlight" :style="highlight.style">
-        <div class="highlight-toolbar">
+        <div class="highlight-toolbar" ref="highlightToolbar">
           <LxButton
             v-if="elementInfo.canMoveForwardIn && canMoveComponent()"
             icon="move-inside"
@@ -1632,10 +1664,19 @@ function updateSelectedModelForCurrentPath(value) {
             />
           </LxStack>
           <span>{{ componentName }}</span>
+          <LxButton
+            v-if="componentName !== 'LxViewLayout' && isToolbarSmaller"
+            icon="delete"
+            variant="icon-only"
+            :label="displayTexts.delete"
+            kind="ghost"
+            :destructive="true"
+            @click="openRemoveComponentConfirmation"
+          />
         </div>
         <div class="highlight-toolbar highlight-toolbar-remove">
           <LxButton
-            v-if="componentName !== 'LxViewLayout'"
+            v-if="componentName !== 'LxViewLayout' && !isToolbarSmaller"
             icon="delete"
             variant="icon-only"
             :label="displayTexts.delete"
