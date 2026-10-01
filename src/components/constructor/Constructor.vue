@@ -434,60 +434,58 @@ function getPositionInfo(schema, currentSchema) {
   elementInfo.value.moveOut = canMoveOut && !checkIfInsideFilterSection(navigation.value);
 }
 
-// Listens for click on the constructor area
+// Callback for clicks on the constructor area
 // identifies the clicked component based on the builderRegistry and updates state
-function clickEventListener() {
-  document.getElementById('constructor')?.addEventListener('click', (e) => {
-    let elem = e.target;
-    let registryElem = null;
-    // Walk up the DOM tree until we find an element with an id in the registry
+function selectElement(e) {
+  let elem = e.target;
+  let registryElem = null;
+  // Walk up the DOM tree until we find an element with an id in the registry
 
-    while (elem) {
-      if ((elem.dataset.id && builderRegistry.get(elem.dataset.id)) || isLxRowClicked(elem.id)) {
-        if (isLxRowClicked(elem.id)) {
-          const lxRowWrapper = elem.id?.replace(/-wrapper$/, '');
-          registryElem = builderRegistry.get(lxRowWrapper);
-        } else {
-          registryElem = builderRegistry.get(elem.dataset.id || elem.id);
-        }
-        break;
+  while (elem) {
+    if ((elem.dataset.id && builderRegistry.get(elem.dataset.id)) || isLxRowClicked(elem.id)) {
+      if (isLxRowClicked(elem.id)) {
+        const lxRowWrapper = elem.id?.replace(/-wrapper$/, '');
+        registryElem = builderRegistry.get(lxRowWrapper);
+      } else {
+        registryElem = builderRegistry.get(elem.dataset.id || elem.id);
       }
-
-      elem = elem.parentElement;
+      break;
     }
 
-    if (registryElem) {
-      componentName.value = registryElem.type;
-      componentPropsDefinitions.value = registryElem.node.type.props;
-      componentProps.value = lxFormatUtils.objectClone(registryElem.props);
-      colorBorder({ target: elem });
-      schemaPath.value = registryElem.builderName;
-      navigation.value = registryElem.componentStack;
-      schemaKey.value = schemaPath.value?.includes('.')
-        ? schemaPath.value?.split('.')?.slice(-1)[0]
-        : schemaPath.value;
-      schemaKeyError.value = null;
-    }
+    elem = elem.parentElement;
+  }
 
-    // Find the selected item in schema
-    currentItem.value = getValueByPath(schemaModel.value, findPositionInSchema());
+  if (registryElem) {
+    componentName.value = registryElem.type;
+    componentPropsDefinitions.value = registryElem.node.type.props;
+    componentProps.value = lxFormatUtils.objectClone(registryElem.props);
+    colorBorder({ target: elem });
+    schemaPath.value = registryElem.builderName;
+    navigation.value = registryElem.componentStack;
+    schemaKey.value = schemaPath.value?.includes('.')
+      ? schemaPath.value?.split('.')?.slice(-1)[0]
+      : schemaPath.value;
+    schemaKeyError.value = null;
+  }
 
-    const parentSchemaPath = schemaPath.value?.includes('.')
-      ? schemaPath.value?.split('.')?.join('.')
-      : null;
+  // Find the selected item in schema
+  currentItem.value = getValueByPath(schemaModel.value, findPositionInSchema());
 
-    // Find the parent item of selected item in schema
-    parentItem.value = getValueByPath(
-      schemaModel.value,
-      findPositionInSchema(parentSchemaPath)?.slice(0, -1)
-    );
+  const parentSchemaPath = schemaPath.value?.includes('.')
+    ? schemaPath.value?.split('.')?.join('.')
+    : null;
 
-    // Update information about selected element
-    getPositionInfo(schemaModel.value, currentItem.value);
+  // Find the parent item of selected item in schema
+  parentItem.value = getValueByPath(
+    schemaModel.value,
+    findPositionInSchema(parentSchemaPath)?.slice(0, -1)
+  );
 
-    // Open the tab with component configuration
-    panelTabl.value = 'config';
-  });
+  // Update information about selected element
+  getPositionInfo(schemaModel.value, currentItem.value);
+
+  // Open the tab with component configuration
+  panelTabl.value = 'config';
 }
 
 // Checks if selected component can be moved
@@ -1111,13 +1109,23 @@ function removeCurrentComponent() {
   setValueByPath(schemaClone, positionPath, positionValue);
   schemaModel.value = schemaClone;
 
-  // Clear selection
-  highlight.value.visible = false;
-  componentName.value = null;
-  navigation.value = [];
-  currentItem.value = null;
-  resetNextElementInfo();
-  resetLowerNestingInfo();
+  // If view is empty after removing the component, hilight the LxViewLayout
+  if (!props.schema?.properties || Object.keys(props.schema?.properties).length === 0) {
+    const viewLayout = document.querySelector('.lx-view-layout');
+    if (viewLayout) {
+      setTimeout(() => {
+        selectElement({ target: viewLayout });
+      }, 100);
+    }
+  } else {
+    // Clear selection
+    highlight.value.visible = false;
+    componentName.value = null;
+    navigation.value = [];
+    currentItem.value = null;
+    resetNextElementInfo();
+    resetLowerNestingInfo();
+  }
 }
 
 // Duplicate the selected component in schema
@@ -1547,7 +1555,9 @@ function outsideClickListener() {
 
 // When component is mounted adds event listeners for click and keyboard keys for moving elements
 onMounted(() => {
-  clickEventListener();
+  document.getElementById('constructor')?.addEventListener('click', (e) => {
+    selectElement(e);
+  });
   outsideClickListener();
   // Does not allow to scroll the page when arrow keys are pressed
   document?.addEventListener('keydown', (e) => {
@@ -1622,9 +1632,17 @@ function updateSelectedModelForCurrentPath(value) {
   setValueByPath(modelClone, modelPath, value);
   model.value = modelClone;
 }
+
+const isSchemaEmpty = computed(
+  () => !schemaModel.value || Object.keys(schemaModel.value?.properties || {}).length === 0
+);
+
+defineExpose({
+  selectElement,
+});
 </script>
 <template>
-  <div>
+  <div class="lx-constructor">
     <div id="constructor-overlay">
       <div v-show="highlight.visible" class="highlight" :style="highlight.style">
         <div class="highlight-toolbar" ref="highlightToolbar">
@@ -1717,7 +1735,7 @@ function updateSelectedModelForCurrentPath(value) {
       />
     </Teleport>
 
-    <div id="constructor">
+    <div id="constructor" :class="[{ 'empty-schema': isSchemaEmpty }]">
       <LxViewBuilder :schema="schema" v-model="model" :builderOptions="{ useRegistry: true }" />
     </div>
 

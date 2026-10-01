@@ -478,7 +478,6 @@ const COMPONENT_SCHEMA_BUILDERS = {
     res.properties = res.properties || {};
     res.description = p.description;
 
-    res.lx.items = p.items || [];
     res.lx.actionDefinitions = p.actionDefinitions;
     res.lx.groupDefinitions =
       p.groupDefinitions && p.groupDefinitions?.length !== 0 ? p.groupDefinitions : null;
