@@ -31,13 +31,49 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
-  texts: {
-    type: Object,
-    default: () => ({}),
-  },
   panelTeleportTarget: {
     type: String,
     default: null,
+  },
+  hasAiChat: {
+    type: Boolean,
+    default: false,
+  },
+  chatItems: {
+    type: Array,
+    default: () => [],
+  },
+  chatBusy: {
+    type: Boolean,
+    default: false,
+  },
+  chatLoading: {
+    type: Boolean,
+    default: false,
+  },
+  chatUserDefinitions: {
+    type: Array,
+    default: () => [],
+  },
+  chatMessageActionDefinitions: {
+    type: Array,
+    default: () => [],
+  },
+  chatTyping: {
+    type: Boolean,
+    default: false,
+  },
+  chatTypingUsers: {
+    type: Array,
+    default: () => [],
+  },
+  chatHasUndoChange: {
+    type: Boolean,
+    default: false,
+  },
+  texts: {
+    type: Object,
+    default: () => ({}),
   },
 });
 
@@ -112,6 +148,8 @@ const textsDefault = {
   addItemButtonTooltip: 'Pievienot ierakstu',
   addButtonLabel: 'Pievienot ierakstu',
   showAllFields: 'Rādīt visus laukus',
+  ai: 'Ģenerēt ar MI',
+  undo: 'Atcelt veiktās izmaiņas',
 
   fileUploader: {
     clear: 'Notīrīt',
@@ -131,11 +169,31 @@ const textsDefault = {
     required: 'Lauks ir obligāts',
     unique: 'Vērtībai jābūt unikālai',
   },
+  chat: {
+    placeholder: 'Rakstīt ziņu',
+    empty: 'Sarakstē vēl nav ziņu',
+    emptyDescription: 'Nosūtiet pirmo ziņu, lai sāktu sarunu',
+    send: 'Sūtīt',
+    error: 'Kļūda!',
+    ai: 'Mākslīgais intelekts',
+    scrollToBottom: 'Atgriezties pie jaunākajām ziņām',
+    statusTextSingular: 'domā',
+    statusTextPlural: 'domā',
+    and: 'un',
+    messageTimeLabel: 'Ziņas laiks',
+  },
 };
 
 const displayTexts = computed(() => lxGeneralUtils.getDisplayTexts(props.texts, textsDefault));
 
-const emits = defineEmits(['update:schema', 'update:modelValue', 'error', 'schemaCopy']);
+const emits = defineEmits([
+  'update:schema',
+  'update:modelValue',
+  'error',
+  'schemaCopy',
+  'send',
+  'messageActionClick',
+]);
 
 // Error message map
 // invalidJson, invalidFileContent, actionDefinitionsValidation, itemsValidation
@@ -212,7 +270,7 @@ const componentAddModal = ref(null);
 const componentToAdd = ref(null);
 const schemaKeyError = ref(null);
 
-const panelTabl = ref(null);
+const panelTab = ref(null);
 
 const confirmDialog = ref();
 
@@ -434,6 +492,10 @@ function getPositionInfo(schema, currentSchema) {
   elementInfo.value.moveOut = canMoveOut && !checkIfInsideFilterSection(navigation.value);
 }
 
+function setPanelTab(tab) {
+  panelTab.value = tab;
+}
+
 // Callback for clicks on the constructor area
 // identifies the clicked component based on the builderRegistry and updates state
 function selectElement(e) {
@@ -485,7 +547,10 @@ function selectElement(e) {
   getPositionInfo(schemaModel.value, currentItem.value);
 
   // Open the tab with component configuration
-  panelTabl.value = 'config';
+  // If ai tab is open then do not switch to config tab
+  if (panelTab.value !== 'ai') {
+    setPanelTab('config');
+  }
 }
 
 // Checks if selected component can be moved
@@ -1078,6 +1143,15 @@ function addModalActionClicked(_, actionId) {
   }
 }
 
+function clearSelectedElement() {
+  highlight.value.visible = false;
+  componentName.value = null;
+  navigation.value = [];
+  currentItem.value = null;
+  resetNextElementInfo();
+  resetLowerNestingInfo();
+}
+
 // Removes the selected component from schema
 function removeCurrentComponent() {
   // find position in schema
@@ -1118,13 +1192,7 @@ function removeCurrentComponent() {
       }, 100);
     }
   } else {
-    // Clear selection
-    highlight.value.visible = false;
-    componentName.value = null;
-    navigation.value = [];
-    currentItem.value = null;
-    resetNextElementInfo();
-    resetLowerNestingInfo();
+    clearSelectedElement();
   }
 }
 
@@ -1318,15 +1386,6 @@ function fileUpload(file) {
 
   const text = decodeBase64Utf8(base64);
   fileContent.value = text;
-}
-
-function clearSelectedElement() {
-  highlight.value.visible = false;
-  componentName.value = null;
-  navigation.value = [];
-  currentItem.value = null;
-  resetNextElementInfo();
-  resetLowerNestingInfo();
 }
 
 // Handles import modal actions
@@ -1637,8 +1696,15 @@ const isSchemaEmpty = computed(
   () => !schemaModel.value || Object.keys(schemaModel.value?.properties || {}).length === 0
 );
 
+function getSelectedElementPathInSchema() {
+  return schemaPath.value || null;
+}
+
 defineExpose({
   selectElement,
+  setPanelTab,
+  getSelectedElementPathInSchema,
+  clearSelectedElement,
 });
 </script>
 <template>
@@ -1716,7 +1782,15 @@ defineExpose({
         :schemaKey="schemaKey"
         :schemaKeyError="schemaKeyError"
         :schemaInfo="schemaInfo"
-        v-model:selectedTab="panelTabl"
+        v-model:selectedTab="panelTab"
+        :hasAiChat="hasAiChat"
+        :chatItems="chatItems"
+        :chatBusy="chatBusy"
+        :chatLoading="chatLoading"
+        :chatUserDefinitions="chatUserDefinitions"
+        :chatHasUndoChange="chatHasUndoChange"
+        :chatTyping="chatTyping"
+        :chatTypingUsers="chatTypingUsers"
         :texts="displayTexts"
         @update:componentModel="updateSchemaFromPanel"
         @componentAdd="openAddComponentOptions"
@@ -1731,7 +1805,9 @@ defineExpose({
         @update:viewLayout="updateViewLayout"
         @update:schemaKey="updateSchemaKey"
         @update:selectedModel="updateSelectedModelForCurrentPath"
+        @send="(x) => emits('send', x)"
         @error="(x) => emits('error', x)"
+        @messageActionClick="(x) => emits('messageActionClick', x)"
       />
     </Teleport>
 

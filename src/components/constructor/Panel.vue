@@ -9,6 +9,7 @@ import {
   lxFormatUtils,
   LxEmptyState,
   lxGeneralUtils,
+  LxChat,
 } from '@dativa-lv/lx-ui';
 
 import { useDebounceFn } from '@vueuse/core';
@@ -56,6 +57,38 @@ const props = defineProps({
     type: String,
     default: null,
   },
+  hasAiChat: {
+    type: Boolean,
+    default: false,
+  },
+  chatItems: {
+    type: Array,
+    default: () => [],
+  },
+  chatBusy: {
+    type: Boolean,
+    default: false,
+  },
+  chatLoading: {
+    type: Boolean,
+    default: false,
+  },
+  chatUserDefinitions: {
+    type: Array,
+    default: () => [],
+  },
+  chatTyping: {
+    type: Boolean,
+    default: false,
+  },
+  chatTypingUsers: {
+    type: Array,
+    default: () => [],
+  },
+  chatHasUndoChange: {
+    type: Boolean,
+    default: false,
+  },
   texts: {
     type: Object,
     default: () => ({}),
@@ -101,9 +134,24 @@ const textsDefault = {
   addItemButtonTooltip: 'Pievienot ierakstu',
   addButtonLabel: 'Pievienot ierakstu',
   showAllFields: 'Rādīt visus laukus',
+  ai: 'Ģenerēt ar MI',
+  undo: 'Atcelt veiktās izmaiņas',
   validations: {
     required: 'Lauks ir obligāts',
     unique: 'Vērtībai jābūt unikālai',
+  },
+  chat: {
+    placeholder: 'Rakstīt ziņu',
+    empty: 'Sarakstē vēl nav ziņu',
+    emptyDescription: 'Nosūtiet pirmo ziņu, lai sāktu sarunu',
+    send: 'Sūtīt',
+    error: 'Kļūda!',
+    ai: 'Mākslīgais intelekts',
+    scrollToBottom: 'Atgriezties pie jaunākajām ziņām',
+    statusTextSingular: 'domā',
+    statusTextPlural: 'domā',
+    and: 'un',
+    messageTimeLabel: 'Ziņas laiks',
   },
 };
 
@@ -127,6 +175,8 @@ const emits = defineEmits([
   'update:selectedTab',
   'update:selectedModel',
   'error',
+  'send',
+  'messageActionClick',
 ]);
 
 const COMPONENT_SCHEMA_BUILDERS = {
@@ -794,6 +844,17 @@ function isDuplicatable() {
     props.componentName !== 'LxFilters'
   );
 }
+
+const chatItemsDisplay = computed(() => {
+  const items = [...props.chatItems];
+  const lastAiIndex = items.findLastIndex((item) => item.userId === 'ai');
+
+  if (lastAiIndex !== -1) {
+    items[lastAiIndex] = { ...items[lastAiIndex], hasUndoLastChange: props.chatHasUndoChange };
+  }
+
+  return items;
+});
 </script>
 <template>
   <div class="lx-panel">
@@ -823,7 +884,15 @@ function isDuplicatable() {
         :active="open && tab === 'components'"
         @click="(tab = 'components'), (open = true)"
       />
-
+      <LxButton
+        v-if="hasAiChat"
+        icon="ai"
+        variant="icon-only"
+        :label="displayTexts?.ai"
+        kind="secondary"
+        :active="open && tab === 'ai'"
+        @click="(tab = 'ai'), (open = true)"
+      />
       <LxButton
         icon="settings"
         variant="icon-only"
@@ -854,6 +923,7 @@ function isDuplicatable() {
           <div v-else class="header-wrapper">
             <p v-if="tab === 'components'">{{ displayTexts?.components }}</p>
             <p v-else-if="tab === 'settings'">{{ displayTexts?.settings }}</p>
+            <p v-else-if="tab === 'ai'">{{ displayTexts?.ai }}</p>
             <p v-else>{{ displayTexts?.actionPanel }}</p>
           </div>
         </div>
@@ -954,6 +1024,31 @@ function isDuplicatable() {
               :label="displayTexts?.reportIssue"
               icon="bug"
               @click="emits('reportIssue')"
+            />
+          </div>
+        </div>
+        <div v-if="tab === 'ai'">
+          <div class="panel-chat lx-region-component">
+            <LxChat
+              :userDefinitions="chatUserDefinitions"
+              :items="chatItemsDisplay"
+              :busy="chatBusy"
+              :loading="chatLoading"
+              mode="compact"
+              :messageActionDefinitions="[
+                {
+                  id: 'undo',
+                  name: displayTexts?.undo,
+                  icon: 'undo',
+                  visibleByAttribute: 'hasUndoLastChange',
+                  disabled: chatBusy || chatLoading,
+                },
+              ]"
+              :typing="chatTyping"
+              :typingUsers="chatTypingUsers"
+              :texts="displayTexts?.chat"
+              @send="(x) => emits('send', x)"
+              @messageActionClick="(x) => emits('messageActionClick', x)"
             />
           </div>
         </div>
