@@ -193,6 +193,7 @@ export function getNewItemSchema(id) {
         lx: {
           displayType: 'list',
           actionDefinitions: [],
+          includeUnspecifiedGroups: true,
         },
       };
 

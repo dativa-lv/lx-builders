@@ -1096,7 +1096,7 @@ function componentChangeFromPanel(item) {
   }
 
   if (elem) {
-    elem.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    selectElement({ target: elem });
   }
 }
 
@@ -1231,21 +1231,19 @@ function duplicateCurrentComponent() {
   setValueByPath(schemaClone, positionPath, positionValue);
   schemaModel.value = schemaClone;
 
-  // Duplicate modelValue for LxList and LxDataGrid components
-  if (componentName.value === 'LxList' || componentName.value === 'LxDataGrid') {
-    const modelClone = lxFormatUtils.objectClone(model.value || {});
-    const modelContainerPath = getModelPathFromSchemaPath(positionPath);
-    const duplicatedModelValue = getValueByPath(modelClone, [...modelContainerPath, duplicateKey]);
+  // Duplicate modelValue for every duplicated component
+  const modelClone = lxFormatUtils.objectClone(model.value || {});
+  const modelContainerPath = getModelPathFromSchemaPath(positionPath);
+  const duplicatedModelValue = getValueByPath(modelClone, [...modelContainerPath, duplicateKey]);
 
-    if (!lxGeneralUtils.isNil(duplicatedModelValue)) {
-      setValueByPath(
-        modelClone,
-        [...modelContainerPath, newKey],
-        lxFormatUtils.objectClone(duplicatedModelValue)
-      );
-      model.value = modelClone;
-      emits('update:modelValue', modelClone);
-    }
+  if (!lxGeneralUtils.isNil(duplicatedModelValue)) {
+    setValueByPath(
+      modelClone,
+      [...modelContainerPath, newKey],
+      lxFormatUtils.objectClone(duplicatedModelValue)
+    );
+    model.value = modelClone;
+    emits('update:modelValue', modelClone);
   }
 
   const parentSchemaPath = getSchemaPathFromPositionPath(positionPath);
@@ -1604,6 +1602,7 @@ function outsideClickListener() {
     if (
       !isInside('#constructor') &&
       !isInside('.lx-panel') &&
+      !isInside('.popper') &&
       !isInside('.lx-modal') &&
       !isInside('.highlight')
     ) {

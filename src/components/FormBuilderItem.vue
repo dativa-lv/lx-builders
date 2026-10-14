@@ -46,6 +46,7 @@ import {
   lxDevUtils,
   LxStack,
   lxGeneralUtils,
+  lxFormatUtils,
 } from '@dativa-lv/lx-ui';
 import useLx from '@/hooks/useLx';
 import { getOtherSelectComponent } from '@/components/formBuilderOtherSelect';
@@ -1150,7 +1151,11 @@ const builderOptions = computed(() => ({
     :categoryAttribute="displaySchema?.properties[name]?.lx?.categoryAttribute"
     :orderAttribute="displaySchema?.properties[name]?.lx?.orderAttribute"
     :hasSearch="displaySchema?.properties[name]?.lx?.hasSearch"
-    :groupDefinitions="displaySchema?.properties[name]?.lx?.groupDefinitions"
+    :groupDefinitions="
+      displaySchema?.properties[name]?.lx?.groupDefinitions
+        ? lxFormatUtils.objectClone(displaySchema?.properties[name]?.lx?.groupDefinitions)
+        : null
+    "
     :icon="displaySchema?.properties[name]?.lx?.icon"
     :iconSet="displaySchema?.properties[name]?.lx?.iconSet"
     :kind="displaySchema?.properties[name]?.lx?.kind"
@@ -1291,7 +1296,11 @@ const builderOptions = computed(() => ({
       :categoryAttribute="displaySchema?.properties[name]?.lx?.categoryAttribute"
       :orderAttribute="displaySchema?.properties[name]?.lx?.orderAttribute"
       :hasSearch="displaySchema?.properties[name]?.lx?.hasSearch"
-      :groupDefinitions="displaySchema?.properties[name]?.lx?.groupDefinitions"
+      :groupDefinitions="
+        displaySchema?.properties[name]?.lx?.groupDefinitions
+          ? lxFormatUtils.objectClone(displaySchema?.properties[name]?.lx?.groupDefinitions)
+          : null
+      "
       :icon="displaySchema?.properties[name]?.lx?.icon"
       :iconSet="displaySchema?.properties[name]?.lx?.iconSet"
       :kind="displaySchema?.properties[name]?.lx?.kind"
