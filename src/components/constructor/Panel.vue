@@ -859,48 +859,50 @@ const chatItemsDisplay = computed(() => {
 <template>
   <div class="lx-panel">
     <div class="button-side">
-      <LxButton
-        :icon="open ? 'close-panel' : 'open-panel'"
-        variant="icon-only"
-        :label="open ? displayTexts?.closePanel : displayTexts?.openPanel"
-        kind="secondary"
-        @click="togglePanel(open)"
-      />
+      <div class="button-group">
+        <LxButton
+          :icon="open ? 'close-panel' : 'open-panel'"
+          variant="icon-only"
+          :label="open ? displayTexts?.closePanel : displayTexts?.openPanel"
+          kind="ghost"
+          @click="togglePanel(open)"
+        />
 
-      <LxButton
-        icon="config"
-        variant="icon-only"
-        :label="displayTexts?.config"
-        kind="secondary"
-        :active="open && tab === 'config'"
-        @click="(tab = 'config'), (open = true)"
-      />
+        <LxButton
+          icon="config"
+          variant="icon-only"
+          :label="displayTexts?.config"
+          kind="ghost"
+          :active="open && tab === 'config'"
+          @click="(tab = 'config'), (open = true)"
+        />
 
-      <LxButton
-        icon="components"
-        variant="icon-only"
-        :label="displayTexts?.components"
-        kind="secondary"
-        :active="open && tab === 'components'"
-        @click="(tab = 'components'), (open = true)"
-      />
-      <LxButton
-        v-if="hasAiChat"
-        icon="ai"
-        variant="icon-only"
-        :label="displayTexts?.ai"
-        kind="secondary"
-        :active="open && tab === 'ai'"
-        @click="(tab = 'ai'), (open = true)"
-      />
-      <LxButton
-        icon="settings"
-        variant="icon-only"
-        :label="displayTexts?.settings"
-        kind="secondary"
-        :active="open && tab === 'settings'"
-        @click="(tab = 'settings'), (open = true)"
-      />
+        <LxButton
+          icon="components"
+          variant="icon-only"
+          :label="displayTexts?.components"
+          kind="ghost"
+          :active="open && tab === 'components'"
+          @click="(tab = 'components'), (open = true)"
+        />
+        <LxButton
+          v-if="hasAiChat"
+          icon="ai"
+          variant="icon-only"
+          :label="displayTexts?.ai"
+          kind="ghost"
+          :active="open && tab === 'ai'"
+          @click="(tab = 'ai'), (open = true)"
+        />
+        <LxButton
+          icon="settings"
+          variant="icon-only"
+          :label="displayTexts?.settings"
+          kind="ghost"
+          :active="open && tab === 'settings'"
+          @click="(tab = 'settings'), (open = true)"
+        />
+      </div>
     </div>
     <div class="panel-side" v-if="open">
       <div>
@@ -932,7 +934,7 @@ const chatItemsDisplay = computed(() => {
           <div class="button-group">
             <LxButton
               icon="copy"
-              kind="secondary"
+              kind="ghost"
               :label="displayTexts?.duplicate"
               :disabled="!isDuplicatable()"
               @click="emits('duplicateComponent')"
@@ -940,7 +942,7 @@ const chatItemsDisplay = computed(() => {
 
             <LxButton
               icon="delete"
-              kind="secondary"
+              kind="ghost"
               :label="displayTexts?.delete"
               :disabled="!isDeletable()"
               :destructive="true"
@@ -990,6 +992,7 @@ const chatItemsDisplay = computed(() => {
               noItems: displayTexts?.noItems,
               notFoundSearch: displayTexts?.notFoundSearch,
             }"
+            :hasVirtualization="false"
             @actionClick="(_, id) => emits('componentAdd', id)"
           />
         </div>

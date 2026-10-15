@@ -51,11 +51,14 @@
   gap: var(--space-0750);
 }
 
+.lx-panel > .panel-side .panel-main > .button-group { 
+  background-color: var(--color-region-2);
+}
+
 .lx-panel > .panel-side .panel-main > .button-group > .lx-button {
-  --color-button-secondary-background: var(--color-region-2);
-  --color-button-secondary-text: var(--color-data);
-  --color-button-secondary-icon: var(--color-data);
-  --button-secondary-border: var(--border-width-2) solid transparent;
+  --color-button-ghost-text: var(--color-data);
+  --color-button-ghost-icon: var(--color-data);
+  --button-ghost-border: var(--border-width-2) solid transparent;
 }
 
 .lx-panel > .panel-side  .button-group > .lx-button:first-child::after{
@@ -218,13 +221,14 @@
   background-color: var(--color-interactive-hover-background);
 }
 
-.lx-panel>.button-side>.lx-button {
-  --color-button-secondary-background: var(--color-nav-background);
-  --color-button-secondary-background-hover: var(--color-interactive-hover-background);
+.lx-panel>.button-side > .button-group > .lx-button {
+  --color-button-ghost-background: var(--color-nav-background);
+  --color-button-ghost-background-hover: var(--color-interactive-hover-background);
   --color-button-active-mode-background: var(--color-nav-item-background-selected);
-  --color-button-secondary-icon: var(--color-nav-foreground);
+  --color-button-ghost-icon: var(--color-nav-foreground);
   --color-button-active-mode-icon: var(--color-nav-item-icon-selected);
-  --button-secondary-border: var(--button-secondary-border-width) solid transparent;
+  --button-ghost-border: var(--button-ghost-border-width) solid transparent;
+  --color-button-ghost-icon-focus: var(--color-nav-background);
 }
 
 .lx-panel > .panel-side .prop-search {
