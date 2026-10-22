@@ -44,7 +44,7 @@
     "test": "bun vitest --mode lib"
   },
   "dependencies": {
-    "@dativa-lv/lx-ui": "2.3.8",
+    "@dativa-lv/lx-ui": "2.3.9",
     "@vue/test-utils": "^2.4.3",
     "@vuelidate/core": "^2.0.3",
     "@vuelidate/validators": "^2.0.4",
@@ -81,13 +81,13 @@
   "overrides": {
     "js-cookie": "3.0.7",
     "flatted": "3.4.2",
-    "markdown-it": "14.2.0",
+    "markdown-it": "15.0.3",
     "picomatch": "2.3.2",
     "js-yaml": "3.14.2",
     "nanoid": "3.3.18"
   },
   "peerDependencies": {
     "vue": "^3.5.17",
-    "@dativa-lv/lx-ui": "2.3.8"
+    "@dativa-lv/lx-ui": "2.3.9"
   }
 }
