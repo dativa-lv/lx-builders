@@ -11,12 +11,12 @@ const vueConfig = defineConfig({
   base: './',
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src'),
+      '@': path.resolve(import.meta.dirname, 'src'),
     },
   },
   build: {
     lib: {
-      entry: path.resolve(__dirname, 'src/lib.js'),
+      entry: path.resolve(import.meta.dirname, 'src/lib.js'),
       name: 'VueCarbonComponents',
       fileName: (format) => `dativa-lx-builders.${format}.js`,
       formats: ['esm', 'umd'],
@@ -40,7 +40,7 @@ const vueConfig = defineConfig({
       exclude: ['tests/**', '**/*.test.*', '**/*.spec.*'],
       afterBuild: () => {
         fs.writeFileSync(
-          path.resolve(__dirname, 'dist/dativa-lx-builders.d.ts'),
+          path.resolve(import.meta.dirname, 'dist/dativa-lx-builders.d.ts'),
           "export * from './types/lib';\n"
         );
       },
@@ -49,6 +49,7 @@ const vueConfig = defineConfig({
   test: {
     globals: true,
     environment: 'happy-dom',
+    setupFiles: ['./tests/setup.js'],
     testTimeout: 30_000,
   },
 });

@@ -5,7 +5,7 @@ import fs from 'fs';
 
 function generateInput() {
   const input = {};
-  const stylesDir = path.resolve(__dirname, 'src/styles');
+  const stylesDir = path.resolve(import.meta.dirname, 'src/styles');
   const files = fs.readdirSync(stylesDir);
 
   const excludedFiles = [];
@@ -25,7 +25,7 @@ export const cssConfig = defineConfig({
   base: './',
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src'),
+      '@': path.resolve(import.meta.dirname, 'src'),
     },
   },
   build: {
