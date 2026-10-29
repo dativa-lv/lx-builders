@@ -49,7 +49,7 @@
     "@vueuse/core": "15.0.0"
   },
   "devDependencies": {
-    "@dativa-lv/lx-ui": "2.3.10",
+    "@dativa-lv/lx-ui": "2.3.11",
     "@vitejs/plugin-vue": "6.0.9",
     "@vue/eslint-config-airbnb": "8.0.0",
     "@vue/test-utils": "^2.4.3",
@@ -61,7 +61,7 @@
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-prettier": "5.5.7",
     "eslint-plugin-vue": "^9.20.1",
-    "happy-dom": "20.14.6",
+    "happy-dom": "21.0.4",
     "prettier": "3.9.10",
     "vite": "8.3.4",
     "vite-plugin-dts": "4.5.4",
@@ -72,6 +72,6 @@
   "overrides": {},
   "peerDependencies": {
     "vue": "^3.5.17",
-    "@dativa-lv/lx-ui": "2.3.10"
+    "@dativa-lv/lx-ui": "2.3.11"
   }
 }
