@@ -1,4 +1,9 @@
 
+.lx {
+  --color-constructor-highlight: var(--color-blue);
+  --color-constructor-highlight-foreground: var(--color-background);
+}
+
 .lx-panel > .panel-side {
   background-color: var(--color-region);
   width: var(--aside-size);
@@ -99,34 +104,52 @@
 .highlight {
   position: absolute;
   box-sizing: border-box;
-  border: var(--border-width-2) solid var(--color-blue);
+  border: var(--border-width-2) solid var(--color-constructor-highlight);
   background: transparent;
   z-index: 100;
   pointer-events: none;
   transition: left 100ms ease-out, top 100ms ease-out;
 }
 
-.highlight .highlight-toolbar {
+.highlight.highlight-linked {
+  border-style: dashed;
+  transition: none;
+}
+
+.highlight.template-mode {
+  --color-constructor-highlight: var(--color-purple);
+}
+
+.highlight .highlight-toolbar,
+.highlight .highlight-footer {
   position: absolute;
   top: -1.5rem;
   left: -0.125rem;
   display: flex;
-  background: var(--color-blue);
+  background: var(--color-constructor-highlight);
   pointer-events: all;
   height: 1.5rem;
 }
 
-.highlight .highlight-toolbar > span{
-  padding-inline: var(--space-0250);
-  color: white; /* TODO: fix */
+.highlight .highlight-footer {
+  top: auto;
+  bottom: -1.5rem;
+  left: 50%;
 }
 
-.highlight .highlight-toolbar .lx-button {
+.highlight .highlight-toolbar > span{
+  padding-inline: var(--space-0250);
+  color: var(--color-constructor-highlight-foreground);
+  flex-shrink: 0;
+}
+
+.highlight .highlight-toolbar .lx-button,
+.highlight .highlight-footer .lx-button {
   --button-ghost-icon-only-height: 1.5rem;
   --button-ghost-icon-only-width: 1.5rem;
   --button-ghost-icon-only-min-width: 1.5rem;
-  --color-button-ghost-icon: white; /* TODO: fix */
-  --color-button-ghost-icon-focus: white; /* TODO: fix */
+  --color-button-ghost-icon: var(--color-constructor-highlight-foreground);
+  --color-button-ghost-icon-focus: var(--color-constructor-highlight-foreground);
 
   --button-ghost-icon-size: 1.25rem;
 }
@@ -217,8 +240,15 @@
   cursor: pointer;
 }
 
-.lx-panel > .panel-side .config-header.has-selected-element:hover {
+.lx-panel > .panel-side .config-header.has-selected-element:hover,
+.lx-panel > .panel-side .config-header.has-selected-element.template-edit-mode-open:hover {
   background-color: var(--color-interactive-hover-background);
+}
+
+
+.lx-theme-dark .lx-panel > .panel-side .config-header.has-selected-element:hover,
+.lx-theme-dark .lx-panel > .panel-side .config-header.has-selected-element.template-edit-mode-open:hover {
+  --color-constructor-highlight-foreground: var(--color-foreground);
 }
 
 .lx-panel>.button-side > .button-group > .lx-button {
@@ -235,12 +265,16 @@
   border-left: var(--border-width-1) solid var(--color-chrome);
 }
 
+.lx-panel > .panel-side .config-header.has-selected-element {
+  --color-button-ghost-icon: var(--color-constructor-highlight-foreground);
+}
+
 .lx-panel > .panel-side .config-header.has-selected-element .header-wrapper p {
-  color: var(--color-focus-foreground);
+  color: var(--color-constructor-highlight-foreground);
 }
 
 .lx-panel > .panel-side .config-header.has-selected-element .header-wrapper svg {
-  fill: var(--color-focus-foreground);
+  fill: var(--color-constructor-highlight-foreground);
 }
 
 /* Panel contrast theme styles */
@@ -299,4 +333,67 @@
 
 .lx-panel .panel-chat .lx-chat-footer .lx-chat-composer {
   border-inline: var(--border-width-1) solid var(--color-chrome);
+}
+
+.lx-modal .items-modal-grid {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  gap: var(--space-2000);
+}
+
+.lx-modal .items-modal-grid > .pseudo-form{
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-0500);
+}
+
+.lx-modal .items-modal-grid label {
+  color: var(--color-label);
+  font-size: var(--font-size-label);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.config-panel-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+}
+
+.config-panel-header .context-container,
+.config-panel-header .popper-wrapper {
+  width: 100%;
+}
+
+.lx-panel > .panel-side .config-header.has-template-edit-mode {
+  padding-right: var(--space-0);
+}
+
+.lx-panel > .panel-side .config-header.has-template-edit-mode .config-panel-header > .lx-button {
+  --color-button-ghost-icon: var(--color-constructor-highlight-foreground);
+  --color-button-ghost-icon-focus: var(--color-constructor-highlight-foreground);
+  margin-left: var(--space-0500);
+}
+
+.lx-panel > .panel-side .config-header.has-selected-element.template-edit-mode-open {
+  background-color: var(--color-purple);
+}
+
+/* When in template mode make empty stack visible/clickable when empty */
+#constructor.template-mode .lx-list-wrapper .lx-stack:empty{
+  min-height: 0.5rem;
+  min-width: 0.5rem;
+}
+
+@media (max-width: 1200px) {
+  .lx-modal .items-modal-grid {
+    grid-template-columns: 2fr 1fr;
+    gap: var(--space-1000);
+  }
+}
+
+@media (max-width: 600px) {
+  .lx-modal .items-modal-grid {
+    grid-template-columns: 1fr;
+  }
 }

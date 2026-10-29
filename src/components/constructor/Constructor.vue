@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch, nextTick } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
 import {
   lxFormatUtils,
   lxStringUtils,
@@ -150,6 +150,16 @@ const textsDefault = {
   showAllFields: 'Rādīt visus laukus',
   ai: 'Ģenerēt ar MI',
   undo: 'Atcelt veiktās izmaiņas',
+  confirmAddCustomItem: 'Pievienot komponenti, izmantojot customItem?',
+  confirmAddCustomItemDescription:
+    'Pievienojot komponenti, pašreizējā LxList struktūrā tiks pievienots arī LxStack. Esošais izkārtojums var mainīties.',
+  templateEditLabel: 'Struktūras labošana',
+  templateEditDescription: 'Izmaiņas tiks piemērotas visiem saraksta elementiem',
+  row: 'Rinda',
+  column: 'Kolonna',
+  autoSize: 'Automātisks izmērs (auto)',
+  sizeRatio: 'Izmēra proporcija',
+  modelPathAttributeError: 'Atribūts nedrīkst būt tukšs un saturēt punktus vai atstarpes',
 
   fileUploader: {
     clear: 'Notīrīt',
@@ -231,6 +241,8 @@ const highlight = ref({
   visible: false,
   style: {},
   el: null,
+  itemId: null, // registry id of the selected element, used to find it again after re-render
+  detached: false, // selected element is temporarily not in DOM
   padding: 2, // extra space around element
 });
 
@@ -274,6 +286,8 @@ const panelTab = ref(null);
 
 const confirmDialog = ref();
 
+const customItemPath = ref(false);
+
 const confirmDialogObject = ref({
   label: null,
   description: null,
@@ -299,23 +313,34 @@ function resetElementInfo() {
 const highlightToolbar = ref();
 const isToolbarSmaller = ref(false);
 
+const templateMode = ref(false);
+
+// Borders of the same custom item template element in other list items (no toolbar)
+const linkedHighlights = ref([]);
+
+// Calculates highlight position and size for the provided DOM element
+function getHighlightStyle(el) {
+  const r = el.getBoundingClientRect();
+  const scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+  const p = highlight.value.padding;
+
+  return {
+    left: `${r.left - p}px`,
+    top: `${r.top - p + scrollY}px`,
+    width: `${r.width + p * 2}px`,
+    height: `${r.height + p * 2}px`,
+  };
+}
+
 // Positions the selection highlight over the provided DOM element
 function colorBorder(e) {
   highlight.value.el = e.target;
 
   if (!highlight.value.el) return;
 
-  const r = highlight.value.el.getBoundingClientRect();
-  const scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
-  const p = highlight.value.padding;
-
-  highlight.value.style = {
-    left: `${r.left - p}px`,
-    top: `${r.top - p + scrollY}px`,
-    width: `${r.width + p * 2}px`,
-    height: `${r.height + p * 2}px`,
-  };
+  highlight.value.style = getHighlightStyle(highlight.value.el);
   highlight.value.visible = true;
+  highlight.value.detached = false;
 
   const toolbarWidth = highlightToolbar.value?.getBoundingClientRect()?.width;
   const highlightWidth = highlight.value.el?.getBoundingClientRect()?.width;
@@ -329,9 +354,78 @@ function colorBorder(e) {
   }
 }
 
+function getRegistryElement(itemId) {
+  return (
+    document.querySelector(`[data-id="${itemId}"]`) ||
+    document.getElementById(`${itemId}-wrapper`) ||
+    document.getElementById(itemId)
+  );
+}
+
+// Draws borders around the same custom item template element in all other list items
+function colorLinkedBorders() {
+  linkedHighlights.value = [];
+  if (!customItemPath.value || !schemaPath.value || !highlight.value.visible) return;
+
+  linkedHighlights.value = Array.from(builderRegistry.all().entries())
+    .filter(
+      ([, item]) =>
+        item?.builderName === schemaPath.value && item?.customItemPath === customItemPath.value
+    )
+    .map(([itemId]) => getRegistryElement(itemId))
+    .filter((el) => el && el !== highlight.value.el && el.isConnected)
+    .map((el) => getHighlightStyle(el));
+}
+
+// Finds the selected element in the current DOM, as the previous node may have been re-rendered
+function resolveSelectedElement() {
+  const { el, itemId } = highlight.value;
+  if (el?.isConnected) return el;
+
+  const byId = itemId ? getRegistryElement(itemId) : null;
+  if (byId?.isConnected) return byId;
+
+  if (!schemaPath.value) return null;
+
+  const entry = Array.from(builderRegistry.all().entries()).find(
+    ([id, item]) =>
+      item?.builderName === schemaPath.value &&
+      (item?.customItemPath || null) === (customItemPath.value || null) &&
+      getRegistryElement(id)?.isConnected
+  );
+  if (!entry) return null;
+
+  [highlight.value.itemId] = entry;
+  return getRegistryElement(entry[0]);
+}
+
+// Recalculates all highlight positions from the current layout
+function refreshHighlights() {
+  if (!highlight.value.visible) return;
+
+  const el = resolveSelectedElement();
+  if (!el) {
+    highlight.value.detached = true;
+    linkedHighlights.value = [];
+    return;
+  }
+
+  colorBorder({ target: el });
+  colorLinkedBorders();
+}
+
+let isHighlightRefreshScheduled = false;
+
+// Schedules highlight refresh after Vue has patched the DOM and the browser has calculated layout
 function updateSelectedElement() {
+  if (isHighlightRefreshScheduled) return;
+  isHighlightRefreshScheduled = true;
+
   nextTick(() => {
-    colorBorder({ target: highlight.value.el });
+    requestAnimationFrame(() => {
+      isHighlightRefreshScheduled = false;
+      refreshHighlights();
+    });
   });
 }
 
@@ -346,7 +440,7 @@ function getValueByPath(obj, path) {
 }
 
 // Finds the correct position in schema based on components provided schemaPath
-function findPositionInSchema(path = null) {
+function findPositionInSchema(path = null, hasItems = null) {
   const pathToUse = path || schemaPath.value;
   const res = [];
 
@@ -354,7 +448,24 @@ function findPositionInSchema(path = null) {
   schemaPropertiesStack.value?.forEach((x) => {
     res.push('properties', x);
   });
+
+  if (hasItems) {
+    const customItemPathToUse = hasItems?.split('.');
+    customItemPathToUse?.forEach((x) => {
+      res.push(x);
+    });
+  }
   return res;
+}
+
+// Position of the container (null for schema root) and key of the selected element, including custom items
+function getSelectedPosition() {
+  const position = findPositionInSchema(schemaPath.value, customItemPath.value);
+
+  return {
+    positionPath: position.length > 2 ? position.slice(0, -2) : null,
+    key: position[position.length - 1],
+  };
 }
 
 // Get schema item displayType
@@ -429,31 +540,94 @@ function canNestComponentInsideSchemaPath(componentId, targetPath, schema = sche
   return true;
 }
 
+// Nesting limits of custom items, based on what FormBuilderItem can render
+const CUSTOM_ITEM_MAX_STACK_DEPTH = 2;
+const CUSTOM_ITEM_MAX_DEPTH = 3;
+const CUSTOM_ITEM_DEFAULT_VALUE = '—';
+
+// Gets the custom item keys from the customItemPath -> 'items.properties.a.properties.b' -> ['a', 'b']
+function getCustomItemKeys(path) {
+  return (
+    path
+      ?.split('.')
+      .slice(1)
+      .filter((_, index) => index % 2 === 1) ?? []
+  );
+}
+
+// Builds customItemPath from the custom item keys -> ['a', 'b'] -> 'items.properties.a.properties.b'
+function buildCustomItemPath(keys) {
+  return ['items', ...keys.flatMap((key) => ['properties', key])].join('.');
+}
+
+function withFlatCustomItemModelPath(componentId, itemSchema, key) {
+  if (componentId === 'LxStack' || !itemSchema || !key) return itemSchema;
+
+  const listModelPath = schemaPath.value?.split('.').filter(Boolean) || [];
+  return {
+    ...itemSchema,
+    lx: {
+      ...(itemSchema.lx || {}),
+      modelPath: [...listModelPath, key].join('.'),
+    },
+  };
+}
+
+// Checks if custom item (with all its children) can be placed at the provided depth
+function canCustomItemFitDepth(item, depth) {
+  if (!item) return false;
+
+  if (getItemDisplayType(item) === 'stack') {
+    return (
+      depth <= CUSTOM_ITEM_MAX_STACK_DEPTH &&
+      Object.values(item.properties || {}).every((child) => canCustomItemFitDepth(child, depth + 1))
+    );
+  }
+
+  return depth <= CUSTOM_ITEM_MAX_DEPTH;
+}
+
+function splitDotPath(path) {
+  if (!path?.includes('.')) return { parent: null, key: path ?? null };
+  const parts = path.split('.');
+  return { parent: parts.slice(0, -1).join('.'), key: parts.slice(-1)[0] };
+}
+
 // Updated infomration about the currenly selected element:
 // Can it be moved to left or right, can it be moved outside or inside and more
 function getPositionInfo(schema, currentSchema) {
-  if (!schemaPath.value || !currentSchema) {
-    resetElementInfo();
-  }
+  resetElementInfo();
+  if (!schemaPath.value || !currentSchema) return;
 
-  const currentKey = schemaPath.value?.split('.')?.slice(-1)[0];
-  const parentPath = schemaPath.value?.includes('.')
-    ? schemaPath.value?.split('.')?.slice(0, -1)?.join('.')
-    : null;
-
-  const parentSchema = parentPath
-    ? getValueByPath(schema, findPositionInSchema(parentPath))
-    : schema;
+  // Same source as moveElement(), includes customItemPath
+  const { positionPath, key: currentKey } = getSelectedPosition();
+  const parentSchema = positionPath ? getValueByPath(schema, positionPath) : schema;
   const siblingProperties = parentSchema?.properties;
+  if (!siblingProperties || !currentKey) return;
 
   const siblingKeys = Object.keys(siblingProperties);
   const currentIndex = siblingKeys.indexOf(currentKey);
-  const nextKey = currentIndex >= 0 ? siblingKeys[currentIndex + 1] : null;
+  if (currentIndex < 0) return;
+
+  const nextKey = siblingKeys[currentIndex + 1] ?? null;
   const nextSchema = nextKey ? siblingProperties[nextKey] : null;
   const previousKey = currentIndex > 0 ? siblingKeys[currentIndex - 1] : null;
 
   elementInfo.value.canMoveBack = !!previousKey;
   elementInfo.value.canMoveForward = !!nextKey;
+
+  // Custom items can be moved in/out only within the list custom item borders
+  if (customItemPath.value) {
+    const depth = getCustomItemKeys(customItemPath.value).length;
+
+    elementInfo.value.canMoveForwardIn =
+      getItemDisplayType(nextSchema) === 'stack' &&
+      canCustomItemFitDepth(siblingProperties[currentKey], depth + 1);
+    elementInfo.value.moveOut = depth > 1;
+    return;
+  }
+
+  const { parent: parentPath } = splitDotPath(schemaPath.value);
 
   // Move inside is allowed only forward
   elementInfo.value.canMoveForwardIn =
@@ -501,17 +675,26 @@ function setPanelTab(tab) {
 function selectElement(e) {
   let elem = e.target;
   let registryElem = null;
+  let registryId = null;
   // Walk up the DOM tree until we find an element with an id in the registry
 
   while (elem) {
     if ((elem.dataset.id && builderRegistry.get(elem.dataset.id)) || isLxRowClicked(elem.id)) {
+      let candidateId = null;
       if (isLxRowClicked(elem.id)) {
-        const lxRowWrapper = elem.id?.replace(/-wrapper$/, '');
-        registryElem = builderRegistry.get(lxRowWrapper);
+        candidateId = elem.id?.replace(/-wrapper$/, '');
       } else {
-        registryElem = builderRegistry.get(elem.dataset.id || elem.id);
+        candidateId = elem.dataset.id || elem.id;
       }
-      break;
+      const candidate = builderRegistry.get(candidateId);
+
+      // LxStack and custom item elements are selectable only in template editing mode
+      const isTemplateOnly = candidate?.type === 'LxStack' || !!candidate?.customItemPath;
+      if (!isTemplateOnly || templateMode.value) {
+        registryElem = candidate;
+        registryId = candidateId;
+        break;
+      }
     }
 
     elem = elem.parentElement;
@@ -522,16 +705,29 @@ function selectElement(e) {
     componentPropsDefinitions.value = registryElem.node.type.props;
     componentProps.value = lxFormatUtils.objectClone(registryElem.props);
     colorBorder({ target: elem });
+    highlight.value.itemId = registryId;
     schemaPath.value = registryElem.builderName;
     navigation.value = registryElem.componentStack;
-    schemaKey.value = schemaPath.value?.includes('.')
-      ? schemaPath.value?.split('.')?.slice(-1)[0]
-      : schemaPath.value;
+    customItemPath.value = registryElem?.customItemPath;
+    colorLinkedBorders();
+    schemaKey.value = getSelectedPosition().key ?? null;
     schemaKeyError.value = null;
+
+    // if not LxList, LxStack or a custom item element then panel template mode can be reset
+    if (
+      componentName.value !== 'LxList' &&
+      componentName.value !== 'LxStack' &&
+      !registryElem.customItemPath
+    ) {
+      templateMode.value = false;
+    }
   }
 
   // Find the selected item in schema
-  currentItem.value = getValueByPath(schemaModel.value, findPositionInSchema());
+  currentItem.value = getValueByPath(
+    schemaModel.value,
+    findPositionInSchema(null, customItemPath.value)
+  );
 
   const parentSchemaPath = schemaPath.value?.includes('.')
     ? schemaPath.value?.split('.')?.join('.')
@@ -540,10 +736,9 @@ function selectElement(e) {
   // Find the parent item of selected item in schema
   parentItem.value = getValueByPath(
     schemaModel.value,
-    findPositionInSchema(parentSchemaPath)?.slice(0, -1)
+    findPositionInSchema(parentSchemaPath, customItemPath.value)?.slice(0, -1)
   );
 
-  // Update information about selected element
   getPositionInfo(schemaModel.value, currentItem.value);
 
   // Open the tab with component configuration
@@ -619,11 +814,7 @@ function moveModelValueBranch(fromSchemaPath, toSchemaPath) {
 
 // Updates the current location in shcema, with the provided new value
 function updateSchemaFromPanel(newSchema) {
-  const res = [];
-  schemaPropertiesStack.value = schemaPath.value?.split('.');
-  schemaPropertiesStack.value?.forEach((x) => {
-    res.push('properties', x);
-  });
+  const res = findPositionInSchema(schemaPath.value, customItemPath.value);
 
   const schemaClone = lxFormatUtils.objectClone(schemaModel.value);
   setValueByPath(schemaClone, res, newSchema);
@@ -680,13 +871,17 @@ function getSchemaPathFromPositionPath(positionPath) {
   return getModelPathFromSchemaPath(positionPath).join('.');
 }
 
-// Makes component selected based on provided schemaPath
-function selectComponentBySchemaPath(newSchemaPath) {
+// Makes component selected based on provided schemaPath (and customItemPath for custom items)
+function selectComponentBySchemaPath(newSchemaPath, newCustomItemPath = null) {
   if (!newSchemaPath) return;
 
   nextTick(() => {
     const registryItems = Array.from(builderRegistry.all().entries());
-    const targetEntry = registryItems.find(([, item]) => item?.builderName === newSchemaPath);
+    const targetEntry = registryItems.find(
+      ([, item]) =>
+        item?.builderName === newSchemaPath &&
+        (item?.customItemPath || null) === (newCustomItemPath || null)
+    );
     if (!targetEntry) return;
 
     const [itemId] = targetEntry;
@@ -702,8 +897,139 @@ function selectComponentBySchemaPath(newSchemaPath) {
   });
 }
 
+// Moves the custom item values in every list row (model) from one key path to another
+function moveListRowsValueBranch(listSchemaPath, fromKeys, toKeys) {
+  const listModelPath = listSchemaPath?.split('.')?.filter(Boolean) || [];
+  if (!listModelPath.length || !fromKeys.length || !toKeys.length) return;
+  if (!Array.isArray(getValueByPath(model.value, listModelPath))) return;
+
+  const modelClone = lxFormatUtils.objectClone(model.value || {});
+
+  getValueByPath(modelClone, listModelPath).forEach((row) => {
+    if (!row || typeof row !== 'object') return;
+
+    const value = getValueByPath(row, fromKeys);
+    if (lxGeneralUtils.isNil(value)) return;
+
+    removeValueByPath(row, fromKeys);
+
+    const targetParent = toKeys.length > 1 ? getValueByPath(row, toKeys.slice(0, -1)) : row;
+    if (!lxGeneralUtils.isNil(targetParent) && typeof targetParent !== 'object') return;
+
+    setValueByPath(row, toKeys, value);
+  });
+
+  model.value = modelClone;
+}
+
+// Sets a default value for the newly added custom item in every list row (model), so that it is visible
+function initializeListRowsValueForAddedCustomItem(componentId, listSchemaPath, keys) {
+  // LxStack is only a container, its children hold the values
+  if (componentId === 'LxStack') return;
+
+  const listModelPath = listSchemaPath?.split('.')?.filter(Boolean) || [];
+  if (!listModelPath.length || !keys?.length) return;
+  if (!Array.isArray(getValueByPath(model.value, listModelPath))) return;
+
+  const modelClone = lxFormatUtils.objectClone(model.value || {});
+
+  getValueByPath(modelClone, listModelPath).forEach((row) => {
+    if (!row || typeof row !== 'object') return;
+    if (!lxGeneralUtils.isNil(getValueByPath(row, keys))) return;
+
+    const targetParent = keys.length > 1 ? getValueByPath(row, keys.slice(0, -1)) : row;
+    if (!lxGeneralUtils.isNil(targetParent) && typeof targetParent !== 'object') return;
+
+    setValueByPath(row, keys, CUSTOM_ITEM_DEFAULT_VALUE);
+  });
+
+  model.value = modelClone;
+}
+
+// Moves the selected custom item inside the next sibling stack
+function moveCustomItemInside() {
+  const keys = getCustomItemKeys(customItemPath.value);
+  const { positionPath, key: currentKey } = getSelectedPosition();
+  if (!positionPath || !currentKey) return;
+
+  const schemaClone = lxFormatUtils.objectClone(schemaModel.value);
+  const siblingProperties = getValueByPath(schemaClone, positionPath)?.properties;
+  if (!siblingProperties) return;
+
+  const siblingKeys = Object.keys(siblingProperties);
+  const targetKey = siblingKeys[siblingKeys.indexOf(currentKey) + 1];
+  const currentSchema = siblingProperties[currentKey];
+  const targetSchema = targetKey ? siblingProperties[targetKey] : null;
+
+  if (
+    getItemDisplayType(targetSchema) !== 'stack' ||
+    !canCustomItemFitDepth(currentSchema, keys.length + 1)
+  ) {
+    return;
+  }
+
+  const targetProperties = targetSchema.properties || {};
+  const movedKey = getUniqueKeyForLevel(currentKey, targetProperties);
+
+  // Move-in always appends moved element as the last element in destination stack
+  targetSchema.properties = { ...targetProperties, [movedKey]: currentSchema };
+  delete siblingProperties[currentKey];
+
+  schemaModel.value = schemaClone;
+
+  const movedKeys = [...keys.slice(0, -1), targetKey, movedKey];
+  // Values of referenced items (lx.modelPath) don't depend on the position in schema
+  if (!currentSchema?.lx?.modelPath) moveListRowsValueBranch(schemaPath.value, keys, movedKeys);
+  selectComponentBySchemaPath(schemaPath.value, buildCustomItemPath(movedKeys));
+}
+
+// Moves the selected custom item out of its parent stack, but not outside the list custom items
+function moveCustomItemOutside() {
+  const keys = getCustomItemKeys(customItemPath.value);
+  if (keys.length < 2) return;
+
+  const { positionPath, key: currentKey } = getSelectedPosition();
+  if (!positionPath || !currentKey) return;
+
+  const schemaClone = lxFormatUtils.objectClone(schemaModel.value);
+  const parentSchema = getValueByPath(schemaClone, positionPath);
+  const outsideSchema = getValueByPath(schemaClone, positionPath.slice(0, -2));
+  const parentKey = keys[keys.length - 2];
+  const currentSchema = parentSchema?.properties?.[currentKey];
+  const outsideProperties = outsideSchema?.properties;
+
+  if (!currentSchema || !outsideProperties?.[parentKey]) return;
+
+  const movedKey = getUniqueKeyForLevel(currentKey, outsideProperties);
+  delete parentSchema.properties[currentKey];
+
+  // Unified take-out behavior: always insert before parent stack
+  outsideSchema.properties = Object.fromEntries(
+    Object.entries(outsideProperties).flatMap(([key, value]) =>
+      key === parentKey
+        ? [
+            [movedKey, currentSchema],
+            [key, value],
+          ]
+        : [[key, value]]
+    )
+  );
+
+  schemaModel.value = schemaClone;
+
+  const movedKeys = [...keys.slice(0, -2), movedKey];
+  // Values of referenced items (lx.modelPath) don't depend on the position in schema
+  if (!currentSchema?.lx?.modelPath) moveListRowsValueBranch(schemaPath.value, keys, movedKeys);
+  selectComponentBySchemaPath(schemaPath.value, buildCustomItemPath(movedKeys));
+}
+
 function moveElementInside() {
   if (!schemaPath.value) return;
+
+  if (customItemPath.value) {
+    moveCustomItemInside();
+    return;
+  }
 
   const currentSchemaPath = schemaPath.value;
   const currentKey = schemaPath.value?.split('.')?.slice(-1)[0];
@@ -777,12 +1103,6 @@ function moveElementInside() {
   selectComponentBySchemaPath(movedSchemaPath);
 }
 
-function splitDotPath(path) {
-  if (!path?.includes('.')) return { parent: null, key: path ?? null };
-  const parts = path.split('.');
-  return { parent: parts.slice(0, -1).join('.'), key: parts.slice(-1)[0] };
-}
-
 function getGreatGrandParent(grandParentPath, schemaClone) {
   const { parent: greatGrandParentPath, key: greatGrandParentKey } = splitDotPath(grandParentPath);
 
@@ -830,6 +1150,11 @@ function resolveOutsideContainer({
 // Moves element outside of current container
 function moveElementOutside(position) {
   if (!schemaPath.value || (position !== 'next' && position !== 'previous')) return;
+
+  if (customItemPath.value) {
+    moveCustomItemOutside();
+    return;
+  }
 
   const currentSchemaPath = schemaPath.value;
   const { parent: parentPath, key: currentKey } = splitDotPath(schemaPath.value);
@@ -934,19 +1259,18 @@ function initializeModelValueForAddedComponent(componentId, key, schemaContainer
 // Adds component in schema, based on provided component id
 function addComponent(id) {
   // find position in schema
-  let positionPath = null;
-  if (schemaPath.value?.includes('.'))
-    positionPath = findPositionInSchema(schemaPath.value?.split('.')?.slice(0, -1)?.join('.'));
+  const { positionPath, key: insertAfterKey } = getSelectedPosition();
 
   // get value that need to be modified
   const positionValue = positionPath
     ? getValueByPath(schemaModel.value, positionPath)
     : schemaModel.value;
 
-  const insertAfterKey = schemaPath.value?.split('.')?.slice(-1)[0];
   const newKey = lxStringUtils.generateUUID();
 
-  const newProp = getNewItemSchema(id);
+  const newProp = customItemPath.value
+    ? withFlatCustomItemModelPath(id, getNewItemSchema(id), newKey)
+    : getNewItemSchema(id);
 
   const oldProps = positionValue.properties;
   const newProps = {};
@@ -965,6 +1289,15 @@ function addComponent(id) {
   const schemaClone = lxFormatUtils.objectClone(schemaModel.value);
   setValueByPath(schemaClone, positionPath, positionValue);
   schemaModel.value = schemaClone;
+
+  if (customItemPath.value) {
+    // Added as a sibling of the selected custom item, its value is stored flat in the list row
+    const addedKeys = [...getCustomItemKeys(customItemPath.value).slice(0, -1), newKey];
+    initializeListRowsValueForAddedCustomItem(id, schemaPath.value, [newKey]);
+    // Custom items are registered with the list schemaPath and their own customItemPath
+    selectComponentBySchemaPath(schemaPath.value, buildCustomItemPath(addedKeys));
+    return;
+  }
 
   initializeModelValueForAddedComponent(id, newKey, positionPath);
 
@@ -1035,25 +1368,30 @@ function addComponentOutsideSelectedSection(id) {
   return true;
 }
 
-// Adds component inside LxSection
-function addComponentInside(id) {
+// Adds component inside LxSection, LxStack or (toListItems) the custom items of the selected list
+function addComponentInside(id, toListItems = false) {
   // find position in schema
-  let positionPath = null;
-  positionPath = findPositionInSchema(schemaPath.value?.split('.')?.join('.'));
+  const positionPath = toListItems
+    ? [...findPositionInSchema(schemaPath.value), 'items']
+    : findPositionInSchema(schemaPath.value, customItemPath.value);
 
   // get value that need to be modified
   const positionValue = positionPath
     ? getValueByPath(schemaModel.value, positionPath)
     : schemaModel.value;
+  if (!positionValue) return;
 
   const insertAfterKey = Object.keys(positionValue.properties || {})[
     Object.keys(positionValue.properties || {}).length - 1
   ];
   const newKey = lxStringUtils.generateUUID();
 
-  const newProp = getNewItemSchema(id);
+  const newProp =
+    toListItems || customItemPath.value
+      ? withFlatCustomItemModelPath(id, getNewItemSchema(id), newKey)
+      : getNewItemSchema(id);
 
-  const oldProps = positionValue.properties;
+  const oldProps = positionValue.properties || {};
   const newProps = {};
 
   Object.keys(oldProps).forEach((key) => {
@@ -1076,11 +1414,67 @@ function addComponentInside(id) {
   setValueByPath(schemaClone, positionPath, positionValue);
   schemaModel.value = schemaClone;
 
+  if (toListItems || customItemPath.value) {
+    // Added inside list custom items (or inside a custom item stack), its value is stored flat in the list row
+    const addedKeys = [...(toListItems ? [] : getCustomItemKeys(customItemPath.value)), newKey];
+    initializeListRowsValueForAddedCustomItem(id, schemaPath.value, [newKey]);
+    // Custom items are registered with the list schemaPath and their own customItemPath
+    selectComponentBySchemaPath(schemaPath.value, buildCustomItemPath(addedKeys));
+    return;
+  }
+
   initializeModelValueForAddedComponent(id, newKey, positionPath);
 
   const containerSchemaPath = getSchemaPathFromPositionPath(positionPath);
   const addedSchemaPath = [containerSchemaPath, newKey].filter(Boolean).join('.');
   selectComponentBySchemaPath(addedSchemaPath);
+}
+
+// Enables custom items for the selected list and adds the component as its first custom item, wrapped in LxStack
+function addFirstCustomItemInStack(id) {
+  const listPositionPath = findPositionInSchema(schemaPath.value);
+  const schemaClone = lxFormatUtils.objectClone(schemaModel.value);
+  const listSchema = getValueByPath(schemaClone, listPositionPath);
+  if (!listSchema) return;
+
+  listSchema.lx = { ...(listSchema.lx || {}), hasCustomItems: 'nested' };
+
+  const stackKey = lxStringUtils.generateUUID();
+  const stackSchema = { ...getNewItemSchema('LxStack'), properties: {} };
+  const addedKeys = [stackKey];
+
+  if (id !== 'LxStack') {
+    const newKey = lxStringUtils.generateUUID();
+    stackSchema.properties[newKey] = withFlatCustomItemModelPath(id, getNewItemSchema(id), newKey);
+    addedKeys.push(newKey);
+  }
+
+  // New custom item definitions, the LxStack wrapper is the only top level custom item
+  listSchema.items = {
+    ...(listSchema.items || {}),
+    type: 'object',
+    properties: { [stackKey]: stackSchema },
+  };
+  schemaModel.value = schemaClone;
+
+  // The value of the added custom item is stored flat in the list row
+  initializeListRowsValueForAddedCustomItem(id, schemaPath.value, addedKeys.slice(-1));
+  selectComponentBySchemaPath(schemaPath.value, buildCustomItemPath(addedKeys));
+}
+
+// Asks for confirmation before adding the first custom item to the selected list
+function openAddFirstCustomItemConfirm(id) {
+  confirmDialogObject.value = {
+    label: displayTexts.value?.confirmAddCustomItem,
+    description: displayTexts.value?.confirmAddCustomItemDescription,
+    kind: 'info',
+    primaryAction: () => {
+      addFirstCustomItemInStack(id);
+      confirmDialog.value.close();
+    },
+    secondaryAction: null,
+  };
+  confirmDialog.value.open();
 }
 
 // Selects component in constructor based on provided item
@@ -1120,6 +1514,16 @@ function openAddComponentOptions(id) {
       // Else have option to add it inside or outside
       componentAddModal.value.open();
     }
+  } else if (
+    componentName.value === 'LxList' &&
+    templateMode.value &&
+    currentItem.value?.lx?.hasCustomItems
+  ) {
+    addComponentInside(id, true);
+  } else if (componentName.value === 'LxList' && templateMode.value) {
+    openAddFirstCustomItemConfirm(id);
+  } else if (componentName.value === 'LxStack' && customItemPath.value) {
+    addComponentInside(id);
   } else addComponent(id);
 }
 
@@ -1145,26 +1549,34 @@ function addModalActionClicked(_, actionId) {
 
 function clearSelectedElement() {
   highlight.value.visible = false;
+  highlight.value.detached = false;
+  highlight.value.el = null;
+  highlight.value.itemId = null;
+  linkedHighlights.value = [];
   componentName.value = null;
   navigation.value = [];
   currentItem.value = null;
+  customItemPath.value = null;
   resetNextElementInfo();
   resetLowerNestingInfo();
+
+  // reset panel template mode
+  templateMode.value = false;
 }
 
 // Removes the selected component from schema
 function removeCurrentComponent() {
   // find position in schema
-  let positionPath = null;
-  if (schemaPath.value?.includes('.'))
-    positionPath = findPositionInSchema(schemaPath.value?.split('.')?.slice(0, -1)?.join('.'));
+  const { positionPath, key: removeKey } = getSelectedPosition();
+
+  // remember custom item context before schema changes
+  const removedCustomItemPath = customItemPath.value;
+  const listSchemaPath = schemaPath.value;
 
   // get value that need to be modified
   const positionValue = positionPath
     ? getValueByPath(schemaModel.value, positionPath)
     : schemaModel.value;
-  // get the key to remove
-  const removeKey = schemaPath.value?.split('.')?.slice(-1)[0];
 
   const oldProps = positionValue.properties;
   const newProps = {};
@@ -1183,8 +1595,17 @@ function removeCurrentComponent() {
   setValueByPath(schemaClone, positionPath, positionValue);
   schemaModel.value = schemaClone;
 
-  // If view is empty after removing the component, hilight the LxViewLayout
-  if (!props.schema?.properties || Object.keys(props.schema?.properties).length === 0) {
+  if (removedCustomItemPath && templateMode.value) {
+    // Keep template mode and select the stack (or the LxList itself) that contained the removed element
+    const parentKeys = getCustomItemKeys(removedCustomItemPath).slice(0, -1);
+    highlight.value.visible = false;
+    linkedHighlights.value = [];
+    selectComponentBySchemaPath(
+      listSchemaPath,
+      parentKeys.length ? buildCustomItemPath(parentKeys) : null
+    );
+  } else if (!props.schema?.properties || Object.keys(props.schema?.properties).length === 0) {
+    // If view is empty after removing the component, hilight the LxViewLayout
     const viewLayout = document.querySelector('.lx-view-layout');
     if (viewLayout) {
       setTimeout(() => {
@@ -1199,16 +1620,13 @@ function removeCurrentComponent() {
 // Duplicate the selected component in schema
 function duplicateCurrentComponent() {
   // find position in schema
-  let positionPath = null;
-  if (schemaPath.value?.includes('.'))
-    positionPath = findPositionInSchema(schemaPath.value?.split('.')?.slice(0, -1)?.join('.'));
+  const { positionPath, key: duplicateKey } = getSelectedPosition();
 
   // get value that need to be modified
   const positionValue = positionPath
     ? getValueByPath(schemaModel.value, positionPath)
     : schemaModel.value;
 
-  const duplicateKey = schemaPath.value?.split('.')?.slice(-1)[0];
   const newKey = lxStringUtils.generateUUID();
 
   const newProp = lxFormatUtils.objectClone(positionValue.properties[duplicateKey]);
@@ -1254,16 +1672,12 @@ function duplicateCurrentComponent() {
 // Moves the selected component up of down in schema in the same nesting level
 function moveElement(direction) {
   // find position in schema
-  let positionPath = null;
-  if (schemaPath.value?.includes('.'))
-    positionPath = findPositionInSchema(schemaPath.value?.split('.')?.slice(0, -1)?.join('.'));
+  const { positionPath, key: moveKey } = getSelectedPosition();
 
   // get value that need to be modified
   const positionValue = positionPath
     ? getValueByPath(schemaModel.value, positionPath)
     : schemaModel.value;
-
-  const moveKey = schemaPath.value?.split('.')?.slice(-1)[0];
 
   const oldProps = positionValue.properties;
   const newProps = {};
@@ -1587,7 +2001,11 @@ function updateSchemaKey(newKey) {
       ? schemaPath.value?.split('.')?.join('.')
       : null;
 
-    setValueByPath(schemaModel.value, findPositionInSchema(parentSchemaPath)?.slice(0, -1), res);
+    setValueByPath(
+      schemaModel.value,
+      findPositionInSchema(parentSchemaPath, customItemPath.value)?.slice(0, -1),
+      res
+    );
   } catch {
     schemaKeyError.value = displayTexts.value?.schemaKeyUpdateError;
   }
@@ -1603,7 +2021,7 @@ function outsideClickListener() {
       !isInside('#constructor') &&
       !isInside('.lx-panel') &&
       !isInside('.popper') &&
-      !isInside('.lx-modal') &&
+      !isInside('#modals') &&
       !isInside('.highlight')
     ) {
       clearSelectedElement();
@@ -1611,12 +2029,32 @@ function outsideClickListener() {
   });
 }
 
+let constructorMutationObserver = null;
+let constructorResizeObserver = null;
+
 // When component is mounted adds event listeners for click and keyboard keys for moving elements
 onMounted(() => {
-  document.getElementById('constructor')?.addEventListener('click', (e) => {
+  const constructorEl = document.getElementById('constructor');
+  constructorEl?.addEventListener('click', (e) => {
     selectElement(e);
   });
   outsideClickListener();
+
+  // Keep highlights in sync with layout after re-renders, stack layout changes and transitions
+  if (constructorEl) {
+    constructorMutationObserver = new MutationObserver(updateSelectedElement);
+    constructorMutationObserver.observe(constructorEl, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      characterData: true,
+    });
+    constructorResizeObserver = new ResizeObserver(updateSelectedElement);
+    constructorResizeObserver.observe(constructorEl);
+    constructorEl.addEventListener('transitionend', updateSelectedElement);
+    constructorEl.addEventListener('animationend', updateSelectedElement);
+  }
+
   // Does not allow to scroll the page when arrow keys are pressed
   document?.addEventListener('keydown', (e) => {
     if (!canHandleGlobalArrowKeys(e.target)) {
@@ -1647,6 +2085,22 @@ onMounted(() => {
   });
 });
 
+onBeforeUnmount(() => {
+  constructorMutationObserver?.disconnect();
+  constructorResizeObserver?.disconnect();
+});
+
+// Checks if the path is or goes through a list that has lx.hasCustomItems
+function isInsideCustomItemsList(path) {
+  const keys = path?.split('.') ?? [];
+  let node = schemaModel.value;
+
+  return keys.some((key) => {
+    node = node?.properties?.[key];
+    return !!node?.lx?.hasCustomItems;
+  });
+}
+
 const schemaInfo = computed(() => {
   const hasForm = Object.values(schemaModel.value?.properties || {}).some(
     (prop) => prop.type === 'object' && prop.lx?.displayType === 'form'
@@ -1664,7 +2118,13 @@ const schemaInfo = computed(() => {
           (childProp) => childProp.type === 'object' && childProp.lx?.displayType === 'section'
         )
     );
-  return { hasForm, hasFilters, isSectionInFilterForm };
+
+  return {
+    hasForm,
+    hasFilters,
+    isSectionInFilterForm,
+    isInsideCustomItemsList: !!customItemPath.value || isInsideCustomItemsList(schemaPath.value),
+  };
 });
 
 const selectedModelForCurrentPath = computed(() => {
@@ -1691,6 +2151,20 @@ function updateSelectedModelForCurrentPath(value) {
   model.value = modelClone;
 }
 
+function addSelectedListItem() {
+  const items = selectedModelForCurrentPath.value;
+  if (!Array.isArray(items) || !items.length) return;
+
+  const lastItem = items[items.length - 1];
+  if (!lastItem || typeof lastItem !== 'object' || Array.isArray(lastItem)) return;
+
+  const newItem = lxFormatUtils.objectClone(lastItem);
+  const idAttribute = currentItem.value?.lx?.idAttribute || 'id';
+  newItem[idAttribute] = lxStringUtils.generateUUID();
+  updateSelectedModelForCurrentPath([...items, newItem]);
+  updateSelectedElement();
+}
+
 const isSchemaEmpty = computed(
   () => !schemaModel.value || Object.keys(schemaModel.value?.properties || {}).length === 0
 );
@@ -1709,10 +2183,26 @@ defineExpose({
 <template>
   <div class="lx-constructor">
     <div id="constructor-overlay">
-      <div v-show="highlight.visible" class="highlight" :style="highlight.style">
+      <div
+        v-for="(style, index) in linkedHighlights"
+        :key="index"
+        class="highlight highlight-linked"
+        :style="style"
+        :class="{ 'template-mode': templateMode }"
+      />
+      <div
+        v-show="highlight.visible && !highlight.detached"
+        class="highlight"
+        :style="highlight.style"
+        :class="{ 'template-mode': templateMode }"
+      >
         <div class="highlight-toolbar" ref="highlightToolbar">
           <LxButton
-            v-if="elementInfo.canMoveForwardIn && canMoveComponent()"
+            v-if="
+              elementInfo.canMoveForwardIn &&
+              canMoveComponent() &&
+              (!templateMode || customItemPath)
+            "
             icon="move-inside"
             variant="icon-only"
             :label="displayTexts.moveInside"
@@ -1720,7 +2210,7 @@ defineExpose({
             @click="moveElementInside()"
           />
           <LxButton
-            v-if="elementInfo.moveOut && canMoveComponent()"
+            v-if="elementInfo.moveOut && canMoveComponent() && (!templateMode || customItemPath)"
             icon="move-outside"
             variant="icon-only"
             :label="displayTexts.moveOutside"
@@ -1768,6 +2258,19 @@ defineExpose({
             @click="openRemoveComponentConfirmation"
           />
         </div>
+        <div class="highlight-footer">
+          <LxButton
+            v-if="componentName === 'LxList' && !templateMode"
+            icon="add-item"
+            variant="icon-only"
+            :label="displayTexts.addItemButtonTooltip"
+            :disabled="
+              !Array.isArray(selectedModelForCurrentPath) || !selectedModelForCurrentPath.length
+            "
+            kind="ghost"
+            @click="addSelectedListItem"
+          />
+        </div>
       </div>
     </div>
     <Teleport :to="panelTeleportTarget" :disabled="!panelTeleportTarget" defer>
@@ -1782,6 +2285,7 @@ defineExpose({
         :schemaKeyError="schemaKeyError"
         :schemaInfo="schemaInfo"
         v-model:selectedTab="panelTab"
+        v-model:templateMode="templateMode"
         :hasAiChat="hasAiChat"
         :chatItems="chatItems"
         :chatBusy="chatBusy"
@@ -1810,7 +2314,10 @@ defineExpose({
       />
     </Teleport>
 
-    <div id="constructor" :class="[{ 'empty-schema': isSchemaEmpty }]">
+    <div
+      id="constructor"
+      :class="[{ 'empty-schema': isSchemaEmpty }, { 'template-mode': templateMode }]"
+    >
       <LxViewBuilder :schema="schema" v-model="model" :builderOptions="{ useRegistry: true }" />
     </div>
 
@@ -1819,6 +2326,7 @@ defineExpose({
       :label="displayTexts?.exportModal"
       size="m"
       :actionDefinitions="[{ id: 'close', name: displayTexts?.close, kind: 'secondary' }]"
+      :texts="{ close: displayTexts?.close }"
     >
       <LxToolbar
         :actionDefinitions="[
@@ -1846,6 +2354,7 @@ defineExpose({
         { id: 'save', name: displayTexts?.save, kind: 'primary', disabled: isUploadable },
         { id: 'close', name: displayTexts?.close, kind: 'secondary' },
       ]"
+      :texts="{ close: displayTexts?.close }"
       @actionClick="confirmFileImport"
       @close="
         () => {
@@ -1892,6 +2401,7 @@ defineExpose({
         { id: 'save', name: displayTexts?.save, kind: 'primary', disabled: !editSchemaContent },
         { id: 'close', name: displayTexts?.close, kind: 'secondary' },
       ]"
+      :texts="{ close: displayTexts?.close }"
       @actionClick="editSchemaActionClicked"
     >
       <LxTextArea
@@ -1906,6 +2416,7 @@ defineExpose({
       ref="componentAddModal"
       :label="displayTexts?.componentAddModal"
       :description="displayTexts?.componentAddModalDescription"
+      :texts="{ close: displayTexts?.close }"
     >
       <p class="component-add-text">{{ displayTexts?.componentAddChoice }}</p>
       <LxList
@@ -1948,6 +2459,7 @@ defineExpose({
         { id: 'save', name: displayTexts?.save, kind: 'primary', disabled: !editModelContent },
         { id: 'close', name: displayTexts?.close, kind: 'secondary' },
       ]"
+      :texts="{ close: displayTexts?.close }"
       @actionClick="editModelActionClicked"
     >
       <LxTextArea
@@ -1968,6 +2480,7 @@ defineExpose({
         { id: 'cancel', name: displayTexts?.no, kind: 'secondary' },
       ]"
       :buttonSecondaryIsCancel="confirmDialogObject?.secondaryAction ? false : true"
+      :texts="{ close: displayTexts?.close }"
       @actionClick="
         (actionId) => {
           if (actionId === 'save' && confirmDialogObject?.primaryAction) {

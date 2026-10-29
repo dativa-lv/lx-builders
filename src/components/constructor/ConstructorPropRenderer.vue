@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, nextTick } from 'vue';
+import { computed, ref, nextTick, watch } from 'vue';
 import {
   LxForm,
   LxRow,
@@ -41,6 +41,14 @@ const props = defineProps({
     type: [Object, Array, String, Number, Boolean],
     default: null,
   },
+  templateMode: {
+    type: Boolean,
+    default: false,
+  },
+  schemaInfo: {
+    type: Object,
+    default: () => ({}),
+  },
   texts: {
     type: Object,
     default: () => ({
@@ -60,6 +68,11 @@ const props = defineProps({
       addItemButtonTooltip: 'Pievienot ierakstu',
       addButtonLabel: 'Pievienot ierakstu',
       showAllFields: 'Rādīt visus laukus',
+      row: 'Rinda',
+      column: 'Kolonna',
+      autoSize: 'Automātisks izmērs (auto)',
+      sizeRatio: 'Izmēra proporcija',
+      modelPathAttributeError: 'Atribūts nedrīkst būt tukšs un saturēt punktus vai atstarpes',
       validations: {
         required: 'Lauks ir obligāts',
         unique: 'Vērtībai jābūt unikālai',
@@ -197,7 +210,8 @@ const hasSchemaKeyEdit = computed(() => {
 });
 
 const isSchemaKeyVisible = computed(() => {
-  if (!hasSchemaKeyEdit.value) return false;
+  if (!hasSchemaKeyEdit.value || props.templateMode || props.schemaInfo?.isInsideCustomItemsList)
+    return false;
   if (props.searchString) {
     return 'schemaKey'?.includes(props.searchString?.toLowerCase());
   }
@@ -205,6 +219,17 @@ const isSchemaKeyVisible = computed(() => {
 });
 
 const mainProps = computed(() => {
+  // If in template mode, show only attribute props in main section
+  if (props.templateMode) {
+    const filtered = Object.entries(props.componentPropsDefinitions ?? {}).filter(([key]) =>
+      key.includes('Attribute')
+    );
+    const searched = props.searchString
+      ? filtered.filter(([key]) => key.toLowerCase().includes(props.searchString.toLowerCase()))
+      : filtered;
+    return Object.fromEntries(searched);
+  }
+
   const res = filterByGroup(props.componentPropsDefinitions, 'main');
 
   const nonPropItems = getNonPropItems(props.componentName);
@@ -216,13 +241,22 @@ const mainProps = computed(() => {
   return filterMainProps(res, props.componentName);
 });
 
-const additionalProps = computed(() =>
-  filterAdditionalProps(
+const additionalProps = computed(() => {
+  if (props.templateMode) {
+    return {};
+  }
+
+  return filterAdditionalProps(
     filterByGroup(props.componentPropsDefinitions, 'additional'),
     props.componentName
-  )
-);
-const modeProps = computed(() => filterByGroup(props.componentPropsDefinitions, 'mode'));
+  );
+});
+const modeProps = computed(() => {
+  if (props.templateMode) {
+    return {};
+  }
+  return filterByGroup(props.componentPropsDefinitions, 'mode');
+});
 
 function updateFormHeader(key, value) {
   let updatedModel = null;
@@ -303,6 +337,69 @@ function handleErrorEmit(params) {
 function handleUpdateSelectedModel(params) {
   emits('update:selectedModel', params);
 }
+
+// Splits list custom item lx.modelPath into the editable last attribute and the rest,
+// e.g. 'list.person.name' -> { prefix: 'list.person.', attribute: 'name' }
+const modelPathParts = computed(() => {
+  const match = compModel.value?.lx?.modelPath?.match(/^(.*\.)([^.]+)$/);
+  return match ? { prefix: match[1], attribute: match[2] } : null;
+});
+
+const modelPathAttribute = ref(null);
+const modelPathAttributeError = ref(null);
+
+watch(
+  () => modelPathParts.value?.attribute,
+  (value) => {
+    modelPathAttribute.value = value ?? null;
+    modelPathAttributeError.value = null;
+  },
+  { immediate: true }
+);
+
+// Applies the attribute only if the same element (with the same modelPath) is still selected
+const debouncedModelPathAttributeUpdate = useDebounceFn((modelPath, attribute) => {
+  const parts = modelPathParts.value;
+  if (!attribute || !parts || compModel.value?.lx?.modelPath !== modelPath) return;
+  if (attribute === parts.attribute) return;
+
+  compModel.value = {
+    ...compModel.value,
+    lx: {
+      ...compModel.value.lx,
+      modelPath: `${parts.prefix}${attribute}`,
+    },
+  };
+}, 500);
+
+// Changes only the last attribute of lx.modelPath
+function updateModelPathAttribute(value) {
+  modelPathAttribute.value = value;
+
+  const attribute = value?.trim();
+  if (!attribute || /[.\s]/.test(attribute)) {
+    modelPathAttributeError.value = props.texts?.modelPathAttributeError;
+    // Cancels the pending update of the previous valid value
+    debouncedModelPathAttributeUpdate(null, null);
+    return;
+  }
+  modelPathAttributeError.value = null;
+  debouncedModelPathAttributeUpdate(compModel.value?.lx?.modelPath, attribute);
+}
+
+function resetModelPathAttribute() {
+  debouncedModelPathAttributeUpdate(null, null);
+  modelPathAttribute.value = modelPathParts.value?.attribute ?? null;
+  modelPathAttributeError.value = null;
+}
+
+function hasCustomAttributeField() {
+  return (
+    props.schemaInfo?.isInsideCustomItemsList &&
+    props.componentName !== 'LxList' &&
+    !!modelPathParts.value
+  );
+}
 </script>
 
 <template>
@@ -316,10 +413,29 @@ function handleUpdateSelectedModel(params) {
       !Object.keys(mainProps).length &&
       !Object.keys(additionalProps).length &&
       !Object.keys(modeProps).length &&
-      !isSchemaKeyVisible
+      !isSchemaKeyVisible &&
+      !hasCustomAttributeField()
     "
   />
-  <LxForm kind="stripped" v-if="Object.keys(mainProps).length">
+  <LxForm kind="stripped" v-if="Object.keys(mainProps).length || hasCustomAttributeField()">
+    <LxRow label="value" v-if="hasCustomAttributeField()">
+      <LxStack orientation="horizontal" kind="compact">
+        <LxTextInput
+          :modelValue="modelPathAttribute"
+          :invalid="!!modelPathAttributeError"
+          :invalidationMessage="modelPathAttributeError"
+          @update:modelValue="updateModelPathAttribute"
+        />
+        <LxButton
+          v-if="modelPathAttributeError"
+          icon="reset"
+          kind="tertiary"
+          :label="texts?.resetKey"
+          variant="icon-only"
+          @click="resetModelPathAttribute()"
+        />
+      </LxStack>
+    </LxRow>
     <LxRow
       v-for="(item, key) in mainProps"
       :key="item.name"
@@ -329,6 +445,7 @@ function handleUpdateSelectedModel(params) {
       <PropRendererItem
         :modelValue="model"
         :item="item"
+        :componentPropsDefinitions="componentPropsDefinitions"
         :name="key"
         :componentName="componentName"
         :selectedModel="selectedModel"
@@ -372,6 +489,7 @@ function handleUpdateSelectedModel(params) {
         <PropRendererItem
           :modelValue="model"
           :item="item"
+          :componentPropsDefinitions="componentPropsDefinitions"
           :name="key"
           :componentName="componentName"
           :selectedModel="selectedModel"
@@ -388,6 +506,7 @@ function handleUpdateSelectedModel(params) {
         <PropRendererItem
           :modelValue="model"
           :item="item"
+          :componentPropsDefinitions="componentPropsDefinitions"
           :name="key"
           :componentName="componentName"
           :selectedModel="selectedModel"

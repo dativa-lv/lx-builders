@@ -259,6 +259,10 @@ function deleteArrayObject(action, value, name, actionDefinitions = undefined) {
   }
 }
 
+function getListItemId(item, name) {
+  return item?.[props.displaySchema?.properties[name]?.lx?.idAttribute || 'id'];
+}
+
 function saveNewElement(name) {
   if (!model.value[name]) model.value[name] = [];
   model.value[name].push(arrayModelValue.value[`${props.id}-${name}`]);
@@ -401,6 +405,15 @@ const builderOptions = computed(() => ({
   schemaPath: builderNameComputed.value,
   useRegistry: props.builderOptions?.useRegistry,
 }));
+
+// Model path of the list, used to resolve custom item `lx.modelPath`
+// (builderNameComputed contains 'null'/'undefined' when the parent builder has no schemaPath)
+const listModelPath = computed(() =>
+  builderNameComputed.value
+    ?.split('.')
+    .filter((part) => part && part !== 'null' && part !== 'undefined')
+    .join('.')
+);
 </script>
 <template>
   <!-- TODO: if type number / decimal / integer then conferToString - false -->
@@ -1133,6 +1146,7 @@ const builderOptions = computed(() => ({
   </div>
   <LxList
     v-else-if="selectedComponent === 'arrayList'"
+    :id="`${id}-${name}`"
     :items="model[name]"
     :actionDefinitions="
       displaySchema?.properties[name]?.lx?.actionDefinitions || [
@@ -1207,6 +1221,11 @@ const builderOptions = computed(() => ({
         :vertical-alignment="displaySchema?.properties[name]?.lx?.stack?.verticalAlignment"
         :horizontal-config="displaySchema?.properties[name]?.lx?.stack?.horizontalConfig"
         :vertical-config="displaySchema?.properties[name]?.lx?.stack?.verticalConfig"
+        :builderOptions="{
+          componentStack: props.builderOptions?.componentStack,
+          schemaPath: `${builderNameComputed}.stack`,
+          useRegistry: props.builderOptions?.useRegistry,
+        }"
       >
         <template
           v-for="(itemValue, itemName) in displaySchema?.properties[name]?.items?.properties"
@@ -1216,6 +1235,8 @@ const builderOptions = computed(() => ({
             :itemValue="itemValue"
             :itemName="itemName"
             :item="item"
+            :row="item"
+            :listPath="listModelPath"
             :useStyles="true"
           />
         </template>
@@ -1231,13 +1252,20 @@ const builderOptions = computed(() => ({
       >
         <LxStack
           v-if="itemValue?.lx?.displayType === 'stack'"
+          :id="`${id}-${name}-${getListItemId(item, name)}-${itemName}`"
           :orientation="itemValue?.lx?.orientation"
           :kind="itemValue?.lx?.kind"
           :mode="itemValue?.lx?.mode"
-          :horizontal-alignment="itemValue?.lx?.horizontalAlignment"
-          :vertical-alignment="itemValue?.lx?.verticalAlignment"
-          :horizontal-config="itemValue?.lx?.horizontalConfig"
-          :vertical-config="itemValue?.lx?.verticalConfig"
+          :horizontalAlignment="itemValue?.lx?.horizontalAlignment"
+          :verticalAlignment="itemValue?.lx?.verticalAlignment"
+          :horizontalConfig="itemValue?.lx?.horizontalConfig"
+          :verticalConfig="itemValue?.lx?.verticalConfig"
+          :builderOptions="{
+            componentStack: [{ id: `${id}-${name}`, name: 'LxList' }],
+            schemaPath: `${builderNameComputed}`,
+            useRegistry: props.builderOptions?.useRegistry,
+            customItemPath: `items.properties.${itemName}`,
+          }"
         >
           <template
             v-for="(nestedItemValue, nestedItemName) in itemValue?.properties"
@@ -1245,13 +1273,23 @@ const builderOptions = computed(() => ({
           >
             <LxStack
               v-if="nestedItemValue?.lx?.displayType === 'stack'"
+              :id="`${id}-${name}-${getListItemId(item, name)}-${itemName}-${nestedItemName}`"
               :orientation="nestedItemValue?.lx?.orientation"
               :kind="nestedItemValue?.lx?.kind"
               :mode="nestedItemValue?.lx?.mode"
-              :horizontal-alignment="nestedItemValue?.lx?.horizontalAlignment"
-              :vertical-alignment="nestedItemValue?.lx?.verticalAlignment"
-              :horizontal-config="nestedItemValue?.lx?.horizontalConfig"
-              :vertical-config="nestedItemValue?.lx?.verticalConfig"
+              :horizontalAlignment="nestedItemValue?.lx?.horizontalAlignment"
+              :verticalAlignment="nestedItemValue?.lx?.verticalAlignment"
+              :horizontalConfig="nestedItemValue?.lx?.horizontalConfig"
+              :verticalConfig="nestedItemValue?.lx?.verticalConfig"
+              :builderOptions="{
+                componentStack: [
+                  { id: `${id}-${name}`, name: 'LxList' },
+                  { id: `${id}-${name}-${getListItemId(item, name)}-${itemName}`, name: 'LxStack' },
+                ],
+                schemaPath: `${builderNameComputed}`,
+                useRegistry: props.builderOptions?.useRegistry,
+                customItemPath: `items.properties.${itemName}.properties.${nestedItemName}`,
+              }"
             >
               <template
                 v-for="(innerNestedItemValue, innerNestedItemName) in nestedItemValue?.properties"
@@ -1261,6 +1299,27 @@ const builderOptions = computed(() => ({
                   :itemValue="innerNestedItemValue"
                   :itemName="innerNestedItemName"
                   :item="item?.[itemName]?.[nestedItemName]"
+                  :row="item"
+                  :listPath="listModelPath"
+                  :builderOptions="{
+                    componentStack: [
+                      { id: `${id}-${name}`, name: 'LxList' },
+                      {
+                        id: `${id}-${name}-${getListItemId(item, name)}-${itemName}`,
+                        name: 'LxStack',
+                      },
+                      {
+                        id: `${id}-${name}-${getListItemId(
+                          item,
+                          name
+                        )}-${itemName}-${nestedItemName}`,
+                        name: 'LxStack',
+                      },
+                    ],
+                    schemaPath: `${builderNameComputed}`,
+                    useRegistry: props.builderOptions?.useRegistry,
+                    customItemPath: `items.properties.${itemName}.properties.${nestedItemName}.properties.${innerNestedItemName}`,
+                  }"
                 />
               </template>
             </LxStack>
@@ -1269,10 +1328,34 @@ const builderOptions = computed(() => ({
               :itemValue="nestedItemValue"
               :itemName="nestedItemName"
               :item="item?.[itemName]"
+              :row="item"
+              :listPath="listModelPath"
+              :builderOptions="{
+                componentStack: [
+                  { id: `${id}-${name}`, name: 'LxList' },
+                  { id: `${id}-${name}-${getListItemId(item, name)}-${itemName}`, name: 'LxStack' },
+                ],
+                schemaPath: `${builderNameComputed}`,
+                useRegistry: props.builderOptions?.useRegistry,
+                customItemPath: `items.properties.${itemName}.properties.${nestedItemName}`,
+              }"
             />
           </template>
         </LxStack>
-        <LxFormBuilderListItem :itemValue="itemValue" :itemName="itemName" :item="item" v-else />
+        <LxFormBuilderListItem
+          v-else
+          :itemValue="itemValue"
+          :itemName="itemName"
+          :item="item"
+          :row="item"
+          :listPath="listModelPath"
+          :builderOptions="{
+            componentStack: [{ id: `${id}-${name}`, name: 'LxList' }],
+            schemaPath: `${builderNameComputed}`,
+            useRegistry: props.builderOptions?.useRegistry,
+            customItemPath: `items.properties.${itemName}`,
+          }"
+        />
       </template>
     </template>
   </LxList>

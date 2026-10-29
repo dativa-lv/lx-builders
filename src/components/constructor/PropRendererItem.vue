@@ -25,12 +25,19 @@ import {
   badgeDefinitionTypeItems,
   badgeTypeItems,
   iconSetItems,
+  getOptionIcon,
+  stateDisplayTypes,
+  stateDisplayShapes,
 } from '@/utils/constructorUtils';
 
 const props = defineProps({
   item: {
     type: Object,
     required: true,
+  },
+  componentPropsDefinitions: {
+    type: Object,
+    default: () => ({}),
   },
   modelValue: {
     type: Object,
@@ -63,6 +70,10 @@ const props = defineProps({
       addItemButtonTooltip: 'Pievienot ierakstu',
       addButtonLabel: 'Pievienot ierakstu',
       showAllFields: 'Rādīt visus laukus',
+      row: 'Rinda',
+      column: 'Kolonna',
+      autoSize: 'Automātisks izmērs (auto)',
+      sizeRatio: 'Izmēra proporcija',
       validations: {
         required: 'Lauks ir obligāts',
         unique: 'Vērtībai jābūt unikālai',
@@ -115,6 +126,7 @@ function formatOptions(options) {
     .map((option) => ({
       id: option,
       name: option,
+      icon: getOptionIcon(props.name, option),
     }));
 }
 
@@ -469,6 +481,12 @@ function getValuePickerVariant(options) {
     props.name === 'cadenceOfSeconds'
   )
     return 'tags';
+  if (
+    props.name === 'orientation' ||
+    props.name === 'horizontalAlignment' ||
+    props.name === 'verticalAlignment'
+  )
+    return 'indicator';
   return options.length > 5 ? 'dropdown' : 'default';
 }
 
@@ -510,6 +528,11 @@ function groupDefinitionsActionClicked(action) {
   }
 }
 
+const modalActions = [
+  { id: 'save', name: props.texts.save, kind: 'primary' },
+  { id: 'close', name: props.texts.close, kind: 'secondary' },
+];
+
 function getAppendableListTexts() {
   return {
     removeItem: props.texts?.removeItem,
@@ -517,6 +540,50 @@ function getAppendableListTexts() {
     addItemButtonTooltip: props.texts?.addItemButtonTooltip,
     addButtonLabel: props.texts?.addButtonLabel,
   };
+}
+
+const stackConfigModal = ref();
+const stackConfigModel = ref(null);
+const stackConfigList = ref();
+
+function editStackConfig() {
+  let res = lxFormatUtils.objectClone(props.modelValue[props.name] || []);
+  res = res.map((x) => ({ auto: x === 'auto', value: x === 'auto' ? null : x }));
+  stackConfigModel.value = res;
+  stackConfigModal.value.open();
+}
+
+function stackConfigActionClicked(action) {
+  if (action === 'save') {
+    const res = stackConfigList.value.clearModel(stackConfigModel.value);
+    const resolved = res.map((x) => (x.auto ? 'auto' : x.value));
+
+    model.value[props.name] = resolved;
+    stackConfigModal.value.close();
+  }
+}
+
+function addDefaultValues(value) {
+  stackConfigModel.value = value?.map((x) =>
+    lxGeneralUtils.isNil(x.auto) ? { ...x, auto: true } : x
+  );
+}
+
+const dictionaryModal = ref();
+const dictionaryModel = ref(null);
+const dictionaryList = ref();
+
+function editDictionary() {
+  dictionaryModel.value = lxFormatUtils.objectClone(props.modelValue[props.name]);
+  dictionaryModal.value.open();
+}
+
+function dictionaryActionClicked(action) {
+  if (action === 'save') {
+    const res = dictionaryList.value.clearModel(dictionaryModel.value);
+    model.value[props.name] = res;
+    dictionaryModal.value.close();
+  }
 }
 </script>
 
@@ -553,10 +620,7 @@ function getAppendableListTexts() {
       ref="indexModal"
       :label="texts?.editing"
       size="l"
-      :actionDefinitions="[
-        { id: 'save', name: texts.save, kind: 'primary' },
-        { id: 'close', name: texts.close, kind: 'secondary' },
-      ]"
+      :actionDefinitions="modalActions"
       :texts="{ close: texts.close }"
       @actionClick="indexModelActionClicked"
     >
@@ -598,10 +662,7 @@ function getAppendableListTexts() {
       ref="actionDefinitionsModal"
       :label="texts?.editing"
       size="l"
-      :actionDefinitions="[
-        { id: 'save', name: texts.save, kind: 'primary' },
-        { id: 'close', name: texts.close, kind: 'secondary' },
-      ]"
+      :actionDefinitions="modalActions"
       :texts="{ close: texts.close }"
       @actionClick="actionModalActionClicked"
     >
@@ -913,20 +974,33 @@ function getAppendableListTexts() {
       ref="itemsModal"
       :label="texts?.editing"
       size="l"
-      :actionDefinitions="[
-        { id: 'save', name: texts.save, kind: 'primary' },
-        { id: 'close', name: texts.close, kind: 'secondary' },
-      ]"
+      :actionDefinitions="modalActions"
       :texts="{ close: texts.close }"
       @actionClick="itemsActionClicked"
     >
-      <LxTextArea
-        v-model="itemsModel"
-        :rows="20"
-        :invalid="!!itemsInvalidMessage"
-        :invalidationMessage="itemsInvalidMessage"
+      <div
         v-if="componentName === 'LxList' || componentName === 'LxDataGrid'"
-      />
+        class="items-modal-grid"
+      >
+        <LxTextArea
+          v-model="itemsModel"
+          :rows="20"
+          :dynamicHeight="true"
+          :invalid="!!itemsInvalidMessage"
+          :invalidationMessage="itemsInvalidMessage"
+        />
+        <div class="pseudo-form">
+          <div
+            v-for="key in Object.keys(componentPropsDefinitions ?? {})?.filter((key) =>
+              key?.includes('Attribute')
+            )"
+            :key="key"
+          >
+            <label :for="key">{{ key }}</label>
+            <LxTextInput v-model="model[key]" :id="key" />
+          </div>
+        </div>
+      </div>
 
       <LxAppendableList
         v-else
@@ -972,10 +1046,7 @@ function getAppendableListTexts() {
       ref="groupDefinitionsModal"
       :label="texts?.editing"
       size="m"
-      :actionDefinitions="[
-        { id: 'save', name: texts.save, kind: 'primary' },
-        { id: 'close', name: texts.close, kind: 'secondary' },
-      ]"
+      :actionDefinitions="modalActions"
       :texts="{ close: texts.close }"
       @actionClick="groupDefinitionsActionClicked"
     >
@@ -1079,10 +1150,7 @@ function getAppendableListTexts() {
       ref="textsModal"
       :label="texts?.editing"
       size="l"
-      :actionDefinitions="[
-        { id: 'save', name: texts.save, kind: 'primary' },
-        { id: 'close', name: texts.close, kind: 'secondary' },
-      ]"
+      :actionDefinitions="modalActions"
       :texts="{ close: texts.close }"
       @actionClick="textsActionClicked"
       @close="textSearchModel = ''"
@@ -1108,10 +1176,7 @@ function getAppendableListTexts() {
       ref="badgeDefinitionsModal"
       :label="texts?.editing"
       size="l"
-      :actionDefinitions="[
-        { id: 'save', name: texts.save, kind: 'primary' },
-        { id: 'close', name: texts.close, kind: 'secondary' },
-      ]"
+      :actionDefinitions="modalActions"
       :texts="{ close: texts.close }"
       @actionClick="badgeDefinitionsActionClicked"
     >
@@ -1144,6 +1209,88 @@ function getAppendableListTexts() {
               :items="badgeDefinitionTypeItems"
               variant="dropdown"
               :nullable="true"
+            />
+          </LxRow>
+        </template>
+      </LxAppendableList>
+    </LxModal>
+  </template>
+
+  <template v-if="props.name === 'verticalConfig' || props.name === 'horizontalConfig'">
+    <LxButton :label="texts.edit" kind="secondary" icon="edit" @click="editStackConfig" />
+
+    <LxModal
+      ref="stackConfigModal"
+      :label="texts?.editing"
+      size="l"
+      :actionDefinitions="modalActions"
+      :texts="{ close: texts.close }"
+      @actionClick="stackConfigActionClicked"
+    >
+      <LxAppendableList
+        ref="stackConfigList"
+        v-model="stackConfigModel"
+        :columnCount="4"
+        requiredMode="none"
+        :texts="getAppendableListTexts()"
+        @update:modelValue="addDefaultValues"
+      >
+        <template #customItem="{ item, index }">
+          <LxRow>
+            <p class="lx-data">
+              {{ props.name === 'verticalConfig' ? texts?.row : texts?.column }} {{ index + 1 }}
+            </p>
+          </LxRow>
+          <LxRow :label="texts?.autoSize">
+            <LxToggle v-model="item.auto" />
+          </LxRow>
+          <LxRow :label="texts?.sizeRatio" v-if="!item?.auto">
+            <LxTextInput v-model="item.value" />
+          </LxRow>
+        </template>
+      </LxAppendableList>
+    </LxModal>
+  </template>
+
+  <template v-if="props.name === 'dictionary'">
+    <LxButton :label="texts.edit" kind="secondary" icon="edit" @click="editDictionary" />
+
+    <LxModal
+      ref="dictionaryModal"
+      :label="texts?.editing"
+      size="l"
+      :actionDefinitions="modalActions"
+      :texts="{ close: texts.close }"
+      @actionClick="dictionaryActionClicked"
+    >
+      <LxAppendableList
+        ref="dictionaryList"
+        v-model="dictionaryModel"
+        :columnCount="4"
+        requiredMode="none"
+        :texts="getAppendableListTexts()"
+      >
+        <template #customItem="{ item }">
+          <LxRow label="value">
+            <LxTextInput v-model="item.value" />
+          </LxRow>
+          <LxRow label="displayName">
+            <LxTextInput v-model="item.displayName" />
+          </LxRow>
+          <LxRow label="displayType">
+            <LxValuePicker
+              v-model="item.displayType"
+              variant="dropdown"
+              :nullable="true"
+              :items="stateDisplayTypes"
+            />
+          </LxRow>
+          <LxRow label="displayShape">
+            <LxValuePicker
+              v-model="item.displayShape"
+              variant="dropdown"
+              :nullable="true"
+              :items="stateDisplayShapes"
             />
           </LxRow>
         </template>

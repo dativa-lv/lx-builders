@@ -10,10 +10,15 @@ import {
   LxEmptyState,
   lxGeneralUtils,
   LxChat,
+  LxInfoBox,
 } from '@dativa-lv/lx-ui';
 
 import { useDebounceFn } from '@vueuse/core';
-import { getLXComponents } from '@/utils/constructorUtils';
+import {
+  getDisplayComponents,
+  getLXComponents,
+  COMPONENT_SCHEMA_BUILDERS,
+} from '@/utils/constructorUtils';
 import ConstructorPropRenderer from '@/components/constructor/ConstructorPropRenderer.vue';
 
 const props = defineProps({
@@ -56,6 +61,10 @@ const props = defineProps({
   selectedTab: {
     type: String,
     default: null,
+  },
+  templateMode: {
+    type: Boolean,
+    default: false,
   },
   hasAiChat: {
     type: Boolean,
@@ -136,6 +145,13 @@ const textsDefault = {
   showAllFields: 'Rādīt visus laukus',
   ai: 'Ģenerēt ar MI',
   undo: 'Atcelt veiktās izmaiņas',
+  templateEditLabel: 'Struktūras labošana',
+  templateEditDescription: 'Izmaiņas tiks piemērotas visiem saraksta elementiem',
+  row: 'Rinda',
+  column: 'Kolonna',
+  autoSize: 'Automātisks izmērs (auto)',
+  sizeRatio: 'Izmēra proporcija',
+  modelPathAttributeError: 'Atribūts nedrīkst būt tukšs un saturēt punktus vai atstarpes',
   validations: {
     required: 'Lauks ir obligāts',
     unique: 'Vērtībai jābūt unikālai',
@@ -177,445 +193,8 @@ const emits = defineEmits([
   'error',
   'send',
   'messageActionClick',
+  'update:templateMode',
 ]);
-
-const COMPONENT_SCHEMA_BUILDERS = {
-  LxTextInput: (res, p) => {
-    res.type = 'string';
-    res.maxLength = p.maxlength;
-    res.lx.mask = p.mask || 'default';
-    res.lx.kind = p.kind || 'default';
-    res.lx.scale = p.scale;
-    res.lx.tooltip = p.tooltip;
-    res.lx.disabled = p.disabled || false;
-    res.lx.uppercase = p.uppercase || false;
-    res.lx.convertToString = p.convertToString || false;
-    res.lx.placeholder = p.placeholder;
-    res.lx.signed = p.signed || false;
-    res.lx.helperText = p.helperText;
-    res.lx.helperTextKind = p.helperTextKind || 'label';
-    res.lx.texts = p.texts || {};
-    res.readOnly = p.readOnly || false;
-  },
-  LxToggle: (res, p) => {
-    res.type = 'boolean';
-    res.lx.size = p.size || 'm';
-    res.lx.disabled = p.disabled || false;
-    res.lx.tooltip = p.tooltip;
-    res.lx.texts = p.texts || {};
-    res.readOnly = p.readOnly || false;
-    res.lx.helperText = p.helperText;
-    res.lx.helperTextKind = p.helperTextKind || 'label';
-  },
-  LxValuePicker: (res, p) => {
-    res.type = p.selectionKind === 'multiple' ? 'array' : 'string';
-    res.lx.items = p.items || [];
-    res.lx.idAttribute = p.idAttribute;
-    res.lx.nameAttribute = p.nameAttribute;
-    res.lx.iconAttribute = p.iconAttribute;
-    res.lx.iconSetAttribute = p.iconSetAttribute;
-    res.lx.categoryAttribute = p.categoryAttribute;
-    res.lx.descriptionAttribute = p.descriptionAttribute;
-    res.lx.variant = p.variant;
-    res.lx.hasSearch = p.hasSearch || false;
-    res.lx.alwaysAsArray = p.alwaysAsArray || false;
-    res.lx.nullable = p.nullable || false;
-    res.lx.tooltip = p.tooltip;
-    res.lx.texts = p.texts || {};
-    res.lx.placeholder = p.placeholder;
-    res.lx.disabled = p.disabled || false;
-    res.readOnly = p.readOnly || false;
-    res.lx.searchAttributes = p.searchAttributes;
-    res.lx.hasSelectAll = p.hasSelectAll || false;
-    res.lx.stickyToolbar = p.stickyToolbar || false;
-    res.lx.readOnlyRenderType = p.readOnlyRenderType || 'row';
-    res.lx.helperText = p.helperText;
-    res.lx.helperTextKind = p.helperTextKind || 'label';
-    res.lx.texts = p.texts || {};
-  },
-  LxRow: (res, p) => {
-    res.title = p.label;
-    res.lx.columnSpan = p.columnSpan || '1';
-    res.lx.rowSpan = p.rowSpan || '1';
-    res.lx.rowActionDefinitions = p.rowActionDefinitions;
-  },
-  LxTextArea: (res, p) => {
-    res.type = 'string';
-    res.maxLength = p.maxlength;
-    res.lx.kind = 'multiline';
-    res.lx.placeholder = p.placeholder;
-    res.lx.rows = p.rows || 3;
-    res.lx.disabled = p.disabled || false;
-    res.lx.dynamicHeight = p.dynamicHeight || false;
-    res.lx.tooltip = p.tooltip;
-    res.lx.texts = p.texts || {};
-    res.lx.helperText = p.helperText;
-    res.lx.helperTextKind = p.helperTextKind || 'label';
-    res.readOnly = p.readOnly || false;
-  },
-  LxDateTimePicker: (res, p) => {
-    res.type = 'string';
-    res.format = p.kind || 'date';
-    res.lx.placeholder = p.placeholder;
-    res.lx.tooltip = p.tooltip;
-    res.lx.minDate = p.minDate;
-    res.lx.maxDate = p.maxDate;
-    res.lx.disabled = p.disabled || false;
-    res.lx.timeAdjust = p.timeAdjust;
-    res.lx.clearIfNotExact = p.clearIfNotExact || false;
-    res.lx.texts = p.texts;
-    res.lx.locale = p.locale;
-    res.lx.specialDates = p.specialDates;
-    res.lx.dictionary = p.dictionary;
-    res.lx.variant = p.variant || 'default';
-    res.lx.cadenceOfMinutes = p.cadenceOfMinutes ? Number(p.cadenceOfMinutes) : 1;
-    res.lx.cadenceOfSeconds = p.cadenceOfSeconds ? Number(p.cadenceOfSeconds) : 1;
-    res.lx.helperText = p.helperText;
-    res.lx.helperTextKind = p.helperTextKind || 'label';
-    res.lx.texts = p.texts || {};
-    res.readOnly = p.readOnly || false;
-  },
-  LxAutoComplete: (res, p) => {
-    res.type = p.selectionKind === 'multiple' ? 'array' : 'string';
-    res.lx.items = p.items || [];
-    res.lx.idAttribute = p.idAttribute || 'id';
-    res.lx.nameAttribute = p.nameAttribute || 'name';
-    res.lx.dictionary = p.dictionary;
-    res.lx.groupId = p.groupId;
-    res.lx.queryMinLength = p.queryMinLength || 0;
-    res.lx.queryMaxLength = p.queryMaxLength;
-    res.lx.queryDebounce = p.queryDebounce || 200;
-    res.lx.placeholder = p.placeholder;
-    res.lx.tooltip = p.tooltip;
-    res.lx.disabled = p.disabled || false;
-    res.lx.loading = p.loading || false;
-    res.lx.hasDetails = p.hasDetails || false;
-    res.lx.selectionKind = p.selectionKind || 'single';
-    res.lx.preloadedItems = p.preloadedItems;
-    res.lx.labelId = p.labelId;
-    res.lx.hasSelectAll = p.hasSelectAll || false;
-    res.lx.enableAdditionalText = p.enableAdditionalText || false;
-    res.lx.texts = p.texts || {};
-    res.lx.searchAttributes = p.searchAttributes;
-    res.lx.helperText = p.helperText;
-    res.lx.helperTextKind = p.helperTextKind || 'label';
-    res.readOnly = p.readOnly || false;
-  },
-  LxCamera: (res, p) => {
-    res.type = 'string';
-    res.lx.cameraSwitcherMode = p.cameraSwitcherMode || 'toggle';
-    res.lx.hasFlashlightToggle = p.hasFlashlightToggle || false;
-    res.lx.imageSize = p.imageSize || 'default';
-    res.lx.preferencesId = p.preferencesId || 'lx-camera-settings';
-    res.lx.stickyToolbar = p.stickyToolbar || false;
-    res.lx.actionDefinitions = p.actionDefinitions;
-    res.lx.labelId = p.labelId;
-    res.lx.helperText = p.helperText;
-    res.lx.helperTextKind = p.helperTextKind || 'label';
-    res.lx.texts = p.texts || {};
-  },
-  LxCheckbox: (res, p) => {
-    res.type = 'boolean';
-    res.lx.groupId = p.groupId;
-    res.lx.label = p.label;
-    res.lx.disabled = p.disabled || false;
-    res.lx.value = p.value || 'none';
-    res.lx.tabindex = p.tabindex || '0';
-    res.lx.labelId = p.labelId;
-  },
-  LxContentSwitcher: (res, p) => {
-    res.type = 'string';
-    res.lx.items = p.items;
-    res.lx.idAttribute = p.idAttribute || 'id';
-    res.lx.nameAttribute = p.nameAttribute || 'name';
-    res.lx.disabled = p.disabled || false;
-    res.lx.kind = p.kind || 'default';
-    res.lx.icon = p.icon;
-    res.lx.iconSet = p.iconSet;
-    res.lx.tooltip = p.tooltip;
-    res.lx.labelId = p.labelId;
-    res.readOnly = p.readOnly || false;
-  },
-  LxDateTimeRange: (res, p) => {
-    res.type = 'object';
-    res.format = p.kind || 'date';
-    res.lx.placeholder = p.placeholder;
-    res.lx.tooltip = p.tooltip;
-    res.lx.minDate = p.minDate;
-    res.lx.maxDate = p.maxDate;
-    res.lx.disabled = p.disabled || false;
-    res.lx.timeAdjust = p.timeAdjust;
-    res.lx.locale = p.locale;
-    res.lx.rangeMonths = p.rangeMonths || 'next';
-    res.lx.clearIfNotExact = p.clearIfNotExact || false;
-    res.lx.labelId = p.labelId;
-    res.lx.helperText = p.helperText;
-    res.lx.helperTextKind = p.helperTextKind || 'label';
-    res.lx.texts = p.texts || {};
-    res.readOnly = p.readOnly || false;
-  },
-  LxFileUploader: (res, p) => {
-    res.type = 'array';
-    res.lx.selectionKind = p.selectionKind || 'single';
-    res.lx.mode = p.mode || 'default';
-    res.lx.draggable = p.draggable || false;
-    res.lx.dataType = p.dataType || 'meta';
-    res.lx.hasSearch = p.hasSearch || false;
-    res.lx.disabled = p.disabled || false;
-    res.lx.loading = p.loading || false;
-    res.lx.busy = p.busy || false;
-    res.lx.allowedFileExtensions = p.allowedFileExtensions || [];
-    res.lx.maxFileSize = p.maxFileSize || 30000000;
-    res.lx.hasDownloadButton = p.hasDownloadButton || false;
-    res.lx.showMeta = p.showMeta ?? true;
-    res.lx.maxSizeForMeta = p.maxSizeForMeta || 30000000;
-    res.lx.hasCamera = p.hasCamera || false;
-    res.lx.cameraSwitcherMode = p.cameraSwitcherMode || 'toggle';
-    res.lx.hasFlashlightToggle = p.hasFlashlightToggle || false;
-    res.lx.imageSize = p.imageSize || 'default';
-    res.lx.preferencesId = p.preferencesId || 'lx-camera-settings';
-    res.lx.labelId = p.labelId;
-    res.lx.helperText = p.helperText;
-    res.lx.helperTextKind = p.helperTextKind || 'label';
-    res.lx.texts = p.texts || {};
-    res.readOnly = p.readOnly || false;
-  },
-  LxNumberInput: (res, p) => {
-    res.type = 'integer';
-    res.lx.min = p.min || 0;
-    res.lx.max = p.max || 9999;
-    res.lx.step = p.step || 1;
-    res.lx.stepMultiplier = p.stepMultiplier || 5;
-    res.lx.hasInput = p.hasInput || false;
-    res.lx.labelId = p.labelId;
-    res.lx.disabled = p.disabled || false;
-    res.lx.kind = p.kind || 'slider';
-    res.lx.helperText = p.helperText;
-    res.lx.helperTextKind = p.helperTextKind || 'label';
-    res.readOnly = p.readOnly || false;
-  },
-  LxQrScanner: (res, p) => {
-    res.type = 'object';
-    res.lx.formats = p.formats || ['qr_code'];
-    res.lx.hasFileUploader = p.hasFileUploader ?? true;
-    res.lx.selectionKind = p.selectionKind || 'single';
-    res.lx.cameraSwitcherMode = p.cameraSwitcherMode || 'list';
-    res.lx.hasFlashlightToggle = p.hasFlashlightToggle || false;
-    res.lx.showAlerts = p.showAlerts ?? true;
-    res.lx.stickyToolbar = p.stickyToolbar ?? false;
-    res.lx.actionDefinitions = p.actionDefinitions;
-    res.lx.labelId = p.labelId;
-    res.lx.helperText = p.helperText;
-    res.lx.helperTextKind = p.helperTextKind || 'label';
-    res.lx.texts = p.texts || {};
-  },
-  LxVisualPicker: (res, p) => {
-    res.type = p.selectionKind === 'multiple' ? 'array' : 'string';
-    res.lx.kind = p.kind || 'europe';
-    res.lx.mode = p.mode || 'default';
-    res.lx.selectionKind = p.selectionKind || 'multiple';
-    res.lx.labelId = p.labelId;
-    res.lx.texts = p.texts || {};
-    res.lx.helperText = p.helperText;
-    res.lx.helperTextKind = p.helperTextKind || 'label';
-    res.readOnly = p.readOnly || false;
-  },
-  LxDurationInput: (res, p) => {
-    res.type = 'integer';
-    res.lx.disabled = p.disabled || false;
-    res.lx.kind = p.kind || 'label';
-    res.lx.variant = p.variant || 'default';
-    res.lx.labelId = p.labelId;
-    res.lx.texts = p.texts || {};
-    res.readOnly = p.readOnly || false;
-  },
-  LxDrawPad: (res, p) => {
-    res.type = 'string';
-    res.lx.disabled = p.disabled ?? false;
-    res.lx.width = p.width || '500';
-    res.lx.height = p.height || '400';
-    res.lx.instrument = p.instrument || 'brush';
-    res.lx.color = p.color || 'black';
-    res.lx.showInstruments = p.showInstruments ?? false;
-    res.lx.showColorPicker = p.showColorPicker ?? false;
-    res.lx.showClearAll = p.showClearAll ?? false;
-    res.lx.labelId = p.labelId;
-    res.lx.stickyToolbar = p.stickyToolbar ?? false;
-    res.lx.actionDefinitions = p.actionDefinitions;
-    res.lx.helperText = p.helperText;
-    res.lx.helperTextKind = p.helperTextKind || 'label';
-    res.lx.texts = p.texts;
-    res.readOnly = p.readOnly ?? false;
-  },
-  LxMarkdownTextArea: (res, p) => {
-    res.type = 'string';
-    res.lx.placeholder = p.placeholder;
-    res.lx.rows = p.rows;
-    res.maxLength = p.maxlength;
-    res.lx.disabled = p.disabled ?? false;
-    res.lx.showColorPicker = p.showColorPicker ?? false;
-    res.lx.showLinkEditor = p.showLinkEditor ?? true;
-    res.lx.tooltip = p.tooltip;
-    res.lx.showPlaceholderPicker = p.showPlaceholderPicker ?? false;
-    res.lx.showImagePicker = p.showImagePicker ?? false;
-    res.lx.showUnderlineToggle = p.showUnderlineToggle ?? false;
-    res.lx.showHeadingPicker = p.showHeadingPicker ?? false;
-    res.lx.imageMaxSize = p.imageMaxSize ?? 3000000;
-    res.lx.dictionary = p.dictionary;
-    res.lx.labelId = p.labelId;
-    res.lx.stickyToolbar = p.stickyToolbar ?? false;
-    res.lx.actionDefinitions = p.actionDefinitions;
-    res.lx.helperText = p.helperText;
-    res.lx.helperTextKind = p.helperTextKind || 'label';
-    res.lx.texts = p.texts || {};
-    res.readOnly = p.readOnly ?? false;
-  },
-  LxSection: (res, p) => {
-    res.type = 'object';
-    res.properties = res.properties || {};
-    res.title = p.label;
-    res.description = p.description;
-    res.lx.columnCount = Number(p.columnCount) || 1;
-    res.lx.requiredMode = p.requiredMode || 'none';
-    res.lx.icon = p.icon;
-    res.lx.iconSet = p.iconSet || 'cds';
-    res.lx.customClass = p.customClass;
-    res.lx.badge = p.badge;
-    res.lx.actionDefinitions = p.actionDefinitions;
-    res.lx.orientation = p.orientation;
-    res.lx.texts = p.texts || {};
-  },
-  LxForm: (res, p) => {
-    res.type = 'object';
-    res.properties = res.properties || {};
-    res.lx.columnCount = Number(p.columnCount) || 1;
-    res.lx.showHeader = p.showHeader ?? true;
-    res.lx.stickyHeader = p.stickyHeader ?? true;
-    res.lx.showFooter = p.showFooter ?? true;
-    res.lx.stickyFooter = p.stickyFooter ?? true;
-    res.lx.showPreHeaderInfo = p.showPreHeaderInfo ?? true;
-    res.lx.showPostHeaderInfo = p.showPostHeaderInfo ?? true;
-    res.lx.index = p.index;
-    res.lx.indexType = p.indexType || 'none';
-    res.lx.requiredMode = p.requiredMode || 'none';
-    res.lx.kind = p.kind || 'default';
-    res.lx.orientation = p.orientation || 'vertical';
-    res.lx.hasSkipLink = p.hasSkipLink || false;
-    res.lx.actionDefinitions = p.actionDefinitions;
-    res.lx.texts = p.texts || {};
-  },
-  LxFilters: (res, p) => {
-    res.type = 'object';
-    res.properties = res.properties || {};
-    res.title = p.label;
-    res.description = p.description;
-    res.lx.defaultValues = p.defaultValues || {};
-    res.lx.useDefaults = p.useDefaults || false;
-    res.lx.usesFilters = p.usesFilters || false;
-    res.lx.filterButtonKind = p.filterButtonKind || 'tertiary';
-    res.lx.columnCount = p.columnCount || 3;
-    res.lx.expanded = p.expanded || false;
-    res.lx.disabled = p.disabled || false;
-    res.lx.fastFilters = p.fastFilters || [];
-    res.lx.fastIdAttribute = p.fastIdAttribute || 'id';
-    res.lx.fastNameAttribute = p.fastNameAttribute || 'name';
-    res.lx.badge = p.badge;
-    res.lx.badgeType = p.badgeType || 'default';
-    res.lx.texts = p.texts || {};
-  },
-  LxList: (res, p) => {
-    res.type = 'array';
-    res.properties = res.properties || {};
-    res.description = p.description;
-
-    res.lx.actionDefinitions = p.actionDefinitions;
-    res.lx.groupDefinitions =
-      p.groupDefinitions && p.groupDefinitions?.length !== 0 ? p.groupDefinitions : null;
-    res.lx.toolbarActionDefinitions = p.toolbarActionDefinitions;
-    res.lx.selectionActionDefinitions = p.selectionActionDefinitions;
-    res.lx.kind = p.kind || 'default';
-    res.lx.listType = p.listType || '3';
-    res.lx.hasSelecting = p.hasSelecting || false;
-    res.lx.selectionKind = p.selectionKind || 'single';
-    res.lx.hasSearch = p.hasSearch || false;
-    res.lx.searchSide = p.searchSide || 'client';
-    res.lx.searchMode = p.searchMode || 'default';
-    res.lx.hideFilteredItems = p.hideFilteredItems || false;
-    res.lx.showLoadMore = p.showLoadMore || false;
-    res.lx.stickyToolbar = p.stickyToolbar || false;
-    res.lx.icon = p.icon || 'open';
-    res.lx.iconSet = p.iconSet || 'cds';
-    res.lx.hasVirtualization = p.hasVirtualization;
-    res.lx.includeUnspecifiedGroups = p.includeUnspecifiedGroups || false;
-    res.lx.hasSkipLink = p.hasSkipLink || false;
-
-    res.lx.loading = p.loading || false;
-    res.lx.busy = p.busy || false;
-
-    res.lx.actionLayout = p.actionLayout || 'default';
-    res.lx.emptyStateActionDefinitions = p.emptyStateActionDefinitions;
-    res.lx.emptyStateIcon = p.emptyStateIcon;
-
-    res.lx.idAttribute = p.idAttribute || 'id';
-    res.lx.nameAttribute = p.nameAttribute || 'name';
-    res.lx.descriptionAttribute = p.descriptionAttribute || 'description';
-    res.lx.hrefAttribute = p.hrefAttribute || 'href';
-    res.lx.groupAttribute = p.groupAttribute || 'group';
-    res.lx.clickableAttribute = p.clickableAttribute || 'clickable';
-    res.lx.iconAttribute = p.iconAttribute || 'icon';
-    res.lx.iconSetAttribute = p.iconSetAttribute || 'iconSet';
-    res.lx.tooltipAttribute = p.tooltipAttribute || 'tooltip';
-    res.lx.categoryAttribute = p.categoryAttribute || 'category';
-    res.lx.childrenAttribute = p.childrenAttribute || 'children';
-    res.lx.hasChildrenAttribute = p.hasChildrenAttribute || 'hasChildren';
-    res.lx.selectableAttribute = p.selectableAttribute || 'selectable';
-    res.lx.orderAttribute = p.orderAttribute || 'order';
-
-    res.lx.texts = p.texts || {};
-  },
-  LxDataGrid: (res, p) => {
-    res.type = 'array';
-    res.properties = res.properties || {};
-    res.description = p.description;
-
-    res.lx.label = p.label;
-    res.lx.description = p.description;
-    res.lx.columnDefinitions = p.columnDefinitions;
-    res.lx.idAttribute = p.idAttribute || 'id';
-    res.lx.scrollable = p.scrollable || false;
-    res.lx.loading = p.loading || false;
-    res.lx.busy = p.busy || false;
-    res.lx.skeletonRowCount = p.skeletonRowCount || 10;
-    res.lx.showHeader = p.showHeader || false;
-    res.lx.showToolbar = p.showToolbar;
-    res.lx.showStatusbar = p.showStatusbar;
-    res.lx.showAllColumns = p.showAllColumns || false;
-    res.lx.hasSorting = p.hasSorting || false;
-    res.lx.sortingIgnoreEmpty = p.sortingIgnoreEmpty;
-    res.lx.itemsPerPage = p.itemsPerPage || 20;
-    res.lx.itemsTotal = p.itemsTotal || 0;
-    res.lx.sortingMode = p.sortingMode || 'strip';
-    res.lx.actionDefinitions = p.actionDefinitions;
-    res.lx.defaultActionName = p.defaultActionName || 'open';
-    res.lx.toolbarActionDefinitions = p.toolbarActionDefinitions;
-    res.lx.hasVirtualization = p.hasVirtualization;
-    res.lx.stickyHeader = p.stickyHeader || false;
-    res.lx.hasPaging = p.hasPaging || false;
-    res.lx.hasSelecting = p.hasSelecting || false;
-    res.lx.selectionKind = p.selectionKind || 'multiple';
-    res.lx.sortingSide = p.sortingSide || 'client';
-    res.lx.emptyStateActionDefinitions = p.emptyStateActionDefinitions;
-    res.lx.emptyStateIcon = p.emptyStateIcon;
-    res.lx.hasSearch = p.hasSearch || false;
-    res.lx.searchMode = p.searchMode || 'default';
-    res.lx.searchString = p.searchString;
-
-    res.lx.fullBleed = p.fullBleed;
-    res.lx.badgeDefinitions = p.badgeDefinitions;
-    res.lx.stickyToolbar = p.stickyToolbar || false;
-    res.lx.texts = p.texts || {};
-  },
-};
 
 const compModel = computed({
   get() {
@@ -665,6 +244,9 @@ const usageGroupDefinitions = computed(() => [
 ]);
 
 const lxComponents = ref(getLXComponents());
+const displayComponents = ref(getDisplayComponents());
+
+const isInsideCustomItemMode = computed(() => props.schemaInfo.isInsideCustomItemsList);
 
 // Can only add LxSection if:
 // It's plain LxForm, or it's LxForm inside LxFilters, but has no LxSection yet
@@ -710,8 +292,21 @@ function canAddLxDataGrid() {
   return true;
 }
 
+function canAddStack() {
+  return props.navigation.filter((x) => x.name === 'LxStack')?.length < 2;
+}
+
 const componentItems = computed(() => {
   if (!props.componentName) return [];
+  // if LxList in template mode or user is changing custom item, show display components
+  if (props.templateMode && (props.componentName === 'LxList' || isInsideCustomItemMode.value)) {
+    return displayComponents.value
+      .map((x) => ({
+        ...x,
+        clickable: x.id !== 'LxStack' || canAddStack(),
+      }))
+      .filter((x) => x.clickable !== false);
+  }
   let res = [...lxComponents.value];
   res = res.map((x) => ({
     ...x,
@@ -855,6 +450,22 @@ const chatItemsDisplay = computed(() => {
 
   return items;
 });
+
+const templateModeModel = computed({
+  get: () => props.templateMode,
+  set: (value) => {
+    emits('update:templateMode', value);
+  },
+});
+
+function toggleTemplateMode(newValue) {
+  templateModeModel.value = newValue;
+  // When turning off template edit mode, select LxList element
+  if (!newValue) {
+    const res = props.navigation?.find((x) => x?.name === 'LxList')?.id;
+    if (res) changeNavigationItem(res);
+  }
+}
 </script>
 <template>
   <div class="lx-panel">
@@ -908,20 +519,42 @@ const chatItemsDisplay = computed(() => {
       <div>
         <div
           class="config-header"
-          :class="[{ 'has-selected-element': componentName && tab === 'config' }]"
+          :class="[
+            {
+              'has-selected-element': componentName && tab === 'config',
+              'has-template-edit-mode':
+                (isInsideCustomItemMode || componentName === 'LxList') && tab === 'config',
+              'template-edit-mode-open':
+                (isInsideCustomItemMode || componentName === 'LxList') &&
+                tab === 'config' &&
+                templateModeModel,
+            },
+          ]"
         >
-          <LxDropDownMenu
-            v-if="tab === 'config'"
-            :actionDefinitions="navigation"
-            @actionClick="changeNavigationItem"
-          >
-            <div class="header-wrapper">
-              <template v-if="componentName">
-                <p>{{ componentName }}</p>
-                <LxIcon value="menu" />
-              </template>
-            </div>
-          </LxDropDownMenu>
+          <div v-if="tab === 'config'" class="config-panel-header">
+            <LxDropDownMenu
+              :actionDefinitions="navigation"
+              placement="bottom-start"
+              offsetSkid="-8"
+              @actionClick="changeNavigationItem"
+            >
+              <div class="header-wrapper">
+                <template v-if="componentName">
+                  <p>{{ componentName }}</p>
+                  <LxIcon value="menu" />
+                </template>
+              </div>
+            </LxDropDownMenu>
+
+            <LxButton
+              v-if="componentName && (isInsideCustomItemMode || componentName === 'LxList')"
+              :icon="templateModeModel ? 'close' : 'edit-item'"
+              kind="ghost"
+              :label="templateModeModel ? displayTexts?.close : displayTexts?.edit"
+              variant="icon-only"
+              @click="toggleTemplateMode(!templateModeModel)"
+            />
+          </div>
           <div v-else class="header-wrapper">
             <p v-if="tab === 'components'">{{ displayTexts?.components }}</p>
             <p v-else-if="tab === 'settings'">{{ displayTexts?.settings }}</p>
@@ -931,53 +564,101 @@ const chatItemsDisplay = computed(() => {
         </div>
 
         <div class="panel-main" v-if="tab === 'config'">
-          <div class="button-group">
-            <LxButton
-              icon="copy"
-              kind="ghost"
-              :label="displayTexts?.duplicate"
-              :disabled="!isDuplicatable()"
-              @click="emits('duplicateComponent')"
+          <!-- Template editing mode -->
+          <template v-if="templateModeModel">
+            <LxTextInput
+              v-model="propSearchModel"
+              kind="search"
+              :placeholder="displayTexts?.searchProps"
+              :disabled="!componentName"
+              class="prop-search"
             />
 
-            <LxButton
-              icon="delete"
-              kind="ghost"
-              :label="displayTexts?.delete"
-              :disabled="!isDeletable()"
-              :destructive="true"
-              @click="emits('removeComponent')"
+            <LxInfoBox
+              icon="info"
+              :label="displayTexts?.templateEditLabel"
+              :description="displayTexts?.templateEditDescription"
             />
-          </div>
 
-          <LxTextInput
-            v-model="propSearchModel"
-            kind="search"
-            :placeholder="displayTexts?.searchProps"
-            :disabled="!componentName"
-            class="prop-search"
-          />
+            <ConstructorPropRenderer
+              v-if="componentName"
+              v-model="componentPropsModel"
+              :componentName="componentName"
+              :componentPropsDefinitions="componentPropsDefinitions"
+              :searchString="propSearchModel"
+              v-model:componentModel="compModel"
+              v-model:schemaKey="schemaKeyModel"
+              :schemaKeyError="schemaKeyError"
+              :navigation="navigation"
+              :selectedModel="selectedModel"
+              :templateMode="componentName === 'LxList' && templateModeModel"
+              :schemaInfo="schemaInfo"
+              :texts="displayTexts"
+              @error="(x) => emits('error', x)"
+              @update:selectedModel="(x) => emits('update:selectedModel', x)"
+            />
+            <div v-else class="no-component-wrapper">
+              <LxEmptyState :label="displayTexts.noComponentSelected" />
+            </div>
+          </template>
+          <!-- Default mode -->
+          <template v-else>
+            <div class="button-group">
+              <LxButton
+                icon="copy"
+                kind="ghost"
+                :label="displayTexts?.duplicate"
+                :disabled="!isDuplicatable()"
+                @click="emits('duplicateComponent')"
+              />
 
-          <ConstructorPropRenderer
-            v-if="componentName"
-            v-model="componentPropsModel"
-            :componentName="componentName"
-            :componentPropsDefinitions="componentPropsDefinitions"
-            :searchString="propSearchModel"
-            v-model:componentModel="compModel"
-            v-model:schemaKey="schemaKeyModel"
-            :schemaKeyError="schemaKeyError"
-            :navigation="navigation"
-            :selectedModel="selectedModel"
-            :texts="displayTexts"
-            @error="(x) => emits('error', x)"
-            @update:selectedModel="(x) => emits('update:selectedModel', x)"
-          />
-          <div v-else class="no-component-wrapper">
-            <LxEmptyState :label="displayTexts?.noComponentSelected" />
-          </div>
+              <LxButton
+                icon="delete"
+                kind="ghost"
+                :label="displayTexts?.delete"
+                :disabled="!isDeletable()"
+                :destructive="true"
+                @click="emits('removeComponent')"
+              />
+            </div>
+
+            <LxTextInput
+              v-model="propSearchModel"
+              kind="search"
+              :placeholder="displayTexts?.searchProps"
+              :disabled="!componentName"
+              class="prop-search"
+            />
+
+            <ConstructorPropRenderer
+              v-if="componentName"
+              v-model="componentPropsModel"
+              :componentName="componentName"
+              :componentPropsDefinitions="componentPropsDefinitions"
+              :searchString="propSearchModel"
+              v-model:componentModel="compModel"
+              v-model:schemaKey="schemaKeyModel"
+              :schemaKeyError="schemaKeyError"
+              :navigation="navigation"
+              :selectedModel="selectedModel"
+              :texts="displayTexts"
+              @error="(x) => emits('error', x)"
+              @update:selectedModel="(x) => emits('update:selectedModel', x)"
+            />
+            <div v-else class="no-component-wrapper">
+              <LxEmptyState :label="displayTexts.noComponentSelected" />
+            </div>
+          </template>
         </div>
+
         <div v-if="tab === 'components'" class="panel-main lx-region" style="padding: 0.25rem">
+          <LxInfoBox
+            v-if="templateModeModel"
+            icon="info"
+            :label="displayTexts.templateEditLabel"
+            :description="displayTexts.templateEditDescription"
+          />
+
           <LxList
             listType="1"
             :hasSearch="true"
@@ -986,6 +667,7 @@ const chatItemsDisplay = computed(() => {
             groupAttribute="usageGroup"
             :hideFilteredItems="true"
             icon="add"
+            :includeUnspecifiedGroups="templateModeModel"
             :texts="{
               placeholder: displayTexts?.searchComponents,
               clear: displayTexts?.clear,
