@@ -69,7 +69,9 @@
     "vue": "^3.5.17",
     "ajv": "^8.5.0"
   },
-  "overrides": {},
+  "overrides": {
+    "follow-redirects": "1.16.2"
+  },
   "peerDependencies": {
     "vue": "^3.5.17",
     "@dativa-lv/lx-ui": "2.3.11"

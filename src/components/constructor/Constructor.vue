@@ -567,7 +567,7 @@ function withFlatCustomItemModelPath(componentId, itemSchema, key) {
   return {
     ...itemSchema,
     lx: {
-      ...(itemSchema.lx || {}),
+      ...itemSchema.lx,
       modelPath: [...listModelPath, key].join('.'),
     },
   };
@@ -1437,7 +1437,7 @@ function addFirstCustomItemInStack(id) {
   const listSchema = getValueByPath(schemaClone, listPositionPath);
   if (!listSchema) return;
 
-  listSchema.lx = { ...(listSchema.lx || {}), hasCustomItems: 'nested' };
+  listSchema.lx = { ...listSchema.lx, hasCustomItems: 'nested' };
 
   const stackKey = lxStringUtils.generateUUID();
   const stackSchema = { ...getNewItemSchema('LxStack'), properties: {} };
@@ -1451,7 +1451,7 @@ function addFirstCustomItemInStack(id) {
 
   // New custom item definitions, the LxStack wrapper is the only top level custom item
   listSchema.items = {
-    ...(listSchema.items || {}),
+    ...listSchema.items,
     type: 'object',
     properties: { [stackKey]: stackSchema },
   };

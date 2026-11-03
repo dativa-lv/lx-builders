@@ -47,6 +47,7 @@
   grid-template-columns: 1fr 1fr;
   border: var(--border-width-1) solid var(--color-chrome);
   border-right: none;
+  background-color: var(--color-region-2);
 }
 
 .lx-panel > .panel-side .settings-wrapper{
@@ -54,10 +55,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-0750);
-}
-
-.lx-panel > .panel-side .panel-main > .button-group { 
-  background-color: var(--color-region-2);
 }
 
 .lx-panel > .panel-side .panel-main > .button-group > .lx-button {
@@ -169,7 +166,7 @@
 .lx-panel .panel-main {
   max-height: 70vh;
   max-width: var(--aside-size);
-  overflow-y: overlay;
+  overflow-y: auto;
 }
 
 .lx-panel .panel-main .lx-form-grid .lx-main.lx-compact-sections> .lx-form-section{
@@ -238,6 +235,7 @@
 .lx-panel > .panel-side .config-header.has-selected-element {
   background-color: var(--color-blue);
   cursor: pointer;
+  --color-button-ghost-icon: var(--color-constructor-highlight-foreground);
 }
 
 .lx-panel > .panel-side .config-header.has-selected-element:hover,
@@ -263,10 +261,6 @@
 
 .lx-panel > .panel-side .prop-search {
   border-left: var(--border-width-1) solid var(--color-chrome);
-}
-
-.lx-panel > .panel-side .config-header.has-selected-element {
-  --color-button-ghost-icon: var(--color-constructor-highlight-foreground);
 }
 
 .lx-panel > .panel-side .config-header.has-selected-element .header-wrapper p {
