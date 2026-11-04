@@ -124,8 +124,8 @@ function formatOptions(options) {
   return (options || [])
     .filter((option) => option != null)
     .map((option) => ({
-      id: option,
-      name: option,
+      id: String(option),
+      name: String(option),
       icon: getOptionIcon(props.name, option),
     }));
 }
@@ -427,7 +427,7 @@ const filteredTextsSchema = computed(() => {
 });
 
 const actionDefinitionsKindItems = computed(() => {
-  if (isActionDefinitionsForToolbar.value) {
+  if (isActionDefinitionsForToolbar.value || props.componentName === 'LxRow') {
     return [
       {
         id: 'primary',
@@ -670,7 +670,9 @@ function dictionaryActionClicked(action) {
         v-if="
           props.name === 'emptyStateActionDefinitions' ||
           (props.name === 'actionDefinitions' &&
-            (props.componentName === 'LxForm' || props.componentName === 'LxSection'))
+            (props.componentName === 'LxForm' ||
+              props.componentName === 'LxSection' ||
+              props.componentName === 'LxRow'))
         "
         ref="actionDefList"
         v-model="actionDefModel"

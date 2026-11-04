@@ -425,7 +425,7 @@ test('LxFormBuilder with LxAppendableList', async () => {
     expect(wrapper.find('.lx-appendable-list').exists()).toBe(true);
   });
 });
-test('LxFormBuilder with LxAppendableListSimple', () => {
+test('LxFormBuilder with LxAppendableListSimple', async () => {
   const schemaValue = {
     type: 'object',
     properties: {
@@ -443,5 +443,94 @@ test('LxFormBuilder with LxAppendableListSimple', () => {
       stubs: ['router-link', 'LxStack'],
     },
   });
-  expect(wrapper.find('.lx-appendable-list-simple').exists()).toBe(true);
+  await vi.waitFor(() => {
+    expect(wrapper.find('.lx-appendable-list-simple').exists()).toBe(true);
+  });
+});
+
+test('LxFormBuilder custom list items with LxBadge', async () => {
+  const schemaValue = {
+    type: 'object',
+    properties: {
+      list: {
+        type: 'array',
+        lx: { displayType: 'list', listType: '1', hasCustomItems: 'default' },
+        items: {
+          properties: {
+            id: { type: 'string' },
+            name: {
+              type: 'string',
+              lx: { displayType: 'primaryText', stackRow: '1', stackColumn: '1' },
+            },
+            status: {
+              type: 'string',
+              lx: { displayType: 'badge', stackRow: '1', stackColumn: '2' },
+            },
+          },
+        },
+      },
+    },
+  };
+  const modelValue = {
+    list: [
+      { id: '1', name: 'Latvia', status: 'New' },
+      { id: '2', name: 'Lithuania', status: '5' },
+    ],
+  };
+
+  wrapper = buildFormBuilderWrapper(schemaValue, {
+    builderProps: { modelValue },
+    global: {
+      stubs: ['router-link'],
+    },
+  });
+  await vi.waitFor(() => {
+    expect(wrapper.find('.lx-badge').exists()).toBe(true);
+  });
+});
+
+// LxChat test
+
+test('LxFormBuilder with LxChat', async () => {
+  const schemaValue = {
+    type: 'object',
+    properties: {
+      chat: {
+        type: 'array',
+        lx: {
+          displayType: 'chat',
+          userDefinitions: [
+            { id: 'bob', name: 'Bob the builder', isAi: true },
+            { id: 'tod', name: 'Tod Smith', isMe: true },
+          ],
+        },
+      },
+    },
+  };
+  const modelValue = {
+    chat: [
+      {
+        id: 'message-one',
+        text: 'First message text',
+        userId: 'bob',
+        createdAt: '2026-10-27T12:00:00',
+      },
+      {
+        id: 'message-two',
+        text: 'Second message text',
+        userId: 'tod',
+        createdAt: '2026-10-27T12:01:00',
+      },
+    ],
+  };
+
+  wrapper = buildFormBuilderWrapper(schemaValue, {
+    builderProps: { modelValue },
+    global: {
+      stubs: ['router-link', 'teleport'],
+    },
+  });
+  await vi.waitFor(() => {
+    expect(wrapper.find('.lx-chat-wrapper').exists()).toBe(true);
+  });
 });

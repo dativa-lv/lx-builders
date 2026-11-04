@@ -5,6 +5,7 @@ import {
   LxStateDisplay,
   LxPersonDisplay,
   LxIcon,
+  LxBadge,
   lxFormatUtils,
   lxStringUtils,
   lxBuilderUtils,
@@ -71,7 +72,9 @@ function listDisplayText(itemValue, item, itemName) {
 }
 
 function isNotComponent(itemValue) {
-  return !['icon', 'flag', 'stateDisplay', 'personDisplay'].includes(itemValue?.lx?.displayType);
+  return !['icon', 'flag', 'stateDisplay', 'personDisplay', 'badge'].includes(
+    itemValue?.lx?.displayType
+  );
 }
 
 function getDisplayType(itemValue) {
@@ -124,6 +127,7 @@ if (props.builderOptions?.useRegistry && isNotComponent(props.itemValue)) {
     :value="source?.[itemName]?.value || source?.[itemName] || itemValue?.lx?.value"
     :size="source?.[itemName]?.size || itemValue?.lx?.size"
     :title="source?.[itemName]?.title || itemValue?.lx?.title"
+    :meaningful="source?.[itemName]?.meaningful || itemValue?.lx?.meaningful"
     :style="useStyles ? getElementStyles(itemValue) : null"
     :builderOptions="builderOptions"
   />
@@ -164,6 +168,9 @@ if (props.builderOptions?.useRegistry && isNotComponent(props.itemValue)) {
     :iconAttribute="source?.[itemName]?.iconAttribute || itemValue?.lx?.iconAttribute"
     :iconSetAttribute="source?.[itemName]?.iconSetAttribute || itemValue?.lx?.iconSetAttribute"
     :maxLength="source?.[itemName]?.maxLength || itemValue?.lx?.maxLength"
+    :customAttributes="source?.[itemName]?.customAttributes || itemValue?.lx?.customAttributes"
+    :customRole="source?.[itemName]?.customRole || itemValue?.lx?.customRole"
+    :focusable="source?.[itemName]?.focusable || itemValue?.lx?.focusable"
     :texts="source?.[itemName]?.texts || itemValue?.lx?.texts"
     :style="useStyles ? getElementStyles(itemValue) : null"
     :builderOptions="builderOptions"
@@ -181,6 +188,15 @@ if (props.builderOptions?.useRegistry && isNotComponent(props.itemValue)) {
     :desc="source?.[itemName]?.desc || itemValue?.lx?.desc"
     :texts="source?.[itemName]?.texts || itemValue?.lx?.texts"
     :style="useStyles ? getElementStyles(itemValue) : null"
+    :builderOptions="builderOptions"
+  />
+  <LxBadge
+    v-else-if="itemValue?.lx?.displayType === 'badge'"
+    :value="source?.[itemName]?.value || source?.[itemName] || itemValue?.lx?.value"
+    :icon="source?.[itemName]?.icon || itemValue?.lx?.icon"
+    :iconSet="source?.[itemName]?.iconSet || itemValue?.lx?.iconSet"
+    :tooltip="source?.[itemName]?.tooltip || itemValue?.lx?.tooltip"
+    :type="source?.[itemName]?.type || itemValue?.lx?.type"
     :builderOptions="builderOptions"
   />
   <p v-else :data-id="id" :style="useStyles ? getElementStyles(itemValue) : null">

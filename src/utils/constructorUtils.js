@@ -287,6 +287,15 @@ export function getNewItemSchema(id) {
         },
       };
     }
+    case 'LxBadge': {
+      return {
+        type: 'string',
+        title: 'New LxBadge',
+        lx: {
+          displayType: 'badge',
+        },
+      };
+    }
 
     case 'LxIcon':
       return {
@@ -423,20 +432,24 @@ export const getDisplayComponents = () => [
     name: 'Text',
   },
   {
-    id: 'LxStateDisplay',
-    name: 'LxStateDisplay',
-  },
-  {
-    id: 'LxIcon',
-    name: 'LxIcon',
+    id: 'LxBadge',
+    name: 'LxBadge',
   },
   {
     id: 'LxFlag',
     name: 'LxFlag',
   },
   {
+    id: 'LxIcon',
+    name: 'LxIcon',
+  },
+  {
     id: 'LxPersonDisplay',
     name: 'LxPersonDisplay',
+  },
+  {
+    id: 'LxStateDisplay',
+    name: 'LxStateDisplay',
   },
   {
     id: 'LxStack',
@@ -707,7 +720,7 @@ export const COMPONENT_SCHEMA_BUILDERS = {
     res.title = p.label;
     res.lx.columnSpan = p.columnSpan || '1';
     res.lx.rowSpan = p.rowSpan || '1';
-    res.lx.rowActionDefinitions = p.rowActionDefinitions;
+    res.lx.rowActionDefinitions = p.actionDefinitions;
   },
   LxTextArea: (res, p) => {
     res.type = 'string';
@@ -1136,5 +1149,15 @@ export const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.icon = p.icon;
     res.lx.iconSet = p.iconSet;
     res.lx.maxLength = p.maxLength;
+  },
+  LxBadge: (res, p) => {
+    res.type = 'string';
+    res.lx = res.lx || {};
+    res.lx.displayType = 'badge';
+
+    res.lx.icon = p.icon;
+    res.lx.iconSet = p.iconSet;
+    res.lx.tooltip = p.tooltip;
+    res.lx.type = p.type;
   },
 };

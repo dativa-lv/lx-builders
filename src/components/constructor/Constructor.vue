@@ -631,7 +631,9 @@ function getPositionInfo(schema, currentSchema) {
 
   // Move inside is allowed only forward
   elementInfo.value.canMoveForwardIn =
-    hasContainerProperties(nextSchema) && componentName.value !== 'LxSection';
+    hasContainerProperties(nextSchema) &&
+    componentName.value !== 'LxSection' &&
+    componentName.value !== 'LxForm';
 
   if (elementInfo.value.canMoveForwardIn && nextSchema) {
     let moveInsideTargetPath = [parentPath, nextKey].filter(Boolean).join('.');

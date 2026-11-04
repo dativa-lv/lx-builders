@@ -117,8 +117,10 @@ const compModel = computed({
 
 function getNonPropItems(componentName) {
   // Define non-prop items for specific components
+  let res = null;
+
   if (componentName === 'LxForm' && !props.navigation?.some((nav) => nav?.name === 'LxFilters')) {
-    const res = {
+    res = {
       header: {
         name: 'header',
         type: 'String',
@@ -150,16 +152,26 @@ function getNonPropItems(componentName) {
         extra: true,
       },
     };
-
-    const searched = props.searchString
-      ? Object.entries(res).filter(([key]) =>
-          key.toLowerCase().includes(props.searchString.toLowerCase())
-        )
-      : Object.entries(res);
-
-    return Object.fromEntries(searched);
+  } else if (componentName === 'LxRow') {
+    res = {
+      description: {
+        name: 'description',
+        type: 'String',
+        group: 'main',
+        extra: true,
+      },
+    };
   }
-  return null;
+
+  if (!res) return null;
+
+  const searched = props.searchString
+    ? Object.entries(res).filter(([key]) =>
+        key.toLowerCase().includes(props.searchString.toLowerCase())
+      )
+    : Object.entries(res);
+
+  return Object.fromEntries(searched);
 }
 
 function filterByGroup(object, group) {
@@ -258,9 +270,14 @@ const modeProps = computed(() => {
   return filterByGroup(props.componentPropsDefinitions, 'mode');
 });
 
-function updateFormHeader(key, value) {
+function updateExtraField(key, value) {
   let updatedModel = null;
-  if (key === 'header') {
+  if (key === 'description') {
+    updatedModel = {
+      ...compModel.value,
+      description: value,
+    };
+  } else if (key === 'header') {
     updatedModel = {
       ...compModel.value,
     };
@@ -303,9 +320,12 @@ function updateFormHeader(key, value) {
   });
 }
 
-function getFormHeaderValue(item, key) {
+function getExtraFieldValue(item, key) {
   if (key === 'header') {
     return compModel.value.title;
+  }
+  if (key === 'description') {
+    return compModel.value.description;
   }
   return compModel.value.lx?.[key]?.properties?.text?.lx?.value;
 }
@@ -457,8 +477,8 @@ function hasCustomAttributeField() {
     <LxRow v-for="(item, key) in mainProps" :key="item.name" :label="`${key}`" v-show="item.extra">
       <LxTextInput
         v-if="item?.extra"
-        :modelValue="getFormHeaderValue(item, key)"
-        @update:modelValue="(x) => updateFormHeader(key, x)"
+        :modelValue="getExtraFieldValue(item, key)"
+        @update:modelValue="(x) => updateExtraField(key, x)"
       />
     </LxRow>
   </LxForm>

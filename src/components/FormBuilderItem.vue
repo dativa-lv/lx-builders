@@ -23,19 +23,15 @@ import {
   LxDropDownMenu,
   LxFileUploader,
   LxFileViewer,
-  LxFlag,
-  LxIcon,
   LxIllustration,
   LxLink,
   LxMap,
   LxMarkdownTextArea,
   LxNumberInput,
-  LxPersonDisplay,
   LxQr,
   LxQrScanner,
   LxRating,
   LxRichTextDisplay,
-  LxStateDisplay,
   LxSteps,
   LxVisualPicker,
   LxDurationInput,
@@ -43,16 +39,22 @@ import {
   LxLogoDisplay,
   LxAutoComplete,
   LxDateTimeRange,
+  LxChat,
+  LxInfoBox,
   lxDevUtils,
   LxStack,
+  LxCard,
+  LxEmptyState,
+  LxErrorPage,
+  LxLoader,
+  LxToolbar,
+  LxAppendableListSimple,
   lxGeneralUtils,
   lxFormatUtils,
 } from '@dativa-lv/lx-ui';
 import useLx from '@/hooks/useLx';
-import { getOtherSelectComponent } from '@/components/formBuilderOtherSelect';
 import LxFormBuilderListItem from '@/components/FormBuilderListItem.vue';
-import LxAppendableListSimple from '@/components/AppendableListSimple.vue';
-import { isDate } from '@/utils/builderUtils';
+import { selectRowComponent } from '@/utils/componentSelectUtils';
 
 const props = defineProps({
   id: { type: String, default: null },
@@ -108,80 +110,19 @@ function stringNumberMask(mask, type) {
   return mask;
 }
 
-function stringSelect(row) {
-  if (
-    (row?.type === 'string' &&
-      row?.lx?.kind !== 'multiline' &&
-      !row?.lx?.variant &&
-      !isDate(row?.format) &&
-      !row?.enum) ||
-    (row?.type === 'number' && !row?.lx?.variant && !isDate(row?.format) && !row?.enum)
-  )
-    return 'textInputDefault';
-  if (row?.type === 'string' && row?.lx?.kind === 'multiline') return 'textArea';
-  if (row?.type === 'string' && isDate(row?.format)) return 'dateTimePicker';
-  return '';
-}
-
-function arraySelect(row) {
-  if (row?.type === 'array' && row?.lx?.displayType === 'list') return 'arrayList';
-  if (row?.type === 'array' && row?.lx?.displayType === 'listModal') return 'arrayListModal';
-  if (row?.type === 'array' && row?.lx?.displayType === 'table') return 'arrayTable';
-  if (row?.type === 'array' && row?.lx?.displayType === 'tableModal') return 'arrayTableModal';
-  if (Array.isArray(row?.lx?.items) || row?.enum) {
-    return 'valuePicker';
-  }
-  if (row?.items?.properties && row?.type === 'array') return 'appendableList';
-  if (row?.type === 'array' && row?.items?.type !== 'object' && row?.items)
-    return 'smallAppendableList';
-  return '';
-}
-
-function objectSelect(row, name) {
-  if (row?.lx?.displayType === 'map' && row?.type === 'object') return 'map';
-  if (
-    row?.type === 'object' &&
-    model.value?.[name] !== undefined &&
-    model.value?.[name] !== null &&
-    row?.lx?.displayType === 'modal'
-  )
-    return 'objectList';
-  if (row?.type === 'object' && !model.value?.[name] && row?.lx?.displayType === 'modal')
-    return 'objectButton';
-  if (row?.type === 'object' && model.value?.[name] !== undefined && model.value?.[name] !== null)
-    return 'dataBlock';
-  return '';
-}
-
-function otherSelect(row) {
-  return getOtherSelectComponent(row, { excludedDisplayTypes: ['stack'] });
-}
-
 function componentSelect(row, name, log = false) {
-  if (row?.lx?.wrapper === 'placeholder') return 'lxPlaceholder';
-  const res = otherSelect(row);
-  if (res) return res;
-
-  if (stringSelect(row) === 'textInputDefault') return 'textInputDefault';
-  if (stringSelect(row) === 'textArea') return 'textArea';
-  if (stringSelect(row) === 'dateTimePicker') return 'dateTimePicker';
-
-  if (row?.type === 'integer') return 'textInputInteger';
-
-  if (row?.type === 'boolean') return 'toggle';
-
-  if ((row?.type === 'string' && (row?.lx?.variant || row?.enum)) || row?.type === 'array') {
-    if (arraySelect(row) !== '') return arraySelect(row);
-  }
-  if (objectSelect(row, name) !== '') return objectSelect(row, name);
-
-  if (name && log)
-    lxDevUtils.log(
-      `Property '${name}' couldn't be rendered`,
-      useLx().getGlobals()?.environment,
-      'warn'
-    );
-  return 'lxPlaceholder';
+  return selectRowComponent(row, {
+    value: model.value?.[name],
+    excludedDisplayTypes: ['stack'],
+    onUnrendered: () => {
+      if (name && log)
+        lxDevUtils.log(
+          `Property '${name}' couldn't be rendered`,
+          useLx().getGlobals()?.environment,
+          'warn'
+        );
+    },
+  });
 }
 
 const selectedComponent = computed(() => componentSelect(props.row, props.name, true));
@@ -3485,74 +3426,7 @@ const listModelPath = computed(() =>
     v-model="model[name]"
     @download="(a) => componentEmit('download', name, a)"
   />
-  <LxFlag
-    v-else-if="selectedComponent === 'flag'"
-    :value="model?.[name]?.value || model?.[name] || displaySchema?.properties[name]?.lx?.value"
-    :size="
-      displaySchema?.properties[name]?.type === 'object'
-        ? model[name]?.size
-        : displaySchema?.properties[name]?.lx?.size
-    "
-    :title="
-      displaySchema?.properties[name]?.type === 'object'
-        ? model[name]?.title
-        : displaySchema?.properties[name]?.lx?.title
-    "
-    :locale="
-      displaySchema?.properties[name]?.type === 'object'
-        ? model[name]?.locale
-        : displaySchema?.properties[name]?.lx?.locale
-    "
-    :meaningful="
-      displaySchema?.properties[name]?.type === 'object'
-        ? model[name]?.meaningful
-        : displaySchema?.properties[name]?.lx?.meaningful
-    "
-  />
-  <LxIcon
-    v-else-if="selectedComponent === 'icon'"
-    :value="model?.[name]?.value || model?.[name] || displaySchema?.properties[name]?.lx?.value"
-    :iconSet="
-      displaySchema?.properties[name]?.type === 'object'
-        ? model[name]?.iconSet
-        : displaySchema?.properties[name]?.lx?.iconSet
-    "
-    :variant="
-      displaySchema?.properties[name]?.type === 'object'
-        ? model[name]?.variant
-        : displaySchema?.properties[name]?.lx?.variant
-    "
-    :customClass="
-      displaySchema?.properties[name]?.type === 'object'
-        ? model[name]?.customClass
-        : displaySchema?.properties[name]?.lx?.customClass
-    "
-    :animation="
-      displaySchema?.properties[name]?.type === 'object'
-        ? model[name]?.animation
-        : displaySchema?.properties[name]?.lx?.animation
-    "
-    :meaningful="
-      displaySchema?.properties[name]?.type === 'object'
-        ? model[name]?.meaningful
-        : displaySchema?.properties[name]?.lx?.meaningful
-    "
-    :title="
-      displaySchema?.properties[name]?.type === 'object'
-        ? model[name]?.title
-        : displaySchema?.properties[name]?.lx?.title
-    "
-    :desc="
-      displaySchema?.properties[name]?.type === 'object'
-        ? model[name]?.desc
-        : displaySchema?.properties[name]?.lx?.desc
-    "
-    :texts="
-      displaySchema?.properties[name]?.type === 'object'
-        ? model[name]?.texts
-        : displaySchema?.properties[name]?.lx?.texts
-    "
-  />
+
   <LxIllustration
     v-else-if="selectedComponent === 'illustration'"
     :value="model?.[name]?.value || model?.[name] || displaySchema?.properties[name]?.lx?.value"
@@ -3644,33 +3518,6 @@ const listModelPath = computed(() =>
     v-model="model[name]"
     :builderOptions="builderOptions"
   />
-  <LxPersonDisplay
-    v-else-if="selectedComponent === 'personDisplay'"
-    :value="model?.[name]"
-    :name="displaySchema?.properties[name]?.lx?.name"
-    :kind="displaySchema?.properties[name]?.lx?.kind"
-    :size="displaySchema?.properties[name]?.lx?.size"
-    :variant="displaySchema?.properties[name]?.lx?.variant"
-    :description="displaySchema?.properties[name]?.lx?.description"
-    :role="displaySchema?.properties[name]?.lx?.role"
-    :institution="displaySchema?.properties[name]?.lx?.institution"
-    :icon="displaySchema?.properties[name]?.lx?.icon"
-    :iconSet="displaySchema?.properties[name]?.lx?.iconSet"
-    :idAttribute="displaySchema?.properties[name]?.lx?.idAttribute"
-    :nameAttribute="displaySchema?.properties[name]?.lx?.nameAttribute"
-    :firstNameAttribute="displaySchema?.properties[name]?.lx?.firstNameAttribute"
-    :lastNameAttribute="displaySchema?.properties[name]?.lx?.lastNameAttribute"
-    :descriptionAttribute="displaySchema?.properties[name]?.lx?.descriptionAttribute"
-    :roleAttribute="displaySchema?.properties[name]?.lx?.roleAttribute"
-    :institutionAttribute="displaySchema?.properties[name]?.lx?.institutionAttribute"
-    :iconAttribute="displaySchema?.properties[name]?.lx?.iconAttribute"
-    :iconSetAttribute="displaySchema?.properties[name]?.lx?.iconSetAttribute"
-    :maxLength="displaySchema?.properties[name]?.lx?.maxLength"
-    :customAttributes="displaySchema?.properties[name]?.lx?.customAttributes"
-    :customRole="displaySchema?.properties[name]?.lx?.customRole"
-    :focusable="displaySchema?.properties[name]?.lx?.focusable"
-    :texts="displaySchema?.properties[name]?.lx?.texts"
-  />
   <LxQr
     v-else-if="selectedComponent === 'qr'"
     :id="`${id}-${name}`"
@@ -3740,15 +3587,6 @@ const listModelPath = computed(() =>
       displaySchema?.properties[name]?.type === 'object'
         ? model?.[name]?.loading
         : displaySchema?.properties[name]?.lx?.loading
-    "
-  />
-  <LxStateDisplay
-    v-else-if="selectedComponent === 'stateDisplay'"
-    :value="model?.[name]?.value || model?.[name] || displaySchema?.properties[name]?.lx?.value"
-    :dictionary="
-      displaySchema?.properties[name]?.type === 'object'
-        ? model?.[name]?.dictionary
-        : displaySchema?.properties[name]?.lx?.dictionary
     "
   />
   <LxSteps
@@ -3836,6 +3674,152 @@ const listModelPath = computed(() =>
         : displaySchema?.properties[name]?.lx?.theme
     "
   />
+  <LxChat
+    v-else-if="selectedComponent === 'chat'"
+    :id="`${id}-${name}`"
+    :kind="displaySchema?.properties[name]?.lx?.kind"
+    :mode="displaySchema?.properties[name]?.lx?.mode"
+    :userDefinitions="displaySchema?.properties[name]?.lx?.userDefinitions"
+    :avatarKind="displaySchema?.properties[name]?.lx?.avatarKind"
+    :messageText="displaySchema?.properties[name]?.lx?.messageText"
+    :items="model[name] || displaySchema?.properties[name]?.lx?.items"
+    :loading="displaySchema?.properties[name]?.lx?.loading"
+    :busy="displaySchema?.properties[name]?.lx?.busy"
+    :messageGrouping="displaySchema?.properties[name]?.lx?.messageGrouping"
+    :messageGroupingInterval="displaySchema?.properties[name]?.lx?.messageGroupingInterval"
+    :clarifyingQuestionsBuilder="displaySchema?.properties[name]?.lx?.clarifyingQuestionsBuilder"
+    :messageActionDefinitions="displaySchema?.properties[name]?.lx?.messageActionDefinitions"
+    :typing="displaySchema?.properties[name]?.lx?.typing"
+    :typingUsers="displaySchema?.properties[name]?.lx?.typingUsers"
+    :typingActionDefinitions="displaySchema?.properties[name]?.lx?.typingActionDefinitions"
+    :texts="displaySchema?.properties[name]?.lx?.texts"
+    @send="(a) => componentEmit('send', name, a)"
+    @clarifyingQuestionSubmit="(a) => componentEmit('clarifyingQuestionSubmit', name, a)"
+    @messageActionClick="(a) => componentEmit('messageActionClick', name, a)"
+    @typingActionClick="(a) => componentEmit('typingActionClick', name, a)"
+  />
+
+  <LxInfoBox
+    v-else-if="selectedComponent === 'infoBox'"
+    :id="`${id}-${name}`"
+    :label="model[name]?.label || displaySchema?.properties[name]?.lx?.label"
+    :description="model[name]?.description || displaySchema?.properties[name]?.lx?.description"
+    :variant="model[name]?.variant || displaySchema?.properties[name]?.lx?.variant"
+    :kind="model[name]?.kind || displaySchema?.properties[name]?.lx?.kind"
+    :actionDefinitions="
+      model[name]?.actionDefinitions || displaySchema?.properties[name]?.lx?.actionDefinitions
+    "
+    :texts="displaySchema?.properties[name]?.lx?.texts"
+  />
+
+  <LxCard
+    v-else-if="selectedComponent === 'card'"
+    :id="`${id}-${name}`"
+    v-model="model[name]"
+    :kind="displaySchema?.properties[name]?.lx?.kind"
+    :interactive="displaySchema?.properties[name]?.lx?.interactive"
+    :texts="displaySchema?.properties[name]?.lx?.texts"
+  >
+    <template #default v-if="row?.lx?.label">
+      <span>{{ row?.lx?.label }}</span>
+    </template>
+    <template #reverse v-if="row?.lx?.labelReverse">
+      <span>{{ row?.lx?.labelReverse }}</span>
+    </template>
+  </LxCard>
+
+  <LxEmptyState
+    v-else-if="selectedComponent === 'emptyState'"
+    :id="`${id}-${name}`"
+    :label="model[name]?.label || displaySchema?.properties[name]?.lx?.label"
+    :description="model[name]?.description || displaySchema?.properties[name]?.lx?.description"
+    :icon="model[name]?.icon || displaySchema?.properties[name]?.lx?.icon"
+    :actionDefinitions="
+      model[name]?.actionDefinitions || displaySchema?.properties[name]?.lx?.actionDefinitions
+    "
+    :announce="model[name]?.announce || displaySchema?.properties[name]?.lx?.announce"
+    :texts="displaySchema?.properties[name]?.lx?.texts"
+    @actionClick="(a) => componentEmit('actionClick', name, a)"
+  />
+
+  <LxErrorPage
+    v-else-if="selectedComponent === 'errorPage'"
+    :id="`${id}-${name}`"
+    :kind="model[name]?.kind || displaySchema?.properties[name]?.lx?.kind"
+    :icon="model[name]?.icon || displaySchema?.properties[name]?.lx?.icon"
+    :title="model[name]?.title || displaySchema?.properties[name]?.lx?.title"
+    :description="model[name]?.description || displaySchema?.properties[name]?.lx?.description"
+    :actionDefinitions="
+      model[name]?.actionDefinitions || displaySchema?.properties[name]?.lx?.actionDefinitions
+    "
+    :texts="displaySchema?.properties[name]?.lx?.texts"
+    @actionClick="(a) => componentEmit('actionClick', name, a)"
+  />
+
+  <LxLoader
+    v-else-if="selectedComponent === 'loader'"
+    :id="`${id}-${name}`"
+    :loading="displaySchema?.properties[name]?.lx?.loading"
+    :size="displaySchema?.properties[name]?.lx?.size"
+    :variant="displaySchema?.properties[name]?.lx?.variant"
+    :kind="displaySchema?.properties[name]?.lx?.kind"
+    :label="displaySchema?.properties[name]?.lx?.label"
+    :description="displaySchema?.properties[name]?.lx?.description"
+    :fakedDuration="displaySchema?.properties[name]?.lx?.fakedDuration"
+    :faked="displaySchema?.properties[name]?.lx?.faked"
+    :state="displaySchema?.properties[name]?.lx?.state"
+    :ariaHidden="displaySchema?.properties[name]?.lx?.ariaHidden"
+    v-model="model[name]"
+  />
+
+  <LxToolbar
+    v-else-if="selectedComponent === 'toolbar'"
+    :id="`${id}-${name}`"
+    :actionDefinitions="
+      model[name]?.actionDefinitions || displaySchema?.properties[name]?.lx?.actionDefinitions
+    "
+    :noBorders="model[name]?.noBorders || displaySchema?.properties[name]?.lx?.noBorders"
+    :disabled="model[name]?.disabled || displaySchema?.properties[name]?.lx?.disabled"
+    :loading="model[name]?.loading || displaySchema?.properties[name]?.lx?.loading"
+    :busy="model[name]?.busy || displaySchema?.properties[name]?.lx?.busy"
+    :hasSearch="model[name]?.hasSearch || displaySchema?.properties[name]?.lx?.hasSearch"
+    :searchString="model[name]?.searchString || displaySchema?.properties[name]?.lx?.searchString"
+    :searchSide="model[name]?.searchSide || displaySchema?.properties[name]?.lx?.searchSide"
+    :searchMode="model[name]?.searchMode || displaySchema?.properties[name]?.lx?.searchMode"
+    :useSearchDebounce="
+      model[name]?.useSearchDebounce || displaySchema?.properties[name]?.lx?.useSearchDebounce
+    "
+    :searchItems="model[name]?.searchItems || displaySchema?.properties[name]?.lx?.searchItems"
+    :hasSelectAll="model[name]?.hasSelectAll || displaySchema?.properties[name]?.lx?.hasSelectAll"
+    :sticky="model[name]?.sticky || displaySchema?.properties[name]?.lx?.sticky"
+    :selectionState="
+      model[name]?.selectionState || displaySchema?.properties[name]?.lx?.selectionState
+    "
+    :selectAllSide="
+      model[name]?.selectAllSide || displaySchema?.properties[name]?.lx?.selectAllSide
+    "
+    :selectAllVariant="
+      model[name]?.selectAllVariant || displaySchema?.properties[name]?.lx?.selectAllVariant
+    "
+    :defaultArea="model[name]?.defaultArea || displaySchema?.properties[name]?.lx?.defaultArea"
+    :wrapperRef="model[name]?.wrapperRef || displaySchema?.properties[name]?.lx?.wrapperRef"
+    :customClass="model[name]?.customClass || displaySchema?.properties[name]?.lx?.customClass"
+    :texts="model[name]?.texts || displaySchema?.properties[name]?.lx?.texts"
+    @actionClick="(a, b) => componentEmit('actionClick', name, a, b)"
+    @search="(a) => componentEmit('search', name, a)"
+    @selectAll="componentEmit('selectAll', name)"
+    @deselectAll="componentEmit('deselectAll', name)"
+    @update:searchString="(a) => componentEmit('update:searchString', name, a)"
+    @searchExpandedChange="(a) => componentEmit('searchExpandedChange', name, a)"
+  />
+
+  <LxFormBuilderListItem
+    v-else-if="selectedComponent === 'indicator'"
+    :item="model"
+    :itemValue="row"
+    :itemName="name"
+  />
+
   <p class="lx-data" v-else-if="selectedComponent === 'text'">
     {{ model[name] }}
   </p>

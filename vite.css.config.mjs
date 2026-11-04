@@ -33,7 +33,6 @@ export const cssConfig = defineConfig({
     rollupOptions: {
       input: generateInput(),
       output: {
-        inlineDynamicImports: false,
         assetFileNames: '[name][extname]',
         format: 'commonjs',
       },

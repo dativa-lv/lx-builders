@@ -753,6 +753,12 @@ List of added components their types and main props:
 | LxDurationInput | 'durationInput' | 'integer', 'object' | - |
 | LxDrawPad | 'drawPad' | 'string' | - |
 | LxLogoDisplay | 'logoDisplay' | 'string', 'object' | `value` |
+| LxChat | 'chat' | 'array' | `items` |
+| LxCard | 'card' | 'boolean' | - |
+| LxEmptyState | 'emptyState' | 'object' | - |
+| LxErrorPage | 'errorPage' | 'object' | - |
+| LxLoader | 'loader' | 'number', 'string' | - |
+| LxToolbar | 'toolbar' | 'object' | - |
 | LxStack | 'stack' | 'object' | - |
 
 There is also an option to show basic text: 
@@ -841,6 +847,7 @@ There are 2 ways to define LxList customItem layout:
 | 'stateDisplay' | 'string', 'object' | Displays state using LxStateDisplay | 
 | 'personDisplay' | 'string', 'object'  | Displays person information using LxPersonDisplay | 
 | 'icon' | 'string', 'object' | Displays icon using LxIcon | 
+| 'badge' | 'string', 'object' | Displays badge using  LxBadge | 
 | `not-defined` | 'string' | Displays value using basic text | 
 
 ### hasCustomItems === 'default'
@@ -2127,5 +2134,226 @@ modelValue:
     size: 'auto',
     theme: 'auto',
   }
+}
+```
+
+### LxChat
+
+schema:
+```js
+{
+  chat: { 
+    type: 'array',
+    lx: {
+      displayType: 'chat',
+      kind: 'chat',
+      mode: 'default',
+      userDefinitions: [
+        {id: 'bob', name: 'Bob the builder', isAi: true},
+        {id: 'tod', name: 'Tod Smith', isMe: true}
+      ],
+      avatarKind: "default",
+      messageText: null,
+      loading: false,
+      busy: false,
+      messageGrouping: true,
+      messageGroupingInterval: 10,
+      clarifyingQuestionsBuilder: null,
+      messageActionDefinitions: [],
+      typing: false,
+      typingUsers: [],
+      typingActionDefinitions: [],
+    }
+  }
+}
+```
+
+
+modelValue: 
+```js
+{
+  chat: [
+    {id: 'message-one', text: 'First message text', userId: "bob", createdAt: '2026-10-27T12:00:00'},
+    {id: 'message-two', text: 'Second message text', userId: "tod", createdAt: '2026-10-27T12:01:00'},
+  ]
+}
+```
+
+
+### LxInfoBox
+
+schema:
+```js
+{
+  infoBox: { 
+    type: 'object',
+    lx: {
+      displayType: 'infoBox',
+    }
+  }
+}
+```
+
+modelValue: 
+```js
+{
+  richTextDisplay: {
+    label: 'info box label',
+    description: 'info box description',
+    variant: 'default',
+    kind: 'default',
+    actionDefinitions: [],
+  }
+}
+```
+
+### LxCard
+
+schema:
+```js
+{
+  card: { 
+    type: 'boolean',
+    lx: {
+      displayType: 'card',
+      kind: 'default',
+      interactive: false,
+    }
+  }
+}
+```
+
+modelValue: 
+```js
+{
+  card: false,
+}
+```
+
+### LxEmptyState
+
+schema:
+```js
+{
+  emptyState: { 
+    type: 'object',
+    lx: {
+      displayType: 'emptyState',
+    }
+  }
+}
+```
+
+modelValue: 
+```js
+{
+  emptyState: {
+    label: 'empty state label',
+    description: 'empty state description',
+    icon: 'invalid',
+    actionDefinitions: [],
+    announce: true,
+  },
+}
+```
+
+### LxErrorPage
+
+schema:
+```js
+{
+  errorPage: { 
+    type: 'object',
+    lx: {
+      displayType: 'errorPage',
+    }
+  }
+}
+```
+
+modelValue: 
+```js
+{
+  errorPage: {
+    kind: '400',
+    icon: null,
+    title: 'error page title',
+    description: 'error page description',
+    actionDefinitions: [],
+    announce: true,
+  },
+}
+```
+
+### LxLoader
+
+schema:
+```js
+{
+  errorPage: { 
+    type: 'number',
+    lx: {
+      displayType: 'loader',
+      loading: true,
+      size: 'l',
+      variant: 'default',
+      kind: 'indeterminate',
+      label: '',
+      description: '',
+      fakedDuration: 2000,
+      faked: false,
+      state: 'default',
+      ariaHidden: false,
+    }
+  }
+}
+```
+
+modelValue: 
+```js
+{
+  errorPage: 0,
+}
+```
+
+### LxToolbar
+
+schema:
+```js
+{
+  toolbar: { 
+    type: 'object',
+    lx: {
+      displayType: 'toolbar',
+    }
+  }
+}
+```
+
+modelValue: 
+```js
+{
+  toolbar: {
+    actionDefinitions: [
+      {id: 'one', name: 'Action one', icon: 'flash', kind: 'primary' },
+      {id: 'two', name: 'Action two', icon: 'bug', area: 'right' }
+    ],
+    noBorders: false,
+    disabled: false,
+    loading: false,
+    busy: false,
+    hasSearch: false,
+    searchString: '',
+    searchSide: 'client',
+    searchMode: 'default',
+    useSearchDebounce: false,
+    searchItems: [],
+    hasSelectAll: false,
+    selectAllSide: 'right',
+    selectAllVariant: 'icon-only',
+    defaultArea: 'auto',
+    wrapperRef: null,
+    customClass: '',
+  },
 }
 ```

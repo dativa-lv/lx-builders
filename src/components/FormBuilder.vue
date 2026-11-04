@@ -13,9 +13,8 @@ import {
   lxDevUtils,
   lxStringUtils,
 } from '@dativa-lv/lx-ui';
-import { getOtherSelectComponent } from '@/components/formBuilderOtherSelect';
 import LxFormBuilderItem from '@/components/FormBuilderItem.vue';
-import { isDate } from '@/utils/builderUtils';
+import { selectRowComponent } from '@/utils/componentSelectUtils';
 
 /**
  * Component for building forms.
@@ -149,77 +148,6 @@ const isSchemaValid = computed(() => {
   return true;
 });
 
-function stringSelect(row) {
-  if (
-    (row?.type === 'string' &&
-      row?.lx?.kind !== 'multiline' &&
-      !row?.lx?.variant &&
-      !isDate(row?.format) &&
-      !row?.enum) ||
-    (row?.type === 'number' && !row?.lx?.variant && !isDate(row?.format) && !row?.enum)
-  )
-    return 'textInputDefault';
-  if (row?.type === 'string' && row?.lx?.kind === 'multiline') return 'textArea';
-  if (row?.type === 'string' && isDate(row?.format)) return 'dateTimePicker';
-  return '';
-}
-
-function arraySelect(row) {
-  if (row?.type === 'array' && row?.lx?.displayType === 'list') return 'arrayList';
-  if (row?.type === 'array' && row?.lx?.displayType === 'listModal') return 'arrayListModal';
-  if (row?.type === 'array' && row?.lx?.displayType === 'table') return 'arrayTable';
-  if (row?.type === 'array' && row?.lx?.displayType === 'tableModal') return 'arrayTableModal';
-  if (Array.isArray(row?.lx?.items) || row?.enum) {
-    return 'valuePicker';
-  }
-  if (row?.items?.properties && row?.type === 'array') return 'appendableList';
-  if (row?.type === 'array' && row?.items?.type !== 'object' && row?.items)
-    return 'smallAppendableList';
-  return '';
-}
-
-function objectSelect(row, name) {
-  if (row?.lx?.displayType === 'map' && row?.type === 'object') return 'map';
-  if (
-    row?.type === 'object' &&
-    model.value?.[name] !== undefined &&
-    model.value?.[name] !== null &&
-    row?.lx?.displayType === 'modal'
-  )
-    return 'objectList';
-  if (row?.type === 'object' && !model.value?.[name] && row?.lx?.displayType === 'modal')
-    return 'objectButton';
-  if (row?.type === 'object' && model.value?.[name] !== undefined && model.value?.[name] !== null)
-    return 'dataBlock';
-  return '';
-}
-
-function otherSelect(row) {
-  return getOtherSelectComponent(row);
-}
-
-function getStringComponent(row) {
-  const selected = stringSelect(row);
-  if (selected) return selected;
-  return null;
-}
-
-function shouldUseArraySelect(row) {
-  return (row?.type === 'string' && (row?.lx?.variant || row?.enum)) || row?.type === 'array';
-}
-
-function getArrayComponent(row) {
-  const selected = arraySelect(row);
-  if (selected !== '') return selected;
-  return null;
-}
-
-function getObjectComponent(row, name) {
-  const selected = objectSelect(row, name);
-  if (selected !== '') return selected;
-  return null;
-}
-
 function logUnrenderedProperty(name) {
   if (!name) return;
 
@@ -231,26 +159,10 @@ function logUnrenderedProperty(name) {
 }
 
 function componentSelect(row, name) {
-  if (row?.lx?.wrapper === 'placeholder') return 'lxPlaceholder';
-  const otherComponent = otherSelect(row);
-  if (otherComponent) return otherComponent;
-
-  const stringComponent = getStringComponent(row);
-  if (stringComponent) return stringComponent;
-
-  if (row?.type === 'integer') return 'textInputInteger';
-
-  if (row?.type === 'boolean') return 'toggle';
-
-  if (shouldUseArraySelect(row)) {
-    const arrayComponent = getArrayComponent(row);
-    if (arrayComponent) return arrayComponent;
-  }
-  const objectComponent = getObjectComponent(row, name);
-  if (objectComponent) return objectComponent;
-
-  logUnrenderedProperty(name);
-  return 'lxPlaceholder';
+  return selectRowComponent(row, {
+    value: model.value?.[name],
+    onUnrendered: () => logUnrenderedProperty(name),
+  });
 }
 
 // Used for adding default values defined in schema to the modelValue
