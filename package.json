@@ -1,7 +1,6 @@
 {
   "name": "@dativa-lv/lx-builders",
   "description": "LX/UI Builders",
-  "prettier": "@zzdats/prettier-config",
   "files": [
     "dist",
     "dist/vite",

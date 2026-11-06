@@ -12,8 +12,7 @@
   height: var(--row-size);
   background-color: var(--color-layout-background);
   padding: 0 0.5rem;
-  border-radius: var(--popover-item-border-radius-outer) var(--popover-item-border-radius-outer)
-    var(--popover-item-border-radius-inner) var(--popover-item-border-radius-inner);
+  border-radius: var(--popover-item-border-radius-outer) var(--popover-item-border-radius-outer) var(--popover-item-border-radius-inner) var(--popover-item-border-radius-inner);
 }
 
 .lx-panel > .panel-side .config-header > .lx-context-container .popper-wrapper {
@@ -257,10 +256,7 @@
 }
 
 .lx-theme-dark .lx-panel > .panel-side .config-header.has-selected-element:hover,
-.lx-theme-dark
-  .lx-panel
-  > .panel-side
-  .config-header.has-selected-element.template-edit-mode-open:hover {
+.lx-theme-dark .lx-panel > .panel-side .config-header.has-selected-element.template-edit-mode-open:hover {
   --color-constructor-highlight-foreground: var(--color-foreground);
 }
 
