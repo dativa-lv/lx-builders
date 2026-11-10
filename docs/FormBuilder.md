@@ -134,6 +134,9 @@ For more LX features, use custom schema attribute `lx` with these parameters:
     - `iconSetAttribute` - LxList `iconSetAttribute` prop        
     - `tooltipAttribute` - LxList `tooltipAttribute` prop
     - `categoryAttribute` - LxList `categoryAttribute` prop
+    - `childrenAttribute` - LxList `childrenAttribute` prop
+    - `hasChildrenAttribute` - LxList `hasChildrenAttribute` prop
+    - `selectableAttribute` - LxList `selectableAttribute` prop
     - `orderAttribute` - LxList `orderAttribute` prop
     - `hasSearch` - LxList `hasSearch` prop
     - `groupDefinitions` - LxList `groupDefinitions` prop
@@ -196,6 +199,9 @@ For more LX features, use custom schema attribute `lx` with these parameters:
     - `fullBleed` - LxDataGrid `fullBleed` prop
     - `badgeDefinitions` - LxDataGrid `badgeDefinitions` prop
     - `stickyToolbar` - LxDataGrid `stickyToolbar` prop
+    - `idAttribute` - LxDataGrid `idAttribute` prop
+    - `categoryAttribute` - LxDataGrid `categoryAttribute` prop
+    - `selectableAttribute` - LxDataGrid `selectableAttribute` prop
 ### `type="boolean"`
 - `size` - LxToggle `size` prop
 - `labelOn` - LxToggle on slot text
