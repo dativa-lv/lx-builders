@@ -249,7 +249,7 @@ test('LxToolbar applies noBorders, sticky and customClass', async () => {
   });
   const classes = wrapper.find('.lx-component-toolbar').classes();
   expect(classes).toContain('lx-toolbar-no-borders');
-  expect(classes).toContain('lx-toolbar-sticky');
+  expect(classes).toContain('lx-component-toolbar-sticky');
   expect(classes).toContain('my-toolbar');
 });
 
