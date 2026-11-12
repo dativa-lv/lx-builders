@@ -87,6 +87,10 @@ const props = defineProps({
     type: String,
     default: null,
   },
+  isDemoMode: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emits = defineEmits([
@@ -210,7 +214,7 @@ function filterAdditionalProps(propValues, component) {
 }
 
 const hasSchemaKeyEdit = computed(() => {
-  if (!props.componentName) return false;
+  if (!props.componentName || props.isDemoMode) return false;
   if (
     props.componentName === 'LxForm' &&
     props.navigation?.some((nav) => nav?.name === 'LxFilters')

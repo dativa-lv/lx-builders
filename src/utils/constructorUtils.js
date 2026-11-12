@@ -1083,6 +1083,7 @@ export const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.actionDefinitions = p.actionDefinitions;
     res.lx.defaultActionName = p.defaultActionName || 'open';
     res.lx.toolbarActionDefinitions = p.toolbarActionDefinitions;
+    res.lx.selectionActionDefinitions = p.selectionActionDefinitions;
     res.lx.hasVirtualization = p.hasVirtualization;
     res.lx.stickyHeader = p.stickyHeader || false;
     res.lx.hasPaging = p.hasPaging || false;
@@ -1163,3 +1164,14 @@ export const COMPONENT_SCHEMA_BUILDERS = {
     res.lx.type = p.type;
   },
 };
+
+// Returns builder schema of the component with provided props, or null if component is not supported
+export function getComponentSchema(componentName, componentProps = {}) {
+  const builder = COMPONENT_SCHEMA_BUILDERS[componentName];
+  const schema = getNewItemSchema(componentName);
+  if (!builder || !schema) return null;
+
+  schema.lx = schema.lx || {};
+  builder(schema, componentProps || {});
+  return schema;
+}

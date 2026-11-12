@@ -182,7 +182,7 @@ function appendableListRequiredRow(requiredValue, row) {
 }
 function deleteArrayObject(action, value, name, actionDefinitions = undefined) {
   if (actionDefinitions && actionDefinitions?.length > 0) {
-    componentEmit(action, name);
+    componentEmit(action, name, value);
   } else if (action === 'remove') {
     if (props.displaySchema?.properties[name]?.lx?.idAttribute) {
       const index = model.value[name].findIndex(
@@ -212,7 +212,7 @@ function saveNewElement(name) {
 
 function listModalAction(action, value, name, actionDefinitions = undefined) {
   if (actionDefinitions && actionDefinitions?.length > 0) {
-    componentEmit(action, name);
+    componentEmit(action, name, value);
   }
   if (action === 'click') {
     let obj = {};
@@ -1967,6 +1967,7 @@ const listModelPath = computed(() =>
     :actionDefinitions="displaySchema?.properties[name]?.lx?.actionDefinitions"
     :defaultActionName="displaySchema?.properties[name]?.lx?.defaultActionName"
     :toolbarActionDefinitions="displaySchema?.properties[name]?.lx?.toolbarActionDefinitions"
+    :selectionActionDefinitions="displaySchema?.properties[name]?.lx?.selectionActionDefinitions"
     :hasVirtualization="displaySchema?.properties[name]?.lx?.hasVirtualization"
     :stickyHeader="displaySchema?.properties[name]?.lx?.stickyHeader"
     :hasPaging="displaySchema?.properties[name]?.lx?.hasPaging"
@@ -2030,6 +2031,7 @@ const listModelPath = computed(() =>
       "
       :defaultActionName="displaySchema?.properties[name]?.lx?.defaultActionName || 'open'"
       :toolbarActionDefinitions="displaySchema?.properties[name]?.lx?.toolbarActionDefinitions"
+      :selectionActionDefinitions="displaySchema?.properties[name]?.lx?.selectionActionDefinitions"
       :hasVirtualization="displaySchema?.properties[name]?.lx?.hasVirtualization"
       :stickyHeader="displaySchema?.properties[name]?.lx?.stickyHeader"
       :hasPaging="displaySchema?.properties[name]?.lx?.hasPaging"

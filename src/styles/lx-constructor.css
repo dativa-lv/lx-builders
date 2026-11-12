@@ -250,12 +250,16 @@
   --color-button-ghost-icon: var(--color-constructor-highlight-foreground);
 }
 
-.lx-panel > .panel-side .config-header.has-selected-element:hover,
+.lx-panel > .panel-side .config-header.has-selected-element.is-demo-mode {
+  cursor: default;
+}
+
+.lx-panel > .panel-side .config-header.has-selected-element:not(.is-demo-mode):hover,
 .lx-panel > .panel-side .config-header.has-selected-element.template-edit-mode-open:hover {
   background-color: var(--color-interactive-hover-background);
 }
 
-.lx-theme-dark .lx-panel > .panel-side .config-header.has-selected-element:hover,
+.lx-theme-dark .lx-panel > .panel-side .config-header.has-selected-element:not(.is-demo-mode):hover,
 .lx-theme-dark .lx-panel > .panel-side .config-header.has-selected-element.template-edit-mode-open:hover {
   --color-constructor-highlight-foreground: var(--color-foreground);
 }

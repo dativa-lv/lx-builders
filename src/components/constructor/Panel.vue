@@ -102,6 +102,10 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  isDemoMode: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const textsDefault = {
@@ -489,6 +493,7 @@ function toggleTemplateMode(newValue) {
         />
 
         <LxButton
+          v-if="!isDemoMode"
           icon="components"
           variant="icon-only"
           :label="displayTexts?.components"
@@ -497,7 +502,7 @@ function toggleTemplateMode(newValue) {
           @click="(tab = 'components'), (open = true)"
         />
         <LxButton
-          v-if="hasAiChat"
+          v-if="hasAiChat && !isDemoMode"
           icon="ai"
           variant="icon-only"
           :label="displayTexts?.ai"
@@ -506,6 +511,7 @@ function toggleTemplateMode(newValue) {
           @click="(tab = 'ai'), (open = true)"
         />
         <LxButton
+          v-if="!isDemoMode || $slots.settings"
           icon="settings"
           variant="icon-only"
           :label="displayTexts?.settings"
@@ -522,6 +528,7 @@ function toggleTemplateMode(newValue) {
           :class="[
             {
               'has-selected-element': componentName && tab === 'config',
+              'is-demo-mode': isDemoMode,
               'has-template-edit-mode':
                 (isInsideCustomItemMode || componentName === 'LxList') && tab === 'config',
               'template-edit-mode-open':
@@ -531,7 +538,7 @@ function toggleTemplateMode(newValue) {
             },
           ]"
         >
-          <div v-if="tab === 'config'" class="config-panel-header">
+          <div v-if="tab === 'config' && !isDemoMode" class="config-panel-header">
             <LxDropDownMenu
               :actionDefinitions="navigation"
               placement="bottom-start"
@@ -556,7 +563,8 @@ function toggleTemplateMode(newValue) {
             />
           </div>
           <div v-else class="header-wrapper">
-            <p v-if="tab === 'components'">{{ displayTexts?.components }}</p>
+            <p v-if="tab === 'config' && isDemoMode">{{ componentName }}</p>
+            <p v-else-if="tab === 'components'">{{ displayTexts?.components }}</p>
             <p v-else-if="tab === 'settings'">{{ displayTexts?.settings }}</p>
             <p v-else-if="tab === 'ai'">{{ displayTexts?.ai }}</p>
             <p v-else>{{ displayTexts?.actionPanel }}</p>
@@ -603,7 +611,7 @@ function toggleTemplateMode(newValue) {
           </template>
           <!-- Default mode -->
           <template v-else>
-            <div class="button-group">
+            <div class="button-group" v-if="!isDemoMode">
               <LxButton
                 icon="copy"
                 kind="ghost"
@@ -642,6 +650,7 @@ function toggleTemplateMode(newValue) {
               :navigation="navigation"
               :selectedModel="selectedModel"
               :texts="displayTexts"
+              :isDemoMode="isDemoMode"
               @error="(x) => emits('error', x)"
               @update:selectedModel="(x) => emits('update:selectedModel', x)"
             />
@@ -679,7 +688,7 @@ function toggleTemplateMode(newValue) {
           />
         </div>
         <div v-if="tab === 'settings'">
-          <div class="settings-wrapper">
+          <div v-if="!isDemoMode" class="settings-wrapper">
             <LxButton
               kind="secondary"
               :label="displayTexts?.import"
@@ -710,6 +719,9 @@ function toggleTemplateMode(newValue) {
               icon="bug"
               @click="emits('reportIssue')"
             />
+          </div>
+          <div v-if="$slots.settings" class="settings-wrapper">
+            <slot name="settings" />
           </div>
         </div>
         <div v-if="tab === 'ai'">

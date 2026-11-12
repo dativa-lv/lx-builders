@@ -75,6 +75,11 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  // Demo mode only prop
+  isDemoMode: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const textsDefault = {
@@ -203,6 +208,7 @@ const emits = defineEmits([
   'schemaCopy',
   'send',
   'messageActionClick',
+  'emit',
 ]);
 
 // Error message map
@@ -2036,6 +2042,7 @@ let constructorResizeObserver = null;
 
 // When component is mounted adds event listeners for click and keyboard keys for moving elements
 onMounted(() => {
+  if (props.isDemoMode) return;
   const constructorEl = document.getElementById('constructor');
   constructorEl?.addEventListener('click', (e) => {
     selectElement(e);
@@ -2184,7 +2191,7 @@ defineExpose({
 </script>
 <template>
   <div class="lx-constructor">
-    <div id="constructor-overlay">
+    <div id="constructor-overlay" v-if="!isDemoMode">
       <div
         v-for="(style, index) in linkedHighlights"
         :key="index"
@@ -2280,6 +2287,7 @@ defineExpose({
         :componentName="componentName"
         :componentProps="componentProps"
         :componentPropsDefinitions="componentPropsDefinitions"
+        :isDemoMode="isDemoMode"
         :navigation="navigation"
         :componentModel="currentItem"
         :selectedModel="selectedModelForCurrentPath"
@@ -2313,14 +2321,23 @@ defineExpose({
         @send="(x) => emits('send', x)"
         @error="(x) => emits('error', x)"
         @messageActionClick="(x) => emits('messageActionClick', x)"
-      />
+      >
+        <template #settings v-if="$slots.settings">
+          <slot name="settings" />
+        </template>
+      </Panel>
     </Teleport>
 
     <div
       id="constructor"
       :class="[{ 'empty-schema': isSchemaEmpty }, { 'template-mode': templateMode }]"
     >
-      <LxViewBuilder :schema="schema" v-model="model" :builderOptions="{ useRegistry: true }" />
+      <LxViewBuilder
+        :schema="schema"
+        v-model="model"
+        :builderOptions="{ useRegistry: true }"
+        @emit="(...args) => emits('emit', ...args)"
+      />
     </div>
 
     <LxModal
