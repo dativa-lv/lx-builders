@@ -90,7 +90,7 @@
 .lx-panel {
   position: fixed;
   top: calc(var(--nav-row-size) + 10vh);
-  z-index: 1000;
+  z-index: 899;
   right: 0;
   display: flex;
   flex-direction: row-reverse;
