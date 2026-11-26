@@ -442,7 +442,7 @@ function hasCustomAttributeField() {
     "
   />
   <LxForm kind="stripped" v-if="Object.keys(mainProps).length || hasCustomAttributeField()">
-    <LxRow label="value" v-if="hasCustomAttributeField()">
+    <LxRow label="attribute" v-if="hasCustomAttributeField()">
       <LxStack orientation="horizontal" kind="compact">
         <LxTextInput
           :modelValue="modelPathAttribute"

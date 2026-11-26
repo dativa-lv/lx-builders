@@ -9,7 +9,8 @@ export function isDate(format) {
     format === 'month' ||
     format === 'month-year' ||
     format === 'quarters' ||
-    format === 'day-month'
+    format === 'day-month' ||
+    format === 'birth-date'
   );
 }
 
